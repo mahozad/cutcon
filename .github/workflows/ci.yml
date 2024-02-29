@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Test the project
+    runs-on: windows-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+      - name: Set up a specific Java version
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin" # OR adopt OR microsoft OR...
+          java-version: "21"
+      - name: Run all unit tests
+        run: ./gradlew test --stacktrace
+      - name: Upload test reports
+        if: always() # Run even if the previous steps failed
+        uses: actions/upload-artifact@v3
+        with:
+          name: tests-report
+          path: build/reports/tests/

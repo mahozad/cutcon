@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration>
+
+<!-- To format/normalize the file to a standard/canonical form, see https://logback.qos.ch/translator/ -->
+
+<configuration>
+  <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
+  <import class="ch.qos.logback.core.rolling.RollingFileAppender"/>
+  <import class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy"/>
+  <import class="ch.qos.logback.core.ConsoleAppender"/>
+  <!-- As an example, IntelliJ IDEA log file name is idea.log -->
+  <variable name="LOG_FILE_NAME" value="app"/>
+  <variable name="APP_NAME" value="cutcon"/>
+
+  <!-- My custom color highlighter -->
+  <conversionRule conversionWord="CustomHighlight" converterClass="ir.mahozad.cutcon.logging.CustomLevelHighlighter" />
+
+  <appender name="STDOUT" class="ConsoleAppender">
+    <encoder>
+      <pattern>%date{HH:mm:ss.SSS, Asia/Tehran} %CustomHighlight(%-5level) [%thread] %logger{0} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- A simple file logger without rolling policy -->
+  <!-- <appender name="FILE" class="ch.qos.logback.core.FileAppender"> -->
+  <!--   <file>info.log</file> -->
+  <!--   <append>true</append> -->
+  <!--   <encoder> -->
+  <!--     <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern> -->
+  <!--   </encoder> -->
+  <!-- </appender> -->
+
+
+  <!-- To send alert emails when error happens see https://www.baeldung.com/logback-send-email -->
+
+
+  <appender name="FILE" class="RollingFileAppender">
+    <!--
+     NOTE: Could also have used "${compose.application.resources.dir}/../../info.log" but
+      if the file path resolves to a protected Windows directory (like "C:/" or "C:/Program Files/..."),
+      running the app exe (after being installed) does not produce the log file unless executed as administrator.
+      See https://superuser.com/q/1031275 and https://stackoverflow.com/q/946420
+    -->
+    <file>${AppData}/${APP_NAME}/${LOG_FILE_NAME}.log</file>
+    <rollingPolicy class="TimeBasedRollingPolicy">
+      <!-- Daily rollover (logs that have the same yyyy-MM-dd will go in the same file) -->
+      <fileNamePattern>${AppData}/${APP_NAME}/${LOG_FILE_NAME}-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+      <!-- Keep 10 days' worth of history capped at 100MB total size -->
+      <maxHistory>10</maxHistory>
+      <totalSizeCap>100MB</totalSizeCap>
+    </rollingPolicy>
+    <encoder class="PatternLayoutEncoder">
+      <pattern>%date{HH:mm:ss.SSS, Asia/Tehran} %-5level [%thread] %logger{20} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!--
+       If there is a Java system property (-Dname=value)
+       or environment variable with the given name, reads it,
+       otherwise, defaults to the value after :-
+       See https://logback.qos.ch/manual/configuration.html#configFileProperty
+       and https://logback.qos.ch/manual/configuration.html#defaultValuesForVariables
+  -->
+  <!-- all -> trace -> debug -> info -> warn -> error -> off -->
+  <root level="${loggingLevel:-info}">
+    <appender-ref ref="STDOUT"/>
+    <appender-ref ref="FILE"/>
+  </root>
+</configuration>

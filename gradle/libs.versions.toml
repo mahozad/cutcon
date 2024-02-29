@@ -1,0 +1,52 @@
+[versions]
+gradle = "8.6"
+jvm = "21"
+kotlin = "1.9.22"
+proguard = "7.4.2"
+compose-multiplatform = "1.5.12"
+buildConfig = "4.1.2"
+buildDownload = "5.5.0"
+kotlin-coroutines = "1.8.0"
+logback = "1.4.11"
+log4jToSlf4j = "2.21.1"
+kotlinLogging = "5.1.0"
+ffmpeg = "5.1.2-1.5.8"
+vlc = "3.0.20"
+vlcj = "4.8.2"
+upx = "4.2.1"
+wavySlider="1.0.0"
+persianDateTime = "4.2.1"
+junit5 = "5.10.0"
+assertj = "3.24.2"
+mockk = "1.13.8"
+tika = "2.9.1"
+jna = "5.13.0"
+jaudioTagger = "3.0.1"
+image-comparison = "4.4.0"
+
+[libraries]
+kotlin-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
+kotlin-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlin-coroutines" }
+kotlin-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlin-coroutines" }
+kotlinLogging = { group = "io.github.oshai", name = "kotlin-logging-jvm", version.ref = "kotlinLogging" }
+logback-classic = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
+log4jToSlf4j = { group = "org.apache.logging.log4j", name = "log4j-to-slf4j", version.ref = "log4jToSlf4j" }
+ffmpeg = { group = "org.bytedeco", name = "ffmpeg", version.ref = "ffmpeg" }
+vlcj = { group = "uk.co.caprica", name = "vlcj", version.ref = "vlcj" }
+mahozad-wavySlider = { group = "ir.mahozad.multiplatform", name = "wavy-slider", version.ref = "wavySlider" }
+persianDateTime = { group = "com.github.mfathi91", name = "persian-date-time", version.ref = "persianDateTime" }
+apache-tika = { group = "org.apache.tika", name = "tika-core", version.ref = "tika" }
+jAudioTagger = { group = "net.jthink", name = "jaudiotagger", version.ref = "jaudioTagger" }
+jna-jpms = { group = "net.java.dev.jna", name = "jna-jpms", version.ref = "jna" }
+jna-platform-jpms = { group = "net.java.dev.jna", name = "jna-platform-jpms", version.ref = "jna" }
+junit5 = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit5" }
+junit5-vintageEngine = { group = "org.junit.vintage", name = "junit-vintage-engine", version.ref = "junit5" }
+imageComparison = { group = "com.github.romankh3", name = "image-comparison", version.ref = "image-comparison" }
+assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
+buildDownload = { id = "de.undercouch.download", version.ref = "buildDownload" }
