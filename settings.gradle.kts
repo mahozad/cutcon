@@ -1,4 +1,8 @@
+rootProject.name = "Cutcon"
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
+    includeBuild("vlc-setup-linux")
     repositories {
         google()
         gradlePluginPortal()
@@ -14,5 +18,3 @@ dependencyResolutionManagement {
         maven(url = "https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
 }
-
-rootProject.name = "Cutcon"

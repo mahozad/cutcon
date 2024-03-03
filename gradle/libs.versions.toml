@@ -1,5 +1,5 @@
 [versions]
-gradle = "8.6"
+gradle = "8.10.2"
 jvm = "21"
 kotlin = "1.9.22"
 proguard = "7.4.2"
@@ -13,7 +13,6 @@ kotlinLogging = "5.1.0"
 ffmpeg = "5.1.2-1.5.8"
 vlc = "3.0.20"
 vlcj = "4.8.2"
-upx = "4.2.1"
 wavySlider="1.0.0"
 persianDateTime = "4.2.1"
 junit5 = "5.10.0"
@@ -36,6 +35,7 @@ vlcj = { group = "uk.co.caprica", name = "vlcj", version.ref = "vlcj" }
 mahozad-wavySlider = { group = "ir.mahozad.multiplatform", name = "wavy-slider", version.ref = "wavySlider" }
 persianDateTime = { group = "com.github.mfathi91", name = "persian-date-time", version.ref = "persianDateTime" }
 apache-tika = { group = "org.apache.tika", name = "tika-core", version.ref = "tika" }
+# Alternative: com.mpatric:mp3agic:0.9.1 but it does not support extracting FLAC cover art etc.
 jAudioTagger = { group = "net.jthink", name = "jaudiotagger", version.ref = "jaudioTagger" }
 jna-jpms = { group = "net.java.dev.jna", name = "jna-jpms", version.ref = "jna" }
 jna-platform-jpms = { group = "net.java.dev.jna", name = "jna-platform-jpms", version.ref = "jna" }
@@ -48,5 +48,6 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+# Alternative: https://github.com/yshrsmz/BuildKonfig
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
 buildDownload = { id = "de.undercouch.download", version.ref = "buildDownload" }

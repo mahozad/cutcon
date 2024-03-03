@@ -1,8 +1,6 @@
-import de.undercouch.gradle.tasks.download.Download
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.api.tasks.wrapper.Wrapper.DistributionType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat.*
-import org.jetbrains.kotlin.cli.common.toBooleanLenient
 import java.nio.file.Path
 import java.time.LocalDate
 import kotlin.io.path.*
@@ -11,47 +9,24 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.buildDownload)
-    // Alternative: https://github.com/yshrsmz/BuildKonfig
     alias(libs.plugins.buildConfig)
+    id("vlc-setup-linux")
 }
 
 val appRawFilesPath = rootDir.toPath() / "raw"
 val appResourcesPath = rootDir.toPath() / "asset"
 val vlcDirectoryName = "vlc"
-val isVlcFull = System.getenv("fullVlc").toBooleanLenient() ?: false
-val shouldMinifyVlc = System.getenv("minifyVlc").toBooleanLenient() ?: true
 val releaseDate: LocalDate = LocalDate.of(2024, 2, 29)
 
 group = "ir.mahozad"
 version = "1"
 
-sourceSets {
-    create("uiTest") {
-        // Adds files from the main source set to the compile classpath and runtime classpath of this new source set.
-        // sourceSets.main.output is a collection of all the directories containing compiled main classes and resources
-        compileClasspath += sourceSets.main.get().output
-        runtimeClasspath += sourceSets.main.get().output
-    }
+vlcSetup {
+    vlcVersion = libs.versions.vlc.get() // FIXME: This is not used by the actual download url; see the vlc download task
+    linuxCopyPath = (appResourcesPath / "linux" / vlcDirectoryName).toFile()
+    shouldCompressPlugins = System.getenv("vlcCompression")?.toBooleanStrictOrNull() ?: true
+    shouldIncludeAllPlugins = System.getenv("vlcAllPlugins")?.toBooleanStrictOrNull() ?: false
 }
-// Makes the uiTestImplementation configuration extend from testImplementation,
-// which means that all the declared dependencies of the test code (and transitively the main as well)
-// also become dependencies of this new configuration
-val uiTestImplementation by configurations.getting {
-    extendsFrom(configurations.testImplementation.get())
-}
-val uiTest = task<Test>("uiTest") {
-    description = "Runs UI tests."
-    group = "verification"
-
-    testClassesDirs = sourceSets["uiTest"].output.classesDirs
-    classpath = sourceSets["uiTest"].runtimeClasspath
-    shouldRunAfter("test")
-
-    testLogging {
-        events(TestLogEvent.PASSED)
-    }
-}
-tasks.check { dependsOn(uiTest) }
 
 tasks.withType<Test> {
     useJUnitPlatform()
@@ -71,131 +46,6 @@ tasks.clean {
         .walk(PathWalkOption.INCLUDE_DIRECTORIES)
         .filter(Path::isDirectory)
         .filter { it.name == vlcDirectoryName }
-}
-
-/**
- * See https://docs.gradle.org/current/userguide/working_with_files.html
- */
-afterEvaluate {
-    tasks.named("prepareAppResources") {
-        dependsOn("prepareVlcPlugins")
-    }
-}
-
-val downloadVlc by tasks.register(
-    name = "downloadVlc",
-    type = Download::class
-) {
-    val baseUrl = "https://get.videolan.org"
-    val version = libs.versions.vlc.get()
-    // Make sure to download the 64-bit version of VLC
-    src("$baseUrl/vlc/$version/win64/vlc-$version-win64.zip")
-    dest((appRawFilesPath / "vlc-$version.zip").toFile())
-    overwrite(false) // Prevents re-download every time
-}
-
-val unzipVlc by tasks.register(
-    name = "unzipVlc",
-    type = Copy::class
-) {
-    dependsOn(downloadVlc)
-    dependsOn(unzipUpx)
-    from(zipTree(downloadVlc.dest)) {
-        // All the below is to copy only the contents of the root directory
-        // in the archive and not the root directory itself
-        // See https://docs.gradle.org/current/userguide/working_with_files.html#ex-unpacking-a-subset-of-a-zip-file
-        eachFile { relativePath = RelativePath(true, *relativePath.segments.drop(1).toTypedArray()) }
-        includeEmptyDirs = false // Deletes empty remainder directories
-    }
-    into(appRawFilesPath / "vlc")
-}
-
-val downloadUpx by tasks.register(
-    name = "downloadUpx",
-    type = Download::class
-) {
-    val version = libs.versions.upx.get()
-    src("https://github.com/upx/upx/releases/download/v$version/upx-$version-win64.zip")
-    dest((appRawFilesPath / "upx-$version.zip").toFile())
-    overwrite(false) // Prevents re-download every time
-}
-
-val unzipUpx by tasks.register(
-    name = "unzipUpx",
-    type = Copy::class
-) {
-    dependsOn(downloadUpx)
-    from(zipTree(downloadUpx.dest)) {
-        // All the below is to copy only the contents of the root directory
-        // in the archive and not the root directory itself
-        // See https://docs.gradle.org/current/userguide/working_with_files.html#ex-unpacking-a-subset-of-a-zip-file
-        eachFile { relativePath = RelativePath(true, *relativePath.segments.drop(1).toTypedArray()) }
-        includeEmptyDirs = false // Deletes empty remainder directories
-    }
-    include("**/upx.exe")
-    into(appRawFilesPath.toFile())
-}
-
-tasks.register(
-    name = "prepareVlcPlugins",
-    type = Copy::class
-) {
-    dependsOn(unzipVlc)
-    dependsOn(unzipUpx)
-    from(unzipVlc.outputs)
-    // If isVlcFull == true and then in a later execution isVlcFull == false (i.e. includes become more restrictive)
-    // or if we directly remove include(s) or modify their patterns in a way that removes some files, then
-    // the task will not remove those now-not-needed files. For these scenarios, clean the project first
-    if (isVlcFull) {
-        include("*.dll")
-        include("plugins/**/*.dll")
-    } else {
-        include(
-            "libvlc.dll",
-            "libvlccore.dll",
-            "plugins/access/libfilesystem_plugin.dll",
-            // Along with audio_output/libmmdevice_plugin.dll normalizes audio loudness
-            "plugins/audio_filter/libnormvol_plugin.dll",
-            "plugins/audio_filter/libscaletempo_pitch_plugin.dll",
-            "plugins/audio_filter/libscaletempo_plugin.dll",
-            "plugins/audio_output/libdirectsound_plugin.dll",
-            // Multimedia device output (along with audio_filter/libnormvol_plugin.dll normalizes audio loudness)
-            "plugins/audio_output/libmmdevice_plugin.dll",
-            // Various audio and video decoders/encoders delivered by the FFmpeg library.
-            // When almost all other DLLs were available (not deleted) I deleted this file and the player still worked but the video flickered (when pausing and sometimes during playback)
-            "plugins/codec/libavcodec_plugin.dll",
-            "plugins/demux/libts_plugin.dll",
-            "plugins/packetizer/libpacketizer_mpeg4audio_plugin.dll",
-            "plugins/packetizer/libpacketizer_mpeg4video_plugin.dll",
-            // For speedup of live-stream video to work correctly and smoothly; speedup of finished videos works without this
-            "plugins/stream_filter/libcache_read_plugin.dll",
-            // Can include this to show the text overlay (save path) when taking a screenshot
-            // "plugins/text_renderer/libfreetype_plugin.dll",
-            "plugins/video_chroma/libswscale_plugin.dll",
-            // To de-interlace the video playback; otherwise, not needed
-            "plugins/video_filter/libdeinterlace_plugin.dll",
-            // Recommended video output for Windows Vista and later
-            "plugins/video_output/libdirect3d9_plugin.dll",
-            // Recommended video output for Windows 8 and later
-            "plugins/video_output/libdirect3d11_plugin.dll",
-            // Recommended video output for Windows XP
-            "plugins/video_output/libdirectdraw_plugin.dll",
-            "plugins/video_output/libdrawable_plugin.dll",
-            // This is needed when drawing to a skia bitmap surface in the app code
-            "plugins/video_output/libvmem_plugin.dll"
-        )
-    }
-    if (shouldMinifyVlc) {
-        eachFile {
-            ProcessBuilder()
-                .command("${appRawFilesPath / "upx.exe"}", "vlc/$path")
-                .directory(appRawFilesPath.toFile())
-                .start()
-                .inputReader()
-                .forEachLine(::println)
-        }
-    }
-    into(appResourcesPath / "windows" / vlcDirectoryName)
 }
 
 /**
@@ -231,15 +81,49 @@ kotlin {
     jvmToolchain(libs.versions.jvm.get().toInt())
 }
 
+sourceSets {
+    create("uiTest") {
+        // Adds files from the main source set to the compile classpath and runtime classpath of this new source set.
+        // sourceSets.main.output is a collection of all the directories containing compiled main classes and resources
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+// Makes the uiTestImplementation configuration extend from testImplementation,
+// which means that all the declared dependencies of the test code (and transitively the main as well)
+// also become dependencies of this new configuration
+val uiTestImplementation by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+}
+val uiTest = task<Test>("uiTest") {
+    description = "Runs UI tests."
+    group = "verification"
+
+    testClassesDirs = sourceSets["uiTest"].output.classesDirs
+    classpath = sourceSets["uiTest"].runtimeClasspath
+    shouldRunAfter("test")
+
+    testLogging {
+        events(TestLogEvent.PASSED)
+    }
+}
+tasks.check { dependsOn(uiTest) }
+
 dependencies {
-    implementation(compose.desktop.currentOs)
     // Alternative icon packs:
     // https://github.com/DevSrSouza/compose-icons: FontAwesome and so on
     // https://github.com/microsoft/fluentui-system-icons: Has Android drawable files
     // which now can be used in Compose Multiplatform with the new resources library
     implementation(compose.materialIconsExtended)
+    implementation(compose.runtime)
+    implementation(compose.foundation)
+    implementation(compose.material)
+    implementation(compose.material3)
+    implementation(compose.ui)
+    @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+    implementation(compose.components.resources)
+    implementation(compose.preview)
     implementation(libs.kotlin.coroutines.core)
-    implementation(libs.kotlin.coroutines.swing)
     implementation(libs.mahozad.wavySlider)
     // Version 1.4.5 crashed the app when running app exe.
     // Requires modules("java.naming") in compose { nativeDistribution block below.
@@ -252,26 +136,34 @@ dependencies {
     // See https://www.slf4j.org/legacy.html#log4j-over-slf4j
     implementation(libs.log4jToSlf4j)
     implementation(libs.persianDateTime)
+    implementation(libs.vlcj)
+    implementation(libs.apache.tika)
+    implementation(compose.desktop.currentOs)
+    implementation(libs.kotlin.coroutines.swing)
+    implementation(libs.jAudioTagger)
+    implementation(libs.jna.jpms)
+    implementation(libs.jna.platform.jpms)
     implementation(libs.ffmpeg) // The main artifact
     // Cannot use version catalog containing artifact classifier
     // See https://github.com/gradle/gradle/issues/17169
     // and https://stackoverflow.com/q/71485996
-    implementation(variantOf(libs.ffmpeg) { classifier("windows-x86_64-gpl") })
-    implementation(libs.vlcj)
-    implementation(libs.apache.tika)
-    // Alternative: implementation("com.mpatric:mp3agic:0.9.1") but it does not support extracting FLAC cover art etc.
-    implementation(libs.jAudioTagger)
-    implementation(libs.jna.jpms)
-    implementation(libs.jna.platform.jpms)
-
+    implementation(
+        dependencies.variantOf(libs.ffmpeg) {
+            if (currentOS == OS.WINDOWS) {
+                classifier("windows-x86_64-gpl")
+            } else {
+                classifier("linux-x86_64-gpl")
+            }
+        }
+    )
     testImplementation(compose.desktop.uiTestJUnit4)
-    testImplementation(libs.kotlin.coroutines.test)
     testImplementation(libs.junit5)
     // Includes the Vintage engine to be able to run JUnit 4 tests as well
     testImplementation(libs.junit5.vintageEngine)
     testImplementation(libs.assertj)
     testImplementation(libs.mockk)
     testImplementation(libs.imageComparison)
+    testImplementation(libs.kotlin.coroutines.test)
 }
 
 compose.desktop {
@@ -307,7 +199,7 @@ compose.desktop {
             // (introduced with ch.qos.logback:logback-classic version 1.4.5)
             // jdk.unsupported is for showing the display image when running the app exe
             modules("java.naming", "jdk.unsupported")
-            targetFormats(Dmg, Msi, Exe, Deb)
+            targetFormats(Dmg, Exe, AppImage)
             packageVersion = "${project.version}.0.0"
             packageName = project.name
             vendor = "Mahdi Hosseinzadeh"
@@ -321,6 +213,17 @@ compose.desktop {
                 configurationFiles.from("rules.pro")
             }
         }
+    }
+}
+
+// Adopted from https://github.com/JetBrains/compose-multiplatform/blob/master/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/internal/utils/osUtils.kt
+enum class OS { WINDOWS, LINUX }
+val currentOS: OS by lazy {
+    val os = System.getProperty("os.name")
+    when {
+        os.startsWith("Win", ignoreCase = true) -> OS.WINDOWS
+        os.startsWith("Linux", ignoreCase = true) -> OS.LINUX
+        else -> error("Unsupported OS")
     }
 }
 

@@ -72,7 +72,7 @@ class DefaultMediaPlayer : MediaPlayer {
         // Format of screenshot {png, jpg, tiff}
         "--snapshot-format=png",
         // Makes the process priority high
-        "--high-priority",
+        // "--high-priority",
         // Disables collection of statistics
         "--no-stats",
         // Shows verbose output {0 error and info, 1 warning, 2 debug}
@@ -83,10 +83,12 @@ class DefaultMediaPlayer : MediaPlayer {
         "--no-interact",
         // Allows hardware decoding when available {any, d3d11va, dxva2, none}
         "--avcodec-hw=any",
-        // Greatly improves the startup time of VLC
-        "--plugins-cache",
         // Drops frames instead of showing visual (gray) artifacts
-        "--no-avcodec-corrupted"
+        "--no-avcodec-corrupted",
+        // Greatly improves the startup time of VLC
+        // "--plugins-cache", // TODO: Enable this and remove the following two
+        "--no-plugins-cache",
+        "--reset-plugins-cache"
     )
 
     private var vlcMediaPlayerFactory = initializeVlcMediaPlayerFactory()
@@ -250,7 +252,9 @@ class DefaultMediaPlayer : MediaPlayer {
             // and to prevent logging too many statements in the logger
             if (mediaLength > 1_000) {
                 logger.info { "Media finished; starting it over" }
-                vlcMediaPlayer.controls().play()
+                vlcMediaPlayer.submit {
+                    vlcMediaPlayer.controls().play()
+                }
             }
         }
 
