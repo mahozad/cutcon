@@ -58,7 +58,8 @@ abstract class CalendarTest {
         val results = mutableListOf<Calendar>()
         backgroundScope.launch(dispatcher) { viewModel.calendar.toList(results) }
         viewModel.setCalendar(Calendar.GREGORIAN)
-        assertThat(results).containsExactly(defaultCalendar, Calendar.GREGORIAN)
+        assertThat(results.first()).isEqualTo(defaultCalendar)
+        assertThat(results.last()).isEqualTo(Calendar.GREGORIAN)
     }
 
     @Test

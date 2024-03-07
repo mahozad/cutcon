@@ -36,7 +36,9 @@ import com.sun.jna.platform.win32.WinDef.*
 import com.sun.jna.platform.win32.WinUser.*
 import com.sun.jna.win32.W32APIOptions
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
+import ir.mahozad.cutcon.OS
 import ir.mahozad.cutcon.defaultFontSize
+import ir.mahozad.cutcon.getCurrentOs
 import ir.mahozad.cutcon.localization.Messages
 import ir.mahozad.cutcon.ui.icon.Close
 import ir.mahozad.cutcon.ui.icon.Icons
@@ -52,20 +54,20 @@ fun WindowScope.WindowDecoration(
     onCloseRequest: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    val windowHandle = remember(window) {
-        val windowPointer = (window as? ComposeWindow)
-            ?.windowHandle
-            ?.let(::Pointer)
-            ?: Native.getWindowPointer(window)
-        HWND(windowPointer)
-    }
-    remember(windowHandle) { CustomWindowProcessor(windowHandle) }
     // For rounded corners, the window transparent should be set to true which requires
     // window undecorated to be set to true as well which causes the workaround for
     // window shadow and minimize/restore/close animations to not work anymore.
     Surface(modifier = Modifier.fillMaxHeight() /* Ensures the content fills the whole window height */) {
         Column {
-            if (isDecorationVisible) {
+            if (getCurrentOs() == OS.WINDOWS && isDecorationVisible) {
+                val windowHandle = remember(window) {
+                    val windowPointer = (window as? ComposeWindow)
+                        ?.windowHandle
+                        ?.let(::Pointer)
+                        ?: Native.getWindowPointer(window)
+                    HWND(windowPointer)
+                }
+                remember(windowHandle) { CustomWindowProcessor(windowHandle) }
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                     WindowDraggableArea(modifier = Modifier.fillMaxWidth().height(30.dp)) {
                         Row(
@@ -93,8 +95,11 @@ fun WindowScope.WindowDecoration(
                                             .width(48.dp)
                                             .fillMaxHeight()
                                             .clickable {
-                                                // See the code below for why
-                                                User32.INSTANCE.CloseWindow(windowHandle)
+                                                if (getCurrentOs() == OS.WINDOWS) {
+                                                    User32.INSTANCE.CloseWindow(windowHandle)
+                                                } else {
+                                                    (window as? ComposeWindow)?.isMinimized = true
+                                                }
                                             }
                                     ) {
                                         Icon(

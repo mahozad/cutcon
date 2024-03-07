@@ -107,7 +107,7 @@ fun getResourceAsPath(name: String): Path = resourceAccessor
  * and https://trac.ffmpeg.org/ticket/9157
  */
 fun getResourceAsURL(name: String): URL {
-    val testResourcesDirectory = Path("src/test/resources").absolutePathString()
+    val testResourcesDirectory = Path("src/desktopTest/resources").absolutePathString()
     return URL("file:$testResourcesDirectory/$name")
 }
 

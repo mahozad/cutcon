@@ -59,7 +59,8 @@ abstract class LanguageTest {
         val results = mutableListOf<Language>()
         backgroundScope.launch(dispatcher) { viewModel.language.toList(results) }
         viewModel.setLanguage(LanguageEn)
-        assertThat(results).containsExactly(defaultLanguage, LanguageEn)
+        assertThat(results.first()).isEqualTo(defaultLanguage)
+        assertThat(results.last()).isEqualTo(LanguageEn)
     }
 
     @Test

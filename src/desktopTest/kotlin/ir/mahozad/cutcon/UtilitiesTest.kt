@@ -4,11 +4,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import io.mockk.every
+import io.mockk.spyk
 import ir.mahozad.cutcon.model.*
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -1090,6 +1093,14 @@ class UtilitiesTest {
         )
     }
 
+    @Disabled("""
+        Because could not mock System.getProperty.
+        Do not try to use System.setProperty() and System.clearProperty() as it messes up real properties
+        (for example, the ffmpeg library sometimes threw "UnsatisfiedLinkError: no avutil in java.library.path")
+        Could create a wrapper class (with methods that call System under the hood) and mock methods of it instead.
+        Maybe can use this library (that uses bytebuddy which may interfere with mockk becuase mockk also uses bytebuddy):
+        https://github.com/webcompere/system-stubs
+    """)
     @Nested
     @TestInstance(Lifecycle.PER_CLASS)
     inner class GetCurrentOsTest {
@@ -1099,9 +1110,8 @@ class UtilitiesTest {
             argument: Pair<String, OS>
         ) {
             val (osName, expectedResult) = argument
-            System.setProperty("os.name", osName)
+            // mock the following System property: os.name = osName
             val result = getCurrentOs()
-            System.clearProperty("os.name")
             assertThat(result).isEqualTo(expectedResult)
         }
 

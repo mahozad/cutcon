@@ -111,6 +111,7 @@ tasks.register(
     name = "prepareVlcPlugins",
     type = Copy::class
 ) {
+    enabled = (currentOS == OS.WINDOWS)
     dependsOn(unzipVlc)
     dependsOn(unzipUpx)
     from(unzipVlc.outputs)
@@ -187,7 +188,7 @@ buildConfig {
 }
 
 kotlin {
-    jvm("desktop")
+    jvm(name = "desktop")
 
     sourceSets {
         val desktopMain by getting
