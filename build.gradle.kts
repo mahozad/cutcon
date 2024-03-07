@@ -8,10 +8,9 @@ import java.time.LocalDate
 import kotlin.io.path.*
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.buildDownload)
-    // Alternative: https://github.com/yshrsmz/BuildKonfig
     alias(libs.plugins.buildConfig)
 }
 
@@ -24,34 +23,6 @@ val releaseDate: LocalDate = LocalDate.of(2024, 2, 29)
 
 group = "ir.mahozad"
 version = "1"
-
-sourceSets {
-    create("uiTest") {
-        // Adds files from the main source set to the compile classpath and runtime classpath of this new source set.
-        // sourceSets.main.output is a collection of all the directories containing compiled main classes and resources
-        compileClasspath += sourceSets.main.get().output
-        runtimeClasspath += sourceSets.main.get().output
-    }
-}
-// Makes the uiTestImplementation configuration extend from testImplementation,
-// which means that all the declared dependencies of the test code (and transitively the main as well)
-// also become dependencies of this new configuration
-val uiTestImplementation by configurations.getting {
-    extendsFrom(configurations.testImplementation.get())
-}
-val uiTest = task<Test>("uiTest") {
-    description = "Runs UI tests."
-    group = "verification"
-
-    testClassesDirs = sourceSets["uiTest"].output.classesDirs
-    classpath = sourceSets["uiTest"].runtimeClasspath
-    shouldRunAfter("test")
-
-    testLogging {
-        events(TestLogEvent.PASSED)
-    }
-}
-tasks.check { dependsOn(uiTest) }
 
 tasks.withType<Test> {
     useJUnitPlatform()
@@ -216,6 +187,72 @@ buildConfig {
 }
 
 kotlin {
+    jvm("desktop")
+
+    sourceSets {
+        val desktopMain by getting
+        val desktopTest by getting
+        val uiTest by creating { dependsOn(desktopTest) }
+        desktopMain.dependencies {
+            // Alternative icon packs:
+            // https://github.com/DevSrSouza/compose-icons: FontAwesome and so on
+            // https://github.com/microsoft/fluentui-system-icons: Has Android drawable files
+            // which now can be used in Compose Multiplatform with the new resources library
+            implementation(compose.materialIconsExtended)
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material)
+            implementation(compose.material3)
+            implementation(compose.ui)
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.components.resources)
+            implementation(compose.preview)
+            implementation(libs.kotlin.coroutines.core)
+            implementation(libs.mahozad.wavySlider)
+            // Version 1.4.5 crashed the app when running app exe.
+            // Requires modules("java.naming") in compose { nativeDistribution block below.
+            // See https://github.com/JetBrains/compose-multiplatform/issues/1358
+            // and https://github.com/JetBrains/compose-multiplatform/issues/1977
+            implementation(libs.logback.classic)
+            implementation(libs.kotlinLogging)
+            // Fixes libraries that use log4j for logging (for example, apache poi)
+            // Maybe could use log4j-over-slf4j library instead
+            // See https://www.slf4j.org/legacy.html#log4j-over-slf4j
+            implementation(libs.log4jToSlf4j)
+            implementation(libs.persianDateTime)
+            implementation(libs.vlcj)
+            implementation(libs.apache.tika)
+            implementation(compose.desktop.currentOs)
+            implementation(libs.kotlin.coroutines.swing)
+            implementation(libs.jAudioTagger)
+            implementation(libs.jna.jpms)
+            implementation(libs.jna.platform.jpms)
+            implementation(libs.ffmpeg) // The main artifact
+            // Cannot use version catalog containing artifact classifier
+            // See https://github.com/gradle/gradle/issues/17169
+            // and https://stackoverflow.com/q/71485996
+            implementation(
+                dependencies.variantOf(libs.ffmpeg) {
+                    if (currentOS == OS.WINDOWS) {
+                        classifier("windows-x86_64-gpl")
+                    } else {
+                        classifier("linux-x86_64-gpl")
+                    }
+                }
+            )
+        }
+        desktopTest.dependencies {
+            implementation(compose.desktop.uiTestJUnit4)
+            implementation(libs.junit5)
+            // Includes the Vintage engine to be able to run JUnit 4 tests as well
+            implementation(libs.junit5.vintageEngine)
+            implementation(libs.assertj)
+            implementation(libs.mockk)
+            implementation(libs.imageComparison)
+            implementation(libs.kotlin.coroutines.test)
+        }
+    }
+
     // With toolchain, we say, no matter what JDK is used for running Gradle itself,
     // we want this specific JDK for building/compiling our code (aka tasks of our library/app).
     // So, if Gradle finds a local JDK matching the specified toolchain properties,
@@ -231,48 +268,19 @@ kotlin {
     jvmToolchain(libs.versions.jvm.get().toInt())
 }
 
-dependencies {
-    implementation(compose.desktop.currentOs)
-    // Alternative icon packs:
-    // https://github.com/DevSrSouza/compose-icons: FontAwesome and so on
-    // https://github.com/microsoft/fluentui-system-icons: Has Android drawable files
-    // which now can be used in Compose Multiplatform with the new resources library
-    implementation(compose.materialIconsExtended)
-    implementation(libs.kotlin.coroutines.core)
-    implementation(libs.kotlin.coroutines.swing)
-    implementation(libs.mahozad.wavySlider)
-    // Version 1.4.5 crashed the app when running app exe.
-    // Requires modules("java.naming") in compose { nativeDistribution block below.
-    // See https://github.com/JetBrains/compose-multiplatform/issues/1358
-    // and https://github.com/JetBrains/compose-multiplatform/issues/1977
-    implementation(libs.logback.classic)
-    implementation(libs.kotlinLogging)
-    // Fixes libraries that use log4j for logging (for example, apache poi)
-    // Maybe could use log4j-over-slf4j library instead
-    // See https://www.slf4j.org/legacy.html#log4j-over-slf4j
-    implementation(libs.log4jToSlf4j)
-    implementation(libs.persianDateTime)
-    implementation(libs.ffmpeg) // The main artifact
-    // Cannot use version catalog containing artifact classifier
-    // See https://github.com/gradle/gradle/issues/17169
-    // and https://stackoverflow.com/q/71485996
-    implementation(variantOf(libs.ffmpeg) { classifier("windows-x86_64-gpl") })
-    implementation(libs.vlcj)
-    implementation(libs.apache.tika)
-    // Alternative: implementation("com.mpatric:mp3agic:0.9.1") but it does not support extracting FLAC cover art etc.
-    implementation(libs.jAudioTagger)
-    implementation(libs.jna.jpms)
-    implementation(libs.jna.platform.jpms)
-
-    testImplementation(compose.desktop.uiTestJUnit4)
-    testImplementation(libs.kotlin.coroutines.test)
-    testImplementation(libs.junit5)
-    // Includes the Vintage engine to be able to run JUnit 4 tests as well
-    testImplementation(libs.junit5.vintageEngine)
-    testImplementation(libs.assertj)
-    testImplementation(libs.mockk)
-    testImplementation(libs.imageComparison)
-}
+// val uiTest = task<Test>("uiTest") {
+//     description = "Runs UI tests."
+//     group = "verification"
+//
+//     testClassesDirs = sourceSets["uiTest"].output.classesDirs
+//     classpath = sourceSets["uiTest"].runtimeClasspath
+//     shouldRunAfter("test")
+//
+//     testLogging {
+//         events(TestLogEvent.PASSED)
+//     }
+// }
+// tasks.check { dependsOn(uiTest) }
 
 compose.desktop {
     application {
@@ -321,6 +329,17 @@ compose.desktop {
                 configurationFiles.from("rules.pro")
             }
         }
+    }
+}
+
+// Adopted from https://github.com/JetBrains/compose-multiplatform/blob/master/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/internal/utils/osUtils.kt
+enum class OS { WINDOWS, LINUX }
+val currentOS: OS by lazy {
+    val os = System.getProperty("os.name")
+    when {
+        os.startsWith("Win", ignoreCase = true) -> OS.WINDOWS
+        os.startsWith("Linux", ignoreCase = true) -> OS.LINUX
+        else -> error("Unsupported OS")
     }
 }
 
