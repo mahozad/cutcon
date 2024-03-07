@@ -187,7 +187,7 @@ buildConfig {
 }
 
 kotlin {
-    jvm("desktop")
+    jvm(name = "desktop")
 
     sourceSets {
         val desktopMain by getting
