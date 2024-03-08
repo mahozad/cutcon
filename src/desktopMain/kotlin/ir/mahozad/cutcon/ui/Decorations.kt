@@ -52,14 +52,14 @@ fun WindowScope.WindowDecoration(
     onCloseRequest: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    val windowHandle = remember(window) {
-        val windowPointer = (window as? ComposeWindow)
-            ?.windowHandle
-            ?.let(::Pointer)
-            ?: Native.getWindowPointer(window)
-        HWND(windowPointer)
-    }
-    remember(windowHandle) { CustomWindowProcessor(windowHandle) }
+//    val windowHandle = remember(window) {
+//        val windowPointer = (window as? ComposeWindow)
+//            ?.windowHandle
+//            ?.let(::Pointer)
+//            ?: Native.getWindowPointer(window)
+//        HWND(windowPointer)
+//    }
+//    remember(windowHandle) { CustomWindowProcessor(windowHandle) }
     // For rounded corners, the window transparent should be set to true which requires
     // window undecorated to be set to true as well which causes the workaround for
     // window shadow and minimize/restore/close animations to not work anymore.
@@ -94,7 +94,7 @@ fun WindowScope.WindowDecoration(
                                             .fillMaxHeight()
                                             .clickable {
                                                 // See the code below for why
-                                                User32.INSTANCE.CloseWindow(windowHandle)
+//                                                User32.INSTANCE.CloseWindow(windowHandle)
                                             }
                                     ) {
                                         Icon(
