@@ -111,7 +111,7 @@ tasks.register(
     name = "prepareVlcPlugins",
     type = Copy::class
 ) {
-    enabled = false
+    enabled = (currentOS == OS.WINDOWS)
     dependsOn(unzipVlc)
     dependsOn(unzipUpx)
     from(unzipVlc.outputs)
