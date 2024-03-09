@@ -1095,8 +1095,8 @@ class UtilitiesTest {
 
     @Disabled("""
         Because could not mock System.getProperty.
-        Do not try to use System.setProperty() and System.clearProperty()
-        as it breaks other tests and messes up real properties!
+        Do not try to use System.setProperty() and System.clearProperty() as it messes up real properties
+        (for example, the ffmpeg library sometimes threw "UnsatisfiedLinkError: no avutil in java.library.path")
         Maybe can use this library (that uses bytebuddy which may interfere with mockk becuase mockk also uses bytebuddy) 
     """)
     @Nested
