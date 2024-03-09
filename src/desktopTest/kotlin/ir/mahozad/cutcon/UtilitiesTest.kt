@@ -1108,6 +1108,7 @@ class UtilitiesTest {
             argument: Pair<String, OS>
         ) {
             val (osName, expectedResult) = argument
+            // mock the following System property: os.name = osName
             val result = getCurrentOs()
             assertThat(result).isEqualTo(expectedResult)
         }
