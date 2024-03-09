@@ -27,7 +27,6 @@ import java.awt.image.BufferedImage
 import java.io.InputStream
 import java.nio.file.Path
 import java.time.LocalDate
-import java.util.*
 import javax.imageio.ImageIO
 import kotlin.io.path.*
 import kotlin.math.roundToInt
@@ -49,6 +48,20 @@ private val dateDelimiterRegex = Regex("""[-و \t_.,،:;؛|/\\]""")
 private val redundantDelimiterRegex = Regex("${dateDelimiterRegex.pattern}+")
 private val tika = Tika()
 private val logger = logger(name = "Utilities")
+
+enum class OS { WINDOWS, LINUX, MAC, OTHER }
+
+fun getCurrentOs(): OS {
+    val name = System
+        .getProperty("os.name")
+        .lowercase()
+    return when {
+        name.startsWith("win") -> OS.WINDOWS
+        name.startsWith("mac") -> OS.MAC
+        name == "linux" -> OS.LINUX
+        else -> OS.OTHER
+    }
+}
 
 fun parseMarkdownAsChangelog(
     inputStream: InputStream,

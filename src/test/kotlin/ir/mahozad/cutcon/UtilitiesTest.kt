@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.condition.EnabledOnOs
-import org.junit.jupiter.api.condition.OS
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
@@ -293,7 +292,7 @@ class UtilitiesTest {
         /**
          * See https://youtrack.jetbrains.com/issue/KT-62225 for why.
          */
-        @EnabledOnOs(OS.WINDOWS)
+        @EnabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
         @ParameterizedTest
         @MethodSource("generateWindowPathsAndExpectedResults")
         fun `Trimming paths with backslash separators should produce proper result`(
@@ -325,7 +324,7 @@ class UtilitiesTest {
         /**
          * See https://youtrack.jetbrains.com/issue/KT-62225 for why.
          */
-        @EnabledOnOs(OS.WINDOWS)
+        @EnabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
         @Test
         fun `Converting a Windows path to LTR string should produce proper result`() {
             val path = Path("""...\موسیقی\abcdefghijklmnopq""")
@@ -1088,6 +1087,39 @@ class UtilitiesTest {
             Color(0xff00ff) to "#ff00ff",
             Color(0xffff00) to "#ffff00",
             Color(0x000000) to "#000000"
+        )
+    }
+
+    @Nested
+    @TestInstance(Lifecycle.PER_CLASS)
+    inner class GetCurrentOsTest {
+        @ParameterizedTest
+        @MethodSource("generateOsNamesAndExpectedResults")
+        fun `Getting current OS should return correct result`(
+            argument: Pair<String, OS>
+        ) {
+            val (osName, expectedResult) = argument
+            System.setProperty("os.name", osName)
+            val result = getCurrentOs()
+            System.clearProperty("os.name")
+            assertThat(result).isEqualTo(expectedResult)
+        }
+
+        private fun generateOsNamesAndExpectedResults() = listOf(
+            "Windows 8" to OS.WINDOWS,
+            "Windows XP" to OS.WINDOWS,
+            "windows 10" to OS.WINDOWS,
+            "windows 10" to OS.WINDOWS,
+            "windows" to OS.WINDOWS,
+            "Windows" to OS.WINDOWS,
+            "WINDOWS" to OS.WINDOWS,
+            "win" to OS.WINDOWS,
+            "linux" to OS.LINUX,
+            "Linux" to OS.LINUX,
+            "Mac OS X" to OS.MAC,
+            "mac" to OS.MAC,
+            "abcd" to OS.OTHER,
+            "" to OS.OTHER
         )
     }
 }
