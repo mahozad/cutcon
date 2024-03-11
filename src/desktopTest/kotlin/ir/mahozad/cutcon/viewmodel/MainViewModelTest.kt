@@ -66,7 +66,6 @@ class MainViewModelTest {
     @Nested inner class IsQualityInputApplicableTests : IsQualityInputApplicableTest()
     @Nested inner class IsScreenshotInputEnabledTests : IsScreenshotInputEnabledTest()
     @Nested inner class IsScreenshotSoundEnabledTests : IsScreenshotSoundEnabledTest()
-    @Nested inner class IsChangelogDialogDisplayedTests : IsChangelogDialogDisplayedTest()
 
     @Test
     fun `When the current time minutes and seconds is zero, live seek fraction should be zero, not infinity`() =

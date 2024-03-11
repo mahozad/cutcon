@@ -65,9 +65,10 @@ class MainViewModel(
     private var conversionJob: Job? = null
     private val _isAppExitConfirmDialogDisplayed = MutableStateFlow(false)
     private val _isChangelogDialogDisplayed = MutableStateFlow(
-        settings[PREF_LAST_SHOWN_CHANGELOG_VERSION, null].let {
-            compareVersionStrings(BuildConfig.APP_VERSION, it) == VersionComparisonResult.NEWER
-        }
+        false
+        // settings[PREF_LAST_SHOWN_CHANGELOG_VERSION, null].let {
+        //     compareVersionStrings(BuildConfig.APP_VERSION, it) == VersionComparisonResult.NEWER
+        // }
     )
     private val _language = MutableStateFlow(
         settings[PREF_LANGUAGE, null]
