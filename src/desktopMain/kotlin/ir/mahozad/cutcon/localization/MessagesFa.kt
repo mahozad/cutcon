@@ -1,20 +1,16 @@
 package ir.mahozad.cutcon.localization
 
 import ir.mahozad.cutcon.BuildConfig
+import ir.mahozad.cutcon.model.Changelog
 import ir.mahozad.cutcon.model.LocalSourceSupportedFileType
 import ir.mahozad.cutcon.model.SupportedImageFormat
-import ir.mahozad.cutcon.parseMarkdownAsChangelog
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 data object MessagesFa : Messages {
-    override val changelog by lazy {
-        // See the build script where the changelog file was added as an app resource
-        val stream = javaClass.getResourceAsStream("/CHANGELOG.md")!!
-        parseMarkdownAsChangelog(stream, LanguageFa.tag)
-    }
+    override val changelog by lazy { Changelog(emptyList()) }
 
     override val appName = "کلیپر"
     override val versionPrefix = "ویرایش"

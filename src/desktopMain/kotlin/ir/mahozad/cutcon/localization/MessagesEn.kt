@@ -4,16 +4,13 @@ import ir.mahozad.cutcon.BuildConfig
 import ir.mahozad.cutcon.model.Changelog
 import ir.mahozad.cutcon.model.LocalSourceSupportedFileType
 import ir.mahozad.cutcon.model.SupportedImageFormat
-import ir.mahozad.cutcon.parseMarkdownAsChangelog
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 data object MessagesEn : Messages {
-    override val changelog by lazy {
-        Changelog(emptyList())
-    }
+    override val changelog by lazy { Changelog(emptyList()) }
 
     // See the build script the BuildConfig is generated automatically
     override val appName = BuildConfig.APP_NAME
