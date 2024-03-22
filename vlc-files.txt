@@ -1,3 +1,36 @@
+build for linux (https://wiki.videolan.org/UnixCompile/):
+- download the release archive: https://get.videolan.org/vlc/3.0.20/
+- extract it: tar xvJf vlc-3.0.20.tar.xz
+- cd vlc-3.0.20
+- sudo apt install g++ make libtool automake autopoint pkg-config flex bison lua5.2
+
+- open software & updates app and enable the sources checkbox and click close and click reload
+  OR
+  in /etc/apt/sources.list uncomment lines that start with `deb-src`
+  then sudo apt update
+
+- ./bootstrap
+
+- To link against dynamic libraries (meaning libraries installed or available on the OS):
+  sudo apt build-dep vlc
+  To link statically (that is, provide the libraries along with the vlc):
+  sudo apt install subversion yasm cvs cmake ragel
+  cd contrib
+  mkdir native
+  cd native
+  ../bootstrap
+  make
+
+- ./configure (make sure it ends with no error)
+- ./compile
+
+
+==========================================================
+==========================================================
+==========================================================
+
+Using the snap version:
+
 IdeaProjects/cutcon/asset/linux/vlc/
 ├── avahi
 │   └── service-types.db
