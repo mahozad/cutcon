@@ -16,7 +16,7 @@ data object MessagesFa : Messages {
         parseMarkdownAsChangelog(stream, LanguageFa.tag)
     }
 
-    override val appName = "کلیپر"
+    override val appName = "کات‌کن"
     override val versionPrefix = "ویرایش"
     override val appVersion = "$versionPrefix ${LanguageFa.localizeDigits(BuildConfig.APP_VERSION)}"
     override val error = "خطایی در برنامه رخ داد.\nبرای جزئیات بیشتر، لاگ برنامه را مشاهده کنید."
