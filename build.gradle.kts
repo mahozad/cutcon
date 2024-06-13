@@ -53,6 +53,10 @@ val uiTest = task<Test>("uiTest") {
 }
 tasks.check { dependsOn(uiTest) }
 
+tasks.processResources {
+    from(rootDir.toPath() / "CHANGELOG.md")
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
     // See https://github.com/JetBrains/compose-multiplatform/issues/3244
