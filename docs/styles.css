@@ -1,0 +1,62 @@
+body {
+    padding-inline: 16px;
+    padding-block-start: 8px;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    background: radial-gradient(#fff, #A7821A10);
+
+    /*background: url(logo-clipper.svg) no-repeat center;*/
+    /*backdrop-filter: blur(100px);*/
+    margin: 0;
+    min-height: 100vh;
+}
+
+#container {
+    border: 1px solid black;
+    padding-inline: 16px;
+    padding-block-end: 16px;
+    border-radius: 8px;
+}
+
+main {
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    gap: 8px;
+    margin-block-start: 24px;
+}
+
+.paragraph-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+#clipper-logo {
+    width: 20px;
+    height: 20px;
+}
+
+#github-logo {
+    width: 18px;
+    height: 18px;
+}
+
+.media-container {
+    display: flex;
+    flex-flow: column;
+    /*align-items: center;*/
+
+    .title {
+        color: #A7821A;
+    }
+
+    .media {
+        width: 400px;
+        border: 1px solid gray;
+        border-radius: 6px;
+        /*height: 400px;*/
+        /*clip-path: inset(5px 5px); !* To hide the black border around video *!*/
+    }
+}
