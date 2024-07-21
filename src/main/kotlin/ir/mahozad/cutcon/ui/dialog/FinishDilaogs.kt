@@ -136,6 +136,9 @@ fun FailureDialog(throwable: Throwable?, onCloseRequest: () -> Unit) {
     }
 }
 
+/**
+ * See https://github.com/JetBrains/compose-multiplatform/issues/3438
+ */
 @Composable
 private fun FinishDialog(
     modifier: Modifier,
@@ -144,22 +147,19 @@ private fun FinishDialog(
 ) {
     val language = LocalLanguage.current
     // See https://github.com/JetBrains/compose-multiplatform/issues/3438
-    Dialog(/* Called when clicking outside the dialog: */ onDismissRequest = onCloseRequest) {
-        DialogDecoration(
-            icon = painterResource("logo.svg"),
-            title = { Text(text = language.messages.appName, fontSize = (defaultFontSize.value - 1).sp) },
-            modifier = modifier,
-            onCloseRequest = onCloseRequest
+    AnimatedDialog(
+        title = language.messages.appName,
+        modifier = modifier,
+        onDismissRequest = onCloseRequest
+    ) {
+        Column(
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top,
+            modifier = Modifier.fillMaxHeight().padding(horizontal = 8.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Top,
-                modifier = Modifier.fillMaxHeight().padding(horizontal = 8.dp)
-            ) {
-                Spacer(Modifier.height(10.dp))
-                content()
-                Spacer(Modifier.height(10.dp))
-            }
+            Spacer(Modifier.height(10.dp))
+            content()
+            Spacer(Modifier.height(10.dp))
         }
     }
 }

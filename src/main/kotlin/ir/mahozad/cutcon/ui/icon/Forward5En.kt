@@ -37,7 +37,7 @@ val Icons.Custom.Forward5En: ImageVector
                 name = "plus",
                 fill = null,
                 stroke = SolidColor(defaultIconColor),
-                strokeLineWidth = 2f
+                strokeLineWidth = 2.0f
             ) {
                 moveTo(4f, 12f)
                 horizontalLineToRelative(6f)
@@ -48,7 +48,7 @@ val Icons.Custom.Forward5En: ImageVector
                 name = "five",
                 fill = null,
                 stroke = SolidColor(defaultIconColor),
-                strokeLineWidth = 2f
+                strokeLineWidth = 2.0f
             ) {
                 moveTo(18f, 8f)
                 horizontalLineToRelative(-5f)

@@ -40,12 +40,12 @@ fun QualityInput(
     max: Int,
     onChange: (Float) -> Unit
 ) {
-    if (isApplicable) {
-        // See the MediaPlayerProgress widget
-        var isSeeking by remember { mutableStateOf(false) }
-        var seek by remember { mutableFloatStateOf(0f) }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Spacer(Modifier.width(8.dp))
+    // See the MediaPlayerProgress widget
+    var isSeeking by remember { mutableStateOf(false) }
+    var seek by remember { mutableFloatStateOf(0f) }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Spacer(Modifier.width(8.dp))
+        if (isApplicable) {
             // Makes it always LTR
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 Slider(
@@ -53,6 +53,7 @@ fun QualityInput(
                     onValueChange = {
                         isSeeking = true
                         seek = it
+                        onChange(seek) // Makes the change reflect in the label as the seek is in progress
                     },
                     onValueChangeFinished = {
                         isSeeking = false
@@ -75,10 +76,7 @@ fun QualityInput(
                     }
                 )
             }
-        }
-    } else {
-        Row {
-            Spacer(Modifier.width(12.dp))
+        } else {
             Text(
                 text = LocalLanguage.current.messages.qualityNotApplicableToRawFormat,
                 fontSize = defaultFontSize,

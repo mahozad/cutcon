@@ -17,8 +17,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":buildSrc:check" />
-          <option value=":check" />
+          <option value="check" />
         </list>
       </option>
       <option name="vmOptions" />

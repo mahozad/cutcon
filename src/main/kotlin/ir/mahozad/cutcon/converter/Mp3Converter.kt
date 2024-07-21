@@ -2,7 +2,6 @@ package ir.mahozad.cutcon.converter
 
 import ir.mahozad.cutcon.assetsPath
 import ir.mahozad.cutcon.convertSvgToPng
-import ir.mahozad.cutcon.model.ConverterFlags
 import ir.mahozad.cutcon.model.CoverOptions
 import ir.mahozad.cutcon.model.IntroOptions
 import ir.mahozad.cutcon.model.Quality
@@ -56,7 +55,9 @@ class Mp3Converter(dispatcher: CoroutineDispatcher) : Converter(dispatcher) {
 
     companion object {
         private const val DEFAULT_ALBUM_ART_SIZE = 512f
-        val defaultAlbumArtPath = (assetsPath / "cover-little-padding.svg")
-            .convertSvgToPng(DEFAULT_ALBUM_ART_SIZE)
+        val defaultAlbumArtPath = convertSvgToPng(
+            path = assetsPath / "cover-little-padding.svg",
+            size = DEFAULT_ALBUM_ART_SIZE
+        )
     }
 }

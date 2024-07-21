@@ -2,24 +2,29 @@ package ir.mahozad.cutcon.component
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
+import androidx.compose.ui.res.loadImageBitmap
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import ir.mahozad.cutcon.BuildConfig
 import ir.mahozad.cutcon.assetsPath
+import ir.mahozad.cutcon.decodeImage
 import ir.mahozad.cutcon.defaultAudioVolume
 import ir.mahozad.cutcon.defaultIsAudioMuted
+import ir.mahozad.cutcon.detectMimeType
 import ir.mahozad.cutcon.model.Clip
 import ir.mahozad.cutcon.model.Progress
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.*
+import org.jaudiotagger.audio.AudioFileIO
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ColorType
 import org.jetbrains.skia.ImageInfo
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.factory.discovery.strategy.NativeDiscoveryStrategy
+import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
+import uk.co.caprica.vlcj.player.base.State
 import uk.co.caprica.vlcj.player.embedded.videosurface.CallbackVideoSurface
 import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurface
 import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapters
@@ -28,20 +33,32 @@ import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCall
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32BufferFormat
 import java.io.File
+import java.net.URI
 import java.net.URL
 import java.nio.ByteBuffer
+import java.nio.file.Path
 import javax.swing.SwingUtilities
+import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.div
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.milliseconds
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory as VlcMediaPlayerFactory
 import uk.co.caprica.vlcj.player.base.MediaPlayer as VlcMediaPlayer
-import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter as VlcMediaPlayerEventAdapter
 
 interface MediaPlayer {
-    val video: Flow<ImageBitmap?>
+
+    val output: Flow<Output>
     val progress: Flow<Progress>
+    val isResumed get() = /* For tests: */ flowOf(false)
+
+    sealed interface Output {
+        data object SourceNotStarted : Output
+        data object SourceHasNoImage : Output
+        @JvmInline value class Image(val image: ImageBitmap) : Output
+        @JvmInline value class Video(val video: Flow<ImageBitmap?>) : Output
+    }
 
     fun play(url: URL)
     fun seek(value: Float)
@@ -54,7 +71,7 @@ interface MediaPlayer {
     fun setSpeed(value: Float)
     fun setClipToLoop(clip: Clip?)
     fun takeScreenshot(saveDirectory: File): Boolean
-    fun setFinishListener(listener: () -> Unit)
+    fun setFinishListener(listener: (MediaPlayer) -> Unit)
     fun terminate()
 }
 
@@ -64,6 +81,8 @@ class DefaultMediaPlayer : MediaPlayer {
 
     private val logger = logger(MediaPlayer::class.simpleName ?: "")
     private val vlcPath = (assetsPath / BuildConfig.VLC_DIRECTORY_NAME).absolutePathString()
+    // Run vlc -H or vlc --help --advanced or add -H or --help and --advanced options
+    // separately below to see all vlc configurations and capabilities in the standard output.
     private val vlcOptions = listOf(
         // Does not have any effect; just in case
         "--video-title=${BuildConfig.APP_NAME} video output",
@@ -81,7 +100,7 @@ class DefaultMediaPlayer : MediaPlayer {
         "--intf=dummy",
         // Avoids showing a dialog box when user input is required
         "--no-interact",
-        // Allows hardware decoding when available {any, d3d11va, dxva2, none}
+        // Allows hardware (GPU) decoding when available {any, d3d11va, dxva2, none}
         "--avcodec-hw=any",
         // Greatly improves the startup time of VLC
         "--plugins-cache",
@@ -90,9 +109,8 @@ class DefaultMediaPlayer : MediaPlayer {
     )
 
     private var vlcMediaPlayerFactory = initializeVlcMediaPlayerFactory()
+    private var finishListener: ((MediaPlayer) -> Unit)? = null
     private var clipToLoop: Clip? = null
-    private var isResumed = true
-    private var finishListener: (() -> Unit)? = null
     private val videoSurface = SkiaBitmapVideoSurface()
     private val eventListener = EventListener()
     private var vlcMediaPlayer = vlcMediaPlayerFactory
@@ -101,8 +119,22 @@ class DefaultMediaPlayer : MediaPlayer {
         .apply { videoSurface().set(videoSurface) }
         .apply { events().addMediaPlayerEventListener(eventListener) }
 
-    override val video = videoSurface.bitmap
+    /**
+     * Instead of [StateFlow], [SharedFlow] with `replay = 2` is used to prevent conflation of emissions and
+     * to retain at least 2 last emissions (so that new consumers, or, the single main consumer, gets the startup values).
+     *
+     * The `onBufferOverflow` should be set to something other than [BufferOverflow.SUSPEND] so that
+     * the [MutableSharedFlow.tryEmit] calls won't drop the new value on fast emissions.
+     * This caused a bug when going live from a date and time different from now because by clicking the live button,
+     * the date and time were updated separately and the [MediaPlayer.play] would be called for each of their new value
+     * separately very fast and this sometimes caused the [MutableSharedFlow.tryEmit] to drop the latest output
+     * and thus the output remained the last video which by now would be closed and empty.
+     */
+    override val output = MutableSharedFlow<MediaPlayer.Output>(
+        replay = 2, onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     override val progress = vlcMediaPlayer.progressFlow()
+    override val isResumed = vlcMediaPlayer.isResumedFlow()
 
     init {
         /**
@@ -127,8 +159,7 @@ class DefaultMediaPlayer : MediaPlayer {
             override fun onSetPluginPath(path: String) = true
         })
         // The default args are MediaPlayerComponentDefaults.EMBEDDED_MEDIA_PLAYER_ARGS
-        // Run vlc -H or vlc --help --advanced or add -H or --help and --advanced options
-        // separately to vlcOptions below to see all vlc configurations and capabilities
+        // To see how to get the list of all possible VLC options, see comments on [vlcOptions].
         return VlcMediaPlayerFactory(discovery, vlcOptions)
     }
 
@@ -158,35 +189,95 @@ class DefaultMediaPlayer : MediaPlayer {
         while (true) {
             val fraction = status().position()
             val length = status().length().milliseconds
-            emit(Progress(fraction, length))
+            // Because when the media is finished the length becomes negative
+            if (length >= ZERO) emit(Progress(fraction, length))
             // Higher delay is better which also fixes problem with progress bar;
             // See the progress bar widget code for more information
             delay(250.milliseconds)
         }
     }
 
+    /**
+     * Could have instead created a [MutableStateFlow] and update it in the proper event listener callback below.
+     */
+    private fun VlcMediaPlayer.isResumedFlow() = flow {
+        while (true) {
+            emit(status().isPlaying)
+            delay(50.milliseconds)
+        }
+    }
+
     private fun Float.toPercentage() = (this * 100).roundToInt()
 
     override fun play(url: URL) {
-        // Sets null to clear the last frame of previous media
-        videoSurface.bitmap.value = null
-        isResumed = true
-        vlcMediaPlayer.media().play /* OR .start */(url.toString())
+        vlcMediaPlayer.controls().stop()
+        videoSurface.stopAndResetVideo()
+        output.tryEmit(MediaPlayer.Output.SourceNotStarted)
+
+        val uri = URI("file", url.host, url.path, null)
+        val path = Path(url.path.drop(1))
+        val mimeType = path.detectMimeType()
+        val urlString = uri.toASCIIString() // Encodes the path if needed
+
+        if (mimeType == "image/gif") {
+            output.tryEmit(MediaPlayer.Output.Video(videoSurface.imageFlow))
+        } else if (mimeType?.startsWith("video") == true) {
+            output.tryEmit(MediaPlayer.Output.Video(videoSurface.imageFlow))
+        } else if (mimeType?.startsWith("audio") == true) {
+            output.tryEmit(generateAudioOutput(path))
+        } else if (mimeType?.startsWith("image") == true) {
+            output.tryEmit(generateImageOutput(path))
+        } else {
+            output.tryEmit(MediaPlayer.Output.SourceHasNoImage)
+        }
+
+        // Uses play() instead of start() because play() is non-blocking (asynchronous)
+        vlcMediaPlayer.media().play(urlString)
+    }
+
+    private fun generateImageOutput(path: Path): MediaPlayer.Output {
+        return decodeImage(path)
+            ?.let(MediaPlayer.Output::Image)
+            ?: MediaPlayer.Output.SourceHasNoImage
+    }
+
+    private fun generateAudioOutput(path: Path): MediaPlayer.Output {
+        return path
+            .toFile()
+            .runCatching(AudioFileIO::read)
+            .getOrNull()
+            ?.tag
+            ?.firstArtwork
+            ?.binaryData
+            ?.inputStream()
+            ?.use(::loadImageBitmap)
+            ?.let(MediaPlayer.Output::Image)
+            ?: MediaPlayer.Output.SourceHasNoImage
     }
 
     override fun pause() {
-        isResumed = false
         vlcMediaPlayer.controls().setPause(true)
     }
 
     override fun resume() {
-        isResumed = true
-        vlcMediaPlayer.controls().setPause(false)
+        // Because if the VLC is in stopped state then setting pause or resume will have no effect
+        // This sometimes happens in the player so this checking is just in case
+        if (vlcMediaPlayer.status().state() == State.STOPPED) {
+            vlcMediaPlayer.submit {
+                // Should be called in submit to prevent occasional java.lang.Error: Invalid memory access
+                vlcMediaPlayer.media().play(vlcMediaPlayer.media().info().mrl())
+            }
+        } else {
+            vlcMediaPlayer.controls().setPause(false)
+        }
     }
 
     override fun toggleResume() {
-        isResumed = !isResumed
-        if (isResumed) resume() else pause()
+        if (vlcMediaPlayer.status().isPlaying) {
+            pause()
+        } else {
+            resume()
+        }
     }
 
     override fun setAudioVolume(value: Float) {
@@ -223,35 +314,16 @@ class DefaultMediaPlayer : MediaPlayer {
         vlcMediaPlayerFactory.release()
     }
 
-    override fun setFinishListener(listener: () -> Unit) {
+    override fun setFinishListener(listener: (MediaPlayer) -> Unit) {
         finishListener = listener
     }
 
-    private inner class EventListener : VlcMediaPlayerEventAdapter() {
-        // Using vlcMediaPlayer.status().length() didn't work
-        var mediaLength = 0L
+    private inner class EventListener : MediaPlayerEventAdapter() {
 
-        override fun lengthChanged(vlcMediaPlayer: VlcMediaPlayer, newLength: Long) {
-            mediaLength = newLength
-        }
-
-        /**
-         * Handles media finish.
-         *
-         * We play the media on finish (so the player is kind of idempotent),
-         * unless the [finishListener] callback stops the playback.
-         * Using `vlcMediaPlayer.controls().repeat = true` did not work as expected.
-         */
         override fun stopped(vlcMediaPlayer: VlcMediaPlayer) {
-            // finishListener?.invoke()
-            // Restarts the media only if it is longer than 1 seconds;
-            // This is mostly for when the file is an image to prevent
-            // this callback which is called very often to consume CPU
-            // and to prevent logging too many statements in the logger
-            if (mediaLength > 1_000) {
-                logger.info { "Media finished; starting it over" }
-                vlcMediaPlayer.controls().play()
-            }
+            logger.info { "Media finished" }
+            // See https://github.com/JetBrains/compose-multiplatform/pull/4048
+            vlcMediaPlayer.submit { finishListener?.invoke(this@DefaultMediaPlayer) }
         }
 
         /**
@@ -259,19 +331,23 @@ class DefaultMediaPlayer : MediaPlayer {
          * Note that it seems vlcj updates the progress only every 250 milliseconds or so.
          *
          * For looping the clip, instead of setting start and stop time options in the play method above
-         * we set them manually here in a listener because when the loop is set to null
-         * the play is called again and thus the media starts over (instead of continuing).
+         * we set them manually here in a listener because of two reasons:
+         *   - The start time option does not work for TV source (issue: https://code.videolan.org/videolan/vlc/-/issues/28227)
+         *   - When the loop is set to null the play is called again and thus the media starts over (instead of continuing)
          *
          * For previous implementation of looping the clip that used stop time option in the play method above,
          * checkout the v1.4.0 git tag.
          */
         override fun timeChanged(vlcMediaPlayer: VlcMediaPlayer, newTime: Long) {
-            val (start, end) = clipToLoop.takeIf { it != null } ?: return
-            val startPosition = start.inWholeMilliseconds / vlcMediaPlayer.status().length().toFloat()
-            if (newTime < (start - 500.milliseconds).inWholeMilliseconds) {
-                vlcMediaPlayer.controls().setPosition(startPosition)
-            } else if (newTime >= end.inWholeMilliseconds) {
-                vlcMediaPlayer.controls().setPosition(startPosition)
+            // See https://github.com/JetBrains/compose-multiplatform/pull/4048
+            vlcMediaPlayer.submit {
+                val (start, end) = clipToLoop ?: return@submit
+                val startPosition = start.inWholeMilliseconds / vlcMediaPlayer.status().length().toFloat()
+                if (newTime < (start - 500.milliseconds).inWholeMilliseconds) {
+                    vlcMediaPlayer.controls().setPosition(startPosition)
+                } else if (newTime >= end.inWholeMilliseconds) {
+                    vlcMediaPlayer.controls().setPosition(startPosition)
+                }
             }
         }
     }
@@ -283,7 +359,22 @@ private class SkiaBitmapVideoSurface : VideoSurface(VideoSurfaceAdapters.getVide
     private lateinit var frameBytes: ByteArray
     private val skiaBitmap = Bitmap()
     private val videoSurface = SkiaBitmapVideoSurface()
-    val bitmap = MutableStateFlow<ImageBitmap?>(null)
+
+    /**
+     * Uses [Channel] instead of [StateFlow] or [SharedFlow] so that
+     * the flow can be indicated finished (closed) for consumers of the flow.
+     */
+    private var bitmap = Channel<ImageBitmap?>(capacity = Channel.CONFLATED)
+
+    /**
+     * Uses [receiveAsFlow] instead of [consumeAsFlow] to prevent rare exceptions.
+     */
+    val imageFlow get() = bitmap.receiveAsFlow()
+
+    fun stopAndResetVideo() {
+        bitmap.close()
+        bitmap = Channel(capacity = Channel.CONFLATED)
+    }
 
     override fun attach(mediaPlayer: VlcMediaPlayer) {
         videoSurface.attach(mediaPlayer)
@@ -321,7 +412,7 @@ private class SkiaBitmapVideoSurface : VideoSurface(VideoSurfaceAdapters.getVide
                 nativeBuffers[0].get(frameBytes)
                 skiaBitmap.installPixels(imageInfo, frameBytes, bufferFormat.width * 4)
                 // Takes less than 1 millisecond
-                bitmap.value = skiaBitmap.asComposeImageBitmap()
+                bitmap.trySend(skiaBitmap.asComposeImageBitmap())
             }
         }
     }

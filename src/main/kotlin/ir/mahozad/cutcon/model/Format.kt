@@ -23,12 +23,14 @@ val supportedImageFileExtensions = SupportedImageFormat
     .toTypedArray()
 
 enum class LocalSourceSupportedFileType(vararg val extensions: String) {
-    MP4("mp4"),
-    MP3("mp3"),
+    MP4("mp4", "mov", "m4a"),
     MKV("mkv"),
+    MP3("mp3"),
     TS("ts"),
-    // We support displaying images but do not want to pollute this with all image types.
-    // The user can either select all types in the dialog or drag images on the player box.
+    PNG("png"),
+    JPG("jpg", "jpeg", "jiff"),
+    GIF("gif"),
+    SVG("svg")
 }
 
 enum class Format(

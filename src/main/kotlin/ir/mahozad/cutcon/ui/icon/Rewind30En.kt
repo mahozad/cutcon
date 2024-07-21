@@ -37,7 +37,7 @@ val Icons.Custom.Rewind30En: ImageVector
                 name = "minus",
                 fill = null,
                 stroke = SolidColor(defaultIconColor),
-                strokeLineWidth = 2f
+                strokeLineWidth = 2.0f
             ) {
                 moveTo(1f, 12f)
                 horizontalLineToRelative(6f)
@@ -46,7 +46,7 @@ val Icons.Custom.Rewind30En: ImageVector
                 name = "three",
                 fill = null,
                 stroke = SolidColor(defaultIconColor),
-                strokeLineWidth = 2f
+                strokeLineWidth = 2.0f
             ) {
                 moveTo(13f, 12f)
                 verticalLineToRelative(4f)
@@ -60,7 +60,7 @@ val Icons.Custom.Rewind30En: ImageVector
                 name = "zero",
                 fill = null,
                 stroke = SolidColor(defaultIconColor),
-                strokeLineWidth = 2f
+                strokeLineWidth = 2.0f
             ) {
                 moveTo(20f, 16f)
                 verticalLineToRelative(-8f)

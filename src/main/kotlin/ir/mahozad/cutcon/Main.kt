@@ -5,6 +5,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.*
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import ir.mahozad.cutcon.component.*
+import ir.mahozad.cutcon.component.DefaultMediaPlayer
 import ir.mahozad.cutcon.converter.DefaultConverterFactory
 import ir.mahozad.cutcon.localization.Messages
 import ir.mahozad.cutcon.ui.MainWindow
@@ -43,7 +44,7 @@ val assetsPath = System
 
 val viewModel = MainViewModel(
     urlMaker = DefaultUrlMaker,
-    settings = Preferences.userRoot(),
+    settings = Preferences.userNodeForPackage({}::class.java),
     dispatcher = Dispatchers.IO,
     mediaPlayer = DefaultMediaPlayer(),
     dateTimeChecker = DefaultDateTimeChecker(Dispatchers.IO),
@@ -52,9 +53,9 @@ val viewModel = MainViewModel(
 )
 
 @OptIn(ExperimentalComposeUiApi::class)
-fun main() {
+fun main(vararg args: String) {
     logger.info { "Application started" }
-    initialize()
+    initialize(args.getOrNull(0))
     application(exitProcessOnExit = false /* See exceptionHandler */) {
         CompositionLocalProvider(
             LocalWindowExceptionHandlerFactory provides exceptionHandler
@@ -66,10 +67,12 @@ fun main() {
     logger.info { "Application finished" }
 }
 
-private fun initialize() {
+private fun initialize(commandLinePath: String?) {
     viewModel.startUrlMaker()
     viewModel.startDateTimeChecker()
     viewModel.startMediaProgressListener()
+    // For when launching the app via "Open with" or command line
+    commandLinePath?.let(::Path)?.run(viewModel::setSourceToLocal)
 }
 
 // This is also called when force closing/halting/killing the app process

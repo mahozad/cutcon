@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
@@ -55,6 +56,7 @@ const val INTRO_PREVIEW_SIZE = 66f
 
 private val height = 92.dp
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun FrameWindowScope.IntroInput(
     isEnabled: Boolean,
@@ -89,25 +91,88 @@ fun FrameWindowScope.IntroInput(
                 language.messages.txtLblMiscFileIntroNotSupported
             }
         )
-    } else if (image == null) {
-        SelectBox(
-            isEnabled = isEnabled,
-            targetFormat = targetFormat,
-            onFileChange = onFileChange,
-            modifier = modifier,
-            lastOpenDirectory = lastOpenDirectory
-        )
     } else {
-        ConfigBox(
-            isEnabled = isEnabled,
-            image = image,
-            options = options,
-            modifier = modifier,
-            onDurationChange = onDurationChange,
-            onBackgroundColorChange = onBackgroundColorChange,
-            onRemoveRequest = { onFileChange(null) }
-        )
+        var isDragging by remember { mutableStateOf(false) }
+        val primaryColor = MaterialTheme.colors.primary
+        val primaryVariantColor = MaterialTheme.colors.primaryVariant
+        Box(modifier = modifier
+            // Uses drawBehind because of the need for dashed stroke
+            .drawBehind {
+                if (isEnabled && (image == null || isDragging)) {
+                    drawBorder(isEnabled, isDragging, 4.dp, primaryColor, primaryVariantColor)
+                }
+            }
+            .clip(RoundedCornerShape(4.dp))
+            .onExternalDrag(
+                onDragStart = { isDragging = true },
+                onDragExit = { isDragging = false },
+                onDrop = { dragState ->
+                    isDragging = false
+                    if (isEnabled) onFileDrop(dragState, onFileChange)
+                }
+            )
+        ) {
+            if (image == null) {
+                SelectBox(
+                    isEnabled = isEnabled,
+                    targetFormat = targetFormat,
+                    onFileChange = onFileChange,
+                    modifier = modifier,
+                    lastOpenDirectory = lastOpenDirectory
+                )
+            } else {
+                ConfigBox(
+                    isEnabled = isEnabled,
+                    image = image,
+                    options = options,
+                    modifier = modifier,
+                    onDurationChange = onDurationChange,
+                    onBackgroundColorChange = onBackgroundColorChange,
+                    onRemoveRequest = { onFileChange(null) }
+                )
+            }
+            if (isEnabled && isDragging) {
+                Box(modifier = Modifier.fillMaxWidth().height(92.dp).background(primaryColor.copy(alpha = 0.2f)))
+            }
+        }
     }
+}
+
+private fun DrawScope.drawBorder(
+    isEnabled: Boolean,
+    isDragging: Boolean,
+    cornerRadius: Dp,
+    primaryColor: Color,
+    primaryVariantColor: Color
+) {
+    val stroke = Stroke(
+        width = if (isDragging) 2.dp.toPx() else 1.dp.toPx(),
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+    )
+    drawRoundRect(
+        color = if (!isEnabled) {
+            Color.LightGray
+        } else if (isDragging) {
+            primaryVariantColor
+        } else {
+            primaryColor
+        },
+        style = stroke,
+        cornerRadius = CornerRadius(cornerRadius.toPx())
+    )
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+private fun onFileDrop(
+    state: ExternalDragValue,
+    onFileSelected: (Path?) -> Unit
+) {
+    (state.dragData as? DragData.FilesList)
+        ?.readFiles()
+        ?.first()
+        ?.let(::URI)
+        ?.let(URI::toPath)
+        ?.let(onFileSelected)
 }
 
 @Composable
@@ -132,7 +197,6 @@ private fun PromptBox(isEnabled: Boolean, text: String, modifier: Modifier) {
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun FrameWindowScope.SelectBox(
     isEnabled: Boolean,
@@ -143,9 +207,6 @@ private fun FrameWindowScope.SelectBox(
 ) {
     val language = LocalLanguage.current
     val scope = rememberCoroutineScope()
-    val primaryColor = MaterialTheme.colors.primary
-    val primaryVariantColor = MaterialTheme.colors.primaryVariant
-    var isDragging by remember { mutableStateOf(false) }
     var isDialogDisplayed by remember { mutableStateOf(false) }
     /**
      * See [SaveAsInput] for more information about this.
@@ -154,30 +215,11 @@ private fun FrameWindowScope.SelectBox(
     Surface(
         color = if (!isEnabled) {
             Color.LightGray.copy(ContentAlpha.disabled)
-        } else if (isDragging) {
-            MaterialTheme.colors.primary.copy(alpha = 0.3f)
         } else {
             MaterialTheme.colors.primary.copy(alpha = 0.1f)
         },
         modifier = modifier
             .height(height)
-            .drawBehind {
-                val stroke = Stroke(
-                    width = if (isDragging) 2f else 1f,
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
-                )
-                drawRoundRect(
-                    color = if (!isEnabled) {
-                        Color.LightGray
-                    } else if (isDragging) {
-                        primaryVariantColor
-                    } else {
-                        primaryColor
-                    },
-                    style = stroke,
-                    cornerRadius = CornerRadius(4.dp.toPx())
-                )
-            }
             .clickable(enabled = isEnabled) {
                 if (
                     isDialogDisplayed ||
@@ -202,28 +244,11 @@ private fun FrameWindowScope.SelectBox(
                     isDialogDisplayed = false
                 }
             }
-            .onExternalDrag(
-                enabled = isEnabled,
-                onDragStart = { isDragging = true },
-                onDragExit = { isDragging = false },
-                onDrop = { state ->
-                    isDragging = false
-                    val dragData = state.dragData
-                    if (dragData is DragData.FilesList) {
-                        dragData
-                            .readFiles()
-                            .first()
-                            .let(::URI)
-                            .let(URI::toPath)
-                            .let(onFileChange)
-                    }
-                }
-            )
     ) {
         Column(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(start = 14.dp)
+            modifier = Modifier.padding(start = 13.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (isDialogDisplayed) {
@@ -234,7 +259,7 @@ private fun FrameWindowScope.SelectBox(
                         contentDescription = Messages.ICO_DSC_ADD_INTRO,
                         modifier = Modifier.size(defaultIconSize),
                         tint = if (isEnabled) {
-                            LocalContentColor.current
+                            LocalContentColor.current.copy(alpha = LocalContentAlpha.current)
                         } else {
                             LocalContentColor.current.copy(alpha = ContentAlpha.disabled)
                         }

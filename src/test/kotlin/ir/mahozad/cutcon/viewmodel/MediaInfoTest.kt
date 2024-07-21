@@ -8,16 +8,22 @@ import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkAll
+import io.mockk.verify
+import ir.mahozad.cutcon.component.MediaPlayer
 import ir.mahozad.cutcon.*
 import ir.mahozad.cutcon.component.*
 import ir.mahozad.cutcon.model.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.jaudiotagger.audio.AudioFileIO
@@ -27,6 +33,7 @@ import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 import kotlin.io.path.absolute
 import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -95,13 +102,15 @@ abstract class MediaInfoTest {
     @Test
     fun `When toggling resume, media info should update`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val viewModel = constructMainViewModel(dispatcher)
+        val isResumed = MutableStateFlow(false)
+        val mediaPlayer = spyk<MediaPlayer>()
+        every { mediaPlayer.isResumed } returns isResumed
+        every { mediaPlayer.toggleResume() } answers { isResumed.update { !it } }
+        val viewModel = constructMainViewModel(dispatcher, mediaPlayer = mediaPlayer)
         val results = mutableListOf<MediaInfo>()
         backgroundScope.launch(dispatcher) { viewModel.mediaInfo.toList(results) }
         viewModel.toggleResume()
-        assertThat(results[1]).isEqualTo(
-            constructMediaInfo(isResumed = false)
-        )
+        assertThat(results.map(MediaInfo::isResumed)).containsExactly(false, true)
     }
 
     @Test
@@ -402,19 +411,10 @@ abstract class MediaInfoTest {
         runTest {
             val dispatcher = UnconfinedTestDispatcher(testScheduler)
             val mockMediaPlayer = spyk<MediaPlayer>()
-            val fakeMediaImage = decodeImage(getResourceAsPath("test.png"))
-            every { mockMediaPlayer.video } returns flowOf(fakeMediaImage)
-            val viewModel = constructMainViewModel(
-                dispatcher = dispatcher,
-                mediaPlayer = mockMediaPlayer
-            ).apply {
-                setSourceToLocal(Path("test.ts"))
-            }
-            val results = mutableListOf<ImageBitmap?>()
-            backgroundScope.launch(dispatcher) { viewModel.displayImage.toList(results) }
+            val fakeMediaImage = decodeImage(getResourceAsPath("test.png"))!!
+            val fakeMediaPlayerOutput = MutableStateFlow<MediaPlayer.Output>(MediaPlayer.Output.SourceNotStarted)
             val localFile = getResourceAsPath("test.mp3")
-            viewModel.setSourceToLocal(localFile)
-            // FIXME: Duplicate of code in MainViewModel; extract both to Utilities file
+            // FIXME: Duplicate of code in MediaPlayer
             val localFileAlbumArt = localFile
                 .toFile()
                 .runCatching(AudioFileIO::read)
@@ -423,10 +423,30 @@ abstract class MediaInfoTest {
                 ?.firstArtwork
                 ?.binaryData
                 ?.inputStream()
-                ?.use(::loadImageBitmap)
+                ?.use(::loadImageBitmap)!!
+            every { mockMediaPlayer.output } returns fakeMediaPlayerOutput
+            every { mockMediaPlayer.play(any()) } coAnswers  {
+                fakeMediaPlayerOutput.value = MediaPlayer.Output.SourceNotStarted
+                delay(10.milliseconds)
+                if ("test.png" in args.single().toString()) {
+                    fakeMediaPlayerOutput.value = MediaPlayer.Output.Video(flowOf(fakeMediaImage))
+                } else {
+                    fakeMediaPlayerOutput.value = MediaPlayer.Output.Image(localFileAlbumArt)
+                }
+            }
+            val viewModel = constructMainViewModel(
+                dispatcher = dispatcher,
+                mediaPlayer = mockMediaPlayer,
+                urlMaker = DefaultUrlMaker
+            ).apply {
+                setSourceToLocal(Path("test.png"))
+                startUrlMaker()
+            }
+            val results = mutableListOf<ImageBitmap?>()
+            backgroundScope.launch(dispatcher) { viewModel.displayImage.toList(results) }
+            viewModel.setSourceToLocal(localFile)
             advanceTimeBy(1.minutes)
             assertThat(results.map(ImageBitmap?::getPixels)).containsExactly(
-                null,
                 fakeMediaImage.getPixels(),
                 null,
                 localFileAlbumArt.getPixels()
@@ -438,18 +458,8 @@ abstract class MediaInfoTest {
         runTest {
             val dispatcher = UnconfinedTestDispatcher(testScheduler)
             val mockMediaPlayer = spyk<MediaPlayer>()
-            val fakeMediaImage = decodeImage(getResourceAsPath("test.png"))
-            every { mockMediaPlayer.video } returns flowOf(fakeMediaImage)
+            val fakeMediaPlayerOutput = MutableStateFlow<MediaPlayer.Output>(MediaPlayer.Output.SourceNotStarted)
             val localFile = getResourceAsPath("test.mp3")
-            val viewModel = constructMainViewModel(
-                dispatcher = dispatcher,
-                mediaPlayer = mockMediaPlayer
-            ).apply {
-                setSourceToLocal(localFile)
-            }
-            val results = mutableListOf<ImageBitmap?>()
-            backgroundScope.launch(dispatcher) { viewModel.displayImage.toList(results) }
-            viewModel.setSourceToLocal(getResourceAsPath("test-no-cover.mp3"))
             val localFileAlbumArt = localFile
                 .toFile()
                 .runCatching(AudioFileIO::read)
@@ -458,10 +468,30 @@ abstract class MediaInfoTest {
                 ?.firstArtwork
                 ?.binaryData
                 ?.inputStream()
-                ?.use(::loadImageBitmap)
+                ?.use(::loadImageBitmap)!!
+            every { mockMediaPlayer.output } returns fakeMediaPlayerOutput
+            every { mockMediaPlayer.play(any()) } coAnswers  {
+                fakeMediaPlayerOutput.value = MediaPlayer.Output.SourceNotStarted
+                delay(10.milliseconds)
+                if ("test.mp3" in args.single().toString()) {
+                    fakeMediaPlayerOutput.value = MediaPlayer.Output.Image(localFileAlbumArt)
+                } else {
+                    fakeMediaPlayerOutput.value = MediaPlayer.Output.SourceHasNoImage
+                }
+            }
+            val viewModel = constructMainViewModel(
+                dispatcher = dispatcher,
+                mediaPlayer = mockMediaPlayer,
+                urlMaker = DefaultUrlMaker
+            ).apply {
+                setSourceToLocal(localFile)
+                startUrlMaker()
+            }
+            val results = mutableListOf<ImageBitmap?>()
+            backgroundScope.launch(dispatcher) { viewModel.displayImage.toList(results) }
+            viewModel.setSourceToLocal(getResourceAsPath("test-no-cover.mp3"))
             advanceTimeBy(1.minutes)
             assertThat(results.map(ImageBitmap?::getPixels)).containsExactly(
-                null,
                 localFileAlbumArt.getPixels(),
                 null,
                 defaultAudioImage.getPixels()
@@ -473,18 +503,9 @@ abstract class MediaInfoTest {
         runTest {
             val dispatcher = UnconfinedTestDispatcher(testScheduler)
             val mockMediaPlayer = spyk<MediaPlayer>()
+            val fakeMediaPlayerOutput = MutableStateFlow<MediaPlayer.Output>(MediaPlayer.Output.SourceNotStarted)
             val fakeMediaImage = decodeImage(getResourceAsPath("test.png"))
-            every { mockMediaPlayer.video } returns flowOf(fakeMediaImage)
             val localFile = getResourceAsPath("test.mp3")
-            val viewModel = constructMainViewModel(
-                dispatcher = dispatcher,
-                mediaPlayer = mockMediaPlayer
-            ).apply {
-                setSourceToLocal(localFile)
-            }
-            val results = mutableListOf<ImageBitmap?>()
-            backgroundScope.launch(dispatcher) { viewModel.displayImage.toList(results) }
-            viewModel.setSourceToLocal(getResourceAsPath("test.ts"))
             val localFileAlbumArt = localFile
                 .toFile()
                 .runCatching(AudioFileIO::read)
@@ -493,10 +514,30 @@ abstract class MediaInfoTest {
                 ?.firstArtwork
                 ?.binaryData
                 ?.inputStream()
-                ?.use(::loadImageBitmap)
+                ?.use(::loadImageBitmap)!!
+            every { mockMediaPlayer.output } returns fakeMediaPlayerOutput
+            every { mockMediaPlayer.play(any()) } coAnswers  {
+                fakeMediaPlayerOutput.value = MediaPlayer.Output.SourceNotStarted
+                delay(10.milliseconds)
+                if ("test.mp3" in args.single().toString()) {
+                    fakeMediaPlayerOutput.value = MediaPlayer.Output.Image(localFileAlbumArt)
+                } else {
+                    fakeMediaPlayerOutput.value = MediaPlayer.Output.Video(flowOf(fakeMediaImage))
+                }
+            }
+            val viewModel = constructMainViewModel(
+                dispatcher = dispatcher,
+                mediaPlayer = mockMediaPlayer,
+                urlMaker = DefaultUrlMaker
+            ).apply {
+                setSourceToLocal(localFile)
+                startUrlMaker()
+            }
+            val results = mutableListOf<ImageBitmap?>()
+            backgroundScope.launch(dispatcher) { viewModel.displayImage.toList(results) }
+            viewModel.setSourceToLocal(getResourceAsPath("test.ts"))
             advanceTimeBy(1.minutes)
             assertThat(results.map(ImageBitmap?::getPixels)).containsExactly(
-                null,
                 localFileAlbumArt.getPixels(),
                 null,
                 fakeMediaImage.getPixels()
@@ -504,24 +545,35 @@ abstract class MediaInfoTest {
         }
 
     @Test
-    fun `When source is set to a local static image, display image should update to the image`() = runTest {
+    fun `When source is set to a local still image, display image should update to the image`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         val mockMediaPlayer = spyk<MediaPlayer>()
+        val fakeMediaPlayerOutput = MutableStateFlow<MediaPlayer.Output>(MediaPlayer.Output.SourceNotStarted)
         val fakeMediaImage = decodeImage(getResourceAsPath("test-wide.png"))
-        every { mockMediaPlayer.video } returns flowOf(fakeMediaImage)
         val localFile = getResourceAsPath("test.png")
+        every { mockMediaPlayer.output } returns fakeMediaPlayerOutput
+        every { mockMediaPlayer.play(any()) } coAnswers  {
+            fakeMediaPlayerOutput.value = MediaPlayer.Output.SourceNotStarted
+            delay(10.milliseconds)
+            if ("test-wide.png" in args.single().toString()) {
+                fakeMediaPlayerOutput.value = MediaPlayer.Output.Video(flowOf(fakeMediaImage))
+            } else {
+                fakeMediaPlayerOutput.value = MediaPlayer.Output.Image(decodeImage(localFile)!!)
+            }
+        }
         val viewModel = constructMainViewModel(
             dispatcher = dispatcher,
-            mediaPlayer = mockMediaPlayer
+            mediaPlayer = mockMediaPlayer,
+            urlMaker = DefaultUrlMaker
         ).apply {
-            setSourceToLocal(Path("test.ts"))
+            setSourceToLocal(Path("test-wide.png"))
+            startUrlMaker()
         }
         val results = mutableListOf<ImageBitmap?>()
         backgroundScope.launch(dispatcher) { viewModel.displayImage.toList(results) }
         viewModel.setSourceToLocal(localFile)
         advanceTimeBy(1.minutes)
         assertThat(results.map(ImageBitmap?::getPixels)).containsExactly(
-            null,
             fakeMediaImage.getPixels(),
             null,
             decodeImage(localFile).getPixels()
@@ -532,24 +584,35 @@ abstract class MediaInfoTest {
     fun `When source is set to a local GIF image, display image should update to the GIF frames`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         val mockMediaPlayer = spyk<MediaPlayer>()
+        val fakeMediaPlayerOutput = MutableStateFlow<MediaPlayer.Output>(MediaPlayer.Output.SourceNotStarted)
         val fakeMediaImage = decodeImage(getResourceAsPath("test.png"))
-        every { mockMediaPlayer.video } returns flowOf(fakeMediaImage)
+        val localFile = getResourceAsPath("test.gif")
+        every { mockMediaPlayer.output } returns fakeMediaPlayerOutput
+        every { mockMediaPlayer.play(any()) } coAnswers {
+            fakeMediaPlayerOutput.value = MediaPlayer.Output.SourceNotStarted
+            delay(10.milliseconds)
+            if ("test.png" in args.single().toString()) {
+                fakeMediaPlayerOutput.value = MediaPlayer.Output.Video(flowOf(fakeMediaImage))
+            } else {
+                fakeMediaPlayerOutput.value = MediaPlayer.Output.Video(flowOf(decodeImage(localFile)))
+            }
+        }
         val viewModel = constructMainViewModel(
             dispatcher = dispatcher,
-            mediaPlayer = mockMediaPlayer
+            mediaPlayer = mockMediaPlayer,
+            urlMaker = DefaultUrlMaker
         ).apply {
-            setSourceToLocal(Path("test.ts"))
+            setSourceToLocal(Path("test.png"))
+            startUrlMaker()
         }
-        val localFile = getResourceAsPath("test.gif")
         val results = mutableListOf<ImageBitmap?>()
         backgroundScope.launch(dispatcher) { viewModel.displayImage.toList(results) }
         viewModel.setSourceToLocal(localFile)
         advanceTimeBy(1.minutes)
         assertThat(results.map(ImageBitmap?::getPixels)).containsExactly(
-            null,
             fakeMediaImage.getPixels(),
             null,
-            fakeMediaImage.getPixels()
+            decodeImage(localFile).getPixels()
         )
     }
 

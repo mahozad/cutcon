@@ -20,9 +20,6 @@ class Mp4Converter(dispatcher: CoroutineDispatcher) : Converter(dispatcher) {
         coverOptions: CoverOptions,
         flags: ConverterFlags
     ): List<FFmpegOption> {
-        // To check if the input has video or not,
-        // could have probably used org.bytedeco.*** classes or
-        // could have used ffprobe (see https://stackoverflow.com/q/32278277)
         if (!flags.isVideoAvailableInInput) return emptyList()
 
         return buildList {

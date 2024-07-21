@@ -37,7 +37,7 @@ val Icons.Custom.SidePanelOff: ImageVector
                 name = "main",
                 fill = null,
                 stroke = SolidColor(defaultIconColor),
-                strokeLineWidth = 2f
+                strokeLineWidth = 2.0f
             ) {
                 moveTo(16f, 20f)
                 verticalLineToRelative(-16f)
@@ -49,7 +49,7 @@ val Icons.Custom.SidePanelOff: ImageVector
                 name = "side",
                 fill = null,
                 stroke = SolidColor(defaultIconColor),
-                strokeLineWidth = 2f
+                strokeLineWidth = 2.0f
             ) {
                 moveTo(21f, 20f)
                 verticalLineToRelative(-16f)

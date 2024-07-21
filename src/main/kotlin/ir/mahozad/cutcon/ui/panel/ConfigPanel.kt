@@ -11,11 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
+import ir.mahozad.cutcon.component.DefaultMediaPlayer
 import ir.mahozad.cutcon.BuildConfig
 import ir.mahozad.cutcon.LocalLanguage
 import ir.mahozad.cutcon.MainViewModel
 import ir.mahozad.cutcon.component.DefaultDateTimeChecker
-import ir.mahozad.cutcon.component.DefaultMediaPlayer
 import ir.mahozad.cutcon.component.DefaultSaveFileNameGenerator
 import ir.mahozad.cutcon.component.DefaultUrlMaker
 import ir.mahozad.cutcon.converter.DefaultConverterFactory
@@ -110,7 +110,13 @@ fun FrameWindowScope.ConfigPanel(viewModel: MainViewModel) {
             onChange = viewModel::setFormat
         )
         Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            // Because of the clipToBounds modifier in SidePanel,
+            // the border of below widgets did not draw completely.
+            // So, a padding is added here to fix that.
+            modifier = Modifier.padding(horizontal = 1.dp)
+        ) {
             IntroInput(
                 source = source,
                 isEnabled = isInputEnabled,

@@ -32,6 +32,11 @@ abstract class Converter(private val dispatcher: CoroutineDispatcher) {
     private val millisecondRegex = Regex("""\.\d+""")
     private val logger = logger(name = Converter::class.simpleName ?: "")
 
+    protected data class ConverterFlags(
+        val isInterlacingFixEnabled: Boolean,
+        val isVideoAvailableInInput: Boolean
+    )
+
     protected abstract fun ffmpegOptions(
         quality: Quality,
         introOptions: IntroOptions,
@@ -59,16 +64,21 @@ abstract class Converter(private val dispatcher: CoroutineDispatcher) {
         intro: IntroOptions,
         cover: CoverOptions,
         quality: Quality,
-        flags: ConverterFlags,
+        fixInterlaced: Boolean,
         output: Path,
         listener: ProgressListener
     ) = withContext(dispatcher) {
+        val isVideoAvailableInInput = isVideoAvailableInInput(input)
+        val flags = ConverterFlags(
+            isInterlacingFixEnabled = fixInterlaced,
+            isVideoAvailableInInput = isVideoAvailableInInput
+        )
         val ffmpegOptions = ffmpegOptions(quality, intro, cover, flags)
         val ffmpegProcess = ProcessBuilder()
             .createCommand(input, clip, ffmpegOptions, output)
             .also { logger.info { "FFmpeg command:\n  ${it.command().joinToString(separator = "\n  ")}" } }
             .runCatching { start() }
-            .onFailure { logger.error(it) { "Starting the FFmpeg process failed" } }
+            .onFailure { logger.error(it) { "Starting the FFmpeg process for conversion failed" } }
             .onSuccess { logger.info { "Started FFmpeg process with pid=${it.pid()}" } }
             .getOrElse { throw FFmpegProcessStartFailureException(it) }
         ffmpegProcess
@@ -94,6 +104,54 @@ abstract class Converter(private val dispatcher: CoroutineDispatcher) {
         }
     }
 
+    private fun URL.toNormalizedPathString(): String {
+        val string = toString()
+            .replaceFirst("file://localhost/", "")
+            .replaceFirst("file://127.0.0.1/", "")
+        return if (host.isEmpty() || host in setOf("localhost", "127.0.0.1")) {
+            string.replaceFirst("file:/", "")
+        } else {
+            string
+        }
+    }
+
+    /**
+     * Note that FFmpeg prints the input information on its start (see the SO post below)
+     * and we use that (printed in error stream) to detect whether the input contains video.
+     *
+     * Instead of FFmpeg, could also have probably used below alternatives:
+     *   - FFprobe: Was used in previous implementation; see commit d35eb1c8
+     *   - VLC through Vlcj: for example, mediaPlayer.meta().info().videoTracks.size etc.
+     *   - Another library from carica: https://github.com/caprica/vlcj-info (see its repository README)
+     *   - MediaInfo SDK or command line: https://stackoverflow.com/q/2168472
+     *   - org.bytedeco.*** classes
+     *
+     * See https://stackoverflow.com/q/32278277
+     * and https://stackoverflow.com/q/11400248
+     * and https://stackoverflow.com/q/21446804
+     * and https://stackoverflow.com/q/56397732
+     */
+    private suspend fun isVideoAvailableInInput(input: URL): Boolean {
+        val hasVideo = ProcessBuilder()
+            .command(ffmpegPath, "-i", input.toNormalizedPathString())
+            .runCatching { start() }
+            .onFailure { logger.warn(it) { "Starting the FFmpeg process for probing failed" } }
+            .getOrNull()
+            ?.errorStream
+            ?.reader()
+            ?.useLines { lines ->
+                lines
+                    .asFlow()
+                    .filter { "Stream #" in it }
+                    .cancellable()
+                    .firstOrNull { "Video:" in it }
+                    ?.isNotEmpty()
+            }
+            ?: false
+        logger.info { "Input was detected to ${if (hasVideo) "" else "NOT"} contain video stream" }
+        return hasVideo
+    }
+
     private fun ProcessBuilder.createCommand(
         input: URL,
         clip: Clip,
@@ -112,7 +170,7 @@ abstract class Converter(private val dispatcher: CoroutineDispatcher) {
         //  For timestamp formats see https://ffmpeg.org/ffmpeg-utils.html#Time-duration
         "-ss", "${(clip.start - /* Makes end result more accurate */ 500.milliseconds).inWholeMilliseconds}ms",
         "-to", "${(clip.end - /* Makes end result more accurate */ 500.milliseconds).inWholeMilliseconds}ms", // Could use -t for duration
-        "-i", input.toString().replace("file://localhost/", "file:"), // The main input (could be a file, stream, etc.)
+        "-i", input.toNormalizedPathString(), // The main input (could be a file, stream, etc.)
         *options.flatMap(FFmpegOption::toList).toTypedArray(),
         // See https://wiki.multimedia.cx/index.php/FFmpeg_Metadata
         "-metadata", "encoding_tool=${BuildConfig.APP_NAME} v${BuildConfig.APP_VERSION}",

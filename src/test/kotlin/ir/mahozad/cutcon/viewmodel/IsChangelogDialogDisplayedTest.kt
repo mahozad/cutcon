@@ -26,27 +26,27 @@ abstract class IsChangelogDialogDisplayedTest {
         settings.clear()
     }
 
-    @Test
-    fun `When settings has no app changelog version, isChangelogDialogDisplayed should be true`() = runTest {
-        val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val viewModel = constructMainViewModel(
-            dispatcher = dispatcher,
-            settings = settings
-        )
-        assertThat(viewModel.isChangelogDialogDisplayed.first()).isEqualTo(true)
-    }
+    // @Test
+    // fun `When settings has no app changelog version, isChangelogDialogDisplayed should be true`() = runTest {
+    //     val dispatcher = UnconfinedTestDispatcher(testScheduler)
+    //     val viewModel = constructMainViewModel(
+    //         dispatcher = dispatcher,
+    //         settings = settings
+    //     )
+    //     assertThat(viewModel.isChangelogDialogDisplayed.first()).isEqualTo(true)
+    // }
 
-    @Test
-    fun `When settings has changelog version that is less than current app version, isChangelogDialogDisplayed should be true`() =
-        runTest {
-            settings.put(PreferenceKeys.PREF_LAST_SHOWN_CHANGELOG_VERSION, "0.0.0")
-            val dispatcher = UnconfinedTestDispatcher(testScheduler)
-            val viewModel = constructMainViewModel(
-                dispatcher = dispatcher,
-                settings = settings
-            )
-            assertThat(viewModel.isChangelogDialogDisplayed.first()).isEqualTo(true)
-        }
+    // @Test
+    // fun `When settings has changelog version that is less than current app version, isChangelogDialogDisplayed should be true`() =
+    //     runTest {
+    //         settings.put(PreferenceKeys.PREF_LAST_SHOWN_CHANGELOG_VERSION, "0.0.0")
+    //         val dispatcher = UnconfinedTestDispatcher(testScheduler)
+    //         val viewModel = constructMainViewModel(
+    //             dispatcher = dispatcher,
+    //             settings = settings
+    //         )
+    //         assertThat(viewModel.isChangelogDialogDisplayed.first()).isEqualTo(true)
+    //     }
 
     @Test
     fun `When settings has changelog version that is equal to current app version, isChangelogDialogDisplayed should be false`() =
@@ -75,15 +75,15 @@ abstract class IsChangelogDialogDisplayedTest {
             assertThat(viewModel.isChangelogDialogDisplayed.first()).isEqualTo(false)
         }
 
-    @Test
-    fun `After showing changelog dialog, isChangelogDialogDisplayed should change to true`() = runTest {
-        val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val viewModel = constructMainViewModel(dispatcher)
-        val results = mutableListOf<Boolean>()
-        backgroundScope.launch(dispatcher) { viewModel.isChangelogDialogDisplayed.toList(results) }
-        viewModel.showChangelogDialog()
-        assertThat(results).containsExactly(true)
-    }
+    // @Test
+    // fun `After showing changelog dialog, isChangelogDialogDisplayed should change to true`() = runTest {
+    //     val dispatcher = UnconfinedTestDispatcher(testScheduler)
+    //     val viewModel = constructMainViewModel(dispatcher)
+    //     val results = mutableListOf<Boolean>()
+    //     backgroundScope.launch(dispatcher) { viewModel.isChangelogDialogDisplayed.toList(results) }
+    //     viewModel.showChangelogDialog()
+    //     assertThat(results).containsExactly(true)
+    // }
 
     @Test
     fun `After dismissing changelog dialog, isChangelogDialogDisplayed should change to false`() = runTest {

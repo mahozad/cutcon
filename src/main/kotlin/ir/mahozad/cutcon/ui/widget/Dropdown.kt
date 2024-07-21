@@ -69,20 +69,18 @@ fun CustomExposedDropDown(
                     .rotate(iconRotation)
             )
         }
-        if (isEnabled) {
-            ExposedDropdownMenu(
-                expanded = isExpanded,
-                onDismissRequest = { isExpanded = false },
-            ) {
-                items.forEachIndexed { i, item ->
-                    DropdownMenuItem(
-                        content = item,
-                        onClick = {
-                            onChange(i)
-                            isExpanded = false
-                        }
-                    )
-                }
+        ExposedDropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = { isExpanded = false },
+        ) {
+            items.forEachIndexed { i, item ->
+                DropdownMenuItem(
+                    content = item,
+                    onClick = {
+                        onChange(i)
+                        isExpanded = false
+                    }
+                )
             }
         }
     }

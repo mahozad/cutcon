@@ -14,7 +14,6 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import java.util.prefs.Preferences
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -50,15 +49,15 @@ abstract class CalendarTest {
         assertThat(results).containsExactly(Calendar.GREGORIAN)
     }
 
-    @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "Fails on CI; FIXME")
+    // @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "Fails on CI; FIXME")
     @Test
     fun `After changing calendar, the calendar should be updated`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         val viewModel = constructMainViewModel(dispatcher)
         val results = mutableListOf<Calendar>()
         backgroundScope.launch(dispatcher) { viewModel.calendar.toList(results) }
-        viewModel.setCalendar(Calendar.GREGORIAN)
-        assertThat(results).containsExactly(defaultCalendar, Calendar.GREGORIAN)
+        viewModel.setCalendar(Calendar.SOLAR_HIJRI)
+        assertThat(results).containsExactly(defaultCalendar, Calendar.SOLAR_HIJRI)
     }
 
     @Test

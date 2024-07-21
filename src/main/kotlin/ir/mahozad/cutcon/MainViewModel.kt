@@ -3,13 +3,13 @@ package ir.mahozad.cutcon
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPosition
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import ir.mahozad.cutcon.component.*
+import ir.mahozad.cutcon.component.MediaPlayer
 import ir.mahozad.cutcon.converter.ConverterFactory
 import ir.mahozad.cutcon.localization.Language
 import ir.mahozad.cutcon.model.*
@@ -27,7 +27,6 @@ import ir.mahozad.cutcon.ui.widget.COVER_PREVIEW_SIZE
 import ir.mahozad.cutcon.ui.widget.INTRO_PREVIEW_SIZE
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import org.jaudiotagger.audio.AudioFileIO
 import java.awt.GraphicsEnvironment
 import java.awt.Rectangle
 import java.nio.file.Path
@@ -60,14 +59,17 @@ class MainViewModel(
         data class Failure(val throwable: Throwable) : ConversionStatus
     }
 
+    data class WindowWidth(val value: Int, val isAnimated: Boolean)
+
     private val logger = logger(name = MainViewModel::class.simpleName ?: "")
     private val coroutineScope = CoroutineScope(dispatcher)
     private var conversionJob: Job? = null
     private val _isAppExitConfirmDialogDisplayed = MutableStateFlow(false)
     private val _isChangelogDialogDisplayed = MutableStateFlow(
-        settings[PREF_LAST_SHOWN_CHANGELOG_VERSION, null].let {
-            compareVersionStrings(BuildConfig.APP_VERSION, it) == VersionComparisonResult.NEWER
-        }
+        // settings[PREF_LAST_SHOWN_CHANGELOG_VERSION, null].let {
+        //     compareVersionStrings(BuildConfig.APP_VERSION, it) == VersionComparisonResult.NEWER
+        // }
+        false
     )
     private val _language = MutableStateFlow(
         settings[PREF_LANGUAGE, null]
@@ -120,6 +122,7 @@ class MainViewModel(
     private val _source = MutableStateFlow<Source>(defaultSource)
     private val _quality = MutableStateFlow(defaultQuality)
     private val _clip = MutableStateFlow(defaultClip)
+    private val _windowWidth = MutableStateFlow(WindowWidth(WINDOW_WIDTH_WITH_PANEL, isAnimated = true))
     private val _isFullscreen = MutableStateFlow(defaultIsFullscreen)
     private val _isMiniScreen = MutableStateFlow(defaultIsMiniScreen)
     private val _isSidePanelDisplayed = MutableStateFlow(defaultIsSidePanelDisplayed)
@@ -143,6 +146,7 @@ class MainViewModel(
     private val _introOptions = MutableStateFlow(defaultIntroOptions)
     private val _coverBitmap = MutableStateFlow<ImageBitmap?>(null)
     private val _introBitmap = MutableStateFlow<ImageBitmap?>(null)
+    private val _isScreenshotInputActive = MutableStateFlow(false)
     private var wasSidePanelDisplayedBeforeChangingScreen = _isSidePanelDisplayed.value
     private var wasMiniScreen = _isMiniScreen.value
     /**
@@ -173,24 +177,19 @@ class MainViewModel(
     private var _clipEndMinuteInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
     private var _clipEndSecondInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
     // NOTE: Do not use .flowOn(dispatcher); It degrades UI performance
-    val displayImage = _source
-        .transform {
+    val displayImage = mediaPlayer.output.transform {
+        if (it is MediaPlayer.Output.SourceNotStarted) {
             emit(null)
             // To give the transition animation of Display widget **at least** this much time
             delay(500.milliseconds)
-            emit(it)
+        } else if (it is MediaPlayer.Output.Video) {
+            emitAll(it.video)
+        } else if (it is MediaPlayer.Output.Image) {
+            emit(it.image)
+        } else if (_source.value.mediaType == Source.MediaType.AUDIO) {
+            emit(defaultAudioImage)
         }
-        .combine(mediaPlayer.video) { source, video ->
-            if (source == null) {
-                null
-            } else if (source.mediaType == Source.MediaType.VIDEO) {
-                video
-            } else if (source.mimeType == "image/gif") {
-                video
-            } else {
-                generateStaticDisplayImage(source)
-            }
-        }
+    }
     val language = _language.asStateFlow()
     val calendar = _calendar.asStateFlow()
     val theme = _theme.asStateFlow()
@@ -231,6 +230,7 @@ class MainViewModel(
             started = SharingStarted.Eagerly,
             initialValue = _source.value.mediaType == Source.MediaType.VIDEO
         )
+    val isScreenshotInputActive = _isScreenshotInputActive.asStateFlow()
     val isQualityInputApplicable = _format
         .map { it != Format.RAW }
         .stateIn(
@@ -293,19 +293,7 @@ class MainViewModel(
         started = SharingStarted.Eagerly,
         initialValue = windowUserDraggedPosition.value
     )
-    val windowWidth = combine(_isSidePanelDisplayed, _isMiniScreen) { isSidePanelDisplayed, isMiniScreen ->
-        if (isMiniScreen) {
-            WINDOW_WIDTH_MINI
-        } else if (isSidePanelDisplayed) {
-            WINDOW_WIDTH_WITH_PANEL
-        } else {
-            WINDOW_WIDTH_NO_PANEL
-        }
-    }.stateIn(
-        scope = coroutineScope,
-        started = SharingStarted.Eagerly,
-        initialValue = WINDOW_WIDTH_WITH_PANEL
-    )
+    val windowWidth = _windowWidth.asStateFlow()
     val windowHeight = _isMiniScreen
         .map { if (it) WINDOW_HEIGHT_MINI else WINDOW_HEIGHT_REGULAR }
         .stateIn(
@@ -353,6 +341,10 @@ class MainViewModel(
     )
 
     init {
+        mediaPlayer
+            .isResumed
+            .onEach { isResumed -> _mediaInfo.update { it.copy(isResumed = isResumed) } }
+            .launchIn(coroutineScope)
         _lastSaveDirectory
             .filterNotNull()
             .conflate()
@@ -371,14 +363,8 @@ class MainViewModel(
             .distinctUntilChanged()
             .onEach(mediaPlayer::play)
             .onEach { mediaPlayer.resume() }
-            .onEach { url -> _mediaInfo.update { it.copy(url = url, isResumed = true) } }
+            .onEach { url -> _mediaInfo.update { it.copy(url = url) } }
             .launchIn(coroutineScope)
-        // Sets the initial seek to default seek
-        coroutineScope.launch {
-            // The delay is required to ensure the url has been started playing
-            delay(100.milliseconds)
-            mediaPlayer.seek(defaultSeek)
-        }
     }
 
     fun startMediaProgressListener() {
@@ -401,6 +387,16 @@ class MainViewModel(
             // .onEach { (date, _) -> currentDate.value = date }
             // .onEach { (_, time) -> currentTime.value = time }
             .launchIn(coroutineScope)
+    }
+
+    private fun updateWindowWidth(shouldAnimate: Boolean) {
+        _windowWidth.value = if (_isMiniScreen.value) {
+            WindowWidth(WINDOW_WIDTH_MINI, isAnimated = false)
+        } else if (_isSidePanelDisplayed.value) {
+            WindowWidth(WINDOW_WIDTH_WITH_PANEL, shouldAnimate)
+        } else {
+            WindowWidth(WINDOW_WIDTH_NO_PANEL, shouldAnimate)
+        }
     }
 
     fun setLanguage(language: Language) {
@@ -547,10 +543,8 @@ class MainViewModel(
     private fun convertImageToSupportedFormatIfNeeded(path: Path?): Path? {
         val mimeType = path?.detectMimeType()
         return if (mimeType == "image/svg+xml") {
-            // FFmpeg does not support SVG format, so here a temp PNG file with the default size
-            // of the SVG (its default width and height) is created
-            path.convertSvgToPng()
-        } else if (mimeType != null && mimeType.startsWith("image/")) {
+            convertSvgToPng(path)
+        } else if (mimeType?.startsWith("image/") == true) {
             path
         } else {
             null
@@ -561,12 +555,12 @@ class MainViewModel(
         path: Path?,
         desiredSizeIfVector: Float,
         onFailure: () -> Unit
-    ) = path
-        ?.let { decodeImage(path = it, desiredSizeIfVector = desiredSizeIfVector) }
-        ?: run {
-            if (path != null) onFailure()
-            null
-        }
+    ): ImageBitmap? {
+        if (path == null) return null
+        val result = decodeImage(path, desiredSizeIfVector)
+        if (result == null) onFailure()
+        return result
+    }
 
     fun setIntroBackgroundColor(color: Color) {
         _introOptions.update { it.copy(backgroundColor = color) }
@@ -619,10 +613,7 @@ class MainViewModel(
                     intro = _introOptions.value,
                     cover = _coverOptions.value,
                     quality = _quality.value,
-                    flags = ConverterFlags(
-                        isInterlacingFixEnabled = _isInterlacedFixEnabled.value,
-                        isVideoAvailableInInput = _source.value.mediaType == Source.MediaType.VIDEO
-                    ),
+                    fixInterlaced = _isInterlacedFixEnabled.value,
                     output = _saveFile.value!!,
                     listener = { _conversion.value = ConversionStatus.InProgress(progress = it) }
                 )
@@ -672,6 +663,7 @@ class MainViewModel(
     fun toggleSidePanel() {
         if (!_isFullscreen.value && !_isMiniScreen.value) {
             _isSidePanelDisplayed.value = !_isSidePanelDisplayed.value
+            updateWindowWidth(shouldAnimate = true)
         }
     }
 
@@ -687,9 +679,7 @@ class MainViewModel(
     }
 
     fun toggleMiniScreen() {
-        if (_isFullscreen.value) {
-            return
-        }
+        if (_isFullscreen.value) return
         if (!_isMiniScreen.value) {
             wasSidePanelDisplayedBeforeChangingScreen = _isSidePanelDisplayed.value
             _isSidePanelDisplayed.value = false
@@ -698,9 +688,18 @@ class MainViewModel(
         if (!_isMiniScreen.value) {
             _isSidePanelDisplayed.value = wasSidePanelDisplayedBeforeChangingScreen
         }
+        updateWindowWidth(shouldAnimate = false)
     }
 
     fun takeScreenshot() {
+        if (!isScreenshotInputEnabled.value) {
+            return
+        }
+        coroutineScope.launch {
+            _isScreenshotInputActive.value = true
+            delay(400.milliseconds)
+            _isScreenshotInputActive.value = false
+        }
         // Does it asynchronously because creating directories takes a little time
         coroutineScope.launch {
             // Makes sure the directories exist.
@@ -724,7 +723,6 @@ class MainViewModel(
 
     fun toggleResume() {
         mediaPlayer.toggleResume()
-        _mediaInfo.update { it.copy(isResumed = !it.isResumed) }
     }
 
     fun setSeek(seek: Float) {
@@ -837,10 +835,15 @@ class MainViewModel(
     }
 
     private fun onSourceChanged() {
-        if (_source.value.mediaType == Source.MediaType.VIDEO) {
-            _aspectRatio.value = lastAspectRatio
-        } else {
-            _aspectRatio.value = AspectRatio.SOURCE
+        coroutineScope.launch {
+            // The aspect ratio is changed with a little delay
+            // so the existing display image is not distorted
+            delay(300.milliseconds)
+            if (_source.value.mediaType == Source.MediaType.VIDEO) {
+                _aspectRatio.value = lastAspectRatio
+            } else {
+                _aspectRatio.value = AspectRatio.SOURCE
+            }
         }
         _saveFile.update {
             it
@@ -860,29 +863,5 @@ class MainViewModel(
         } else {
             _isAppExitConfirmDialogDisplayed.value = true
         }
-    }
-
-    private fun generateStaticDisplayImage(source: Source): ImageBitmap? {
-        val path = (source as? Source.Local)?.path ?: Path("")
-        return path
-            .toFile()
-            .runCatching(AudioFileIO::read)
-            .getOrNull()
-            ?.tag
-            ?.firstArtwork
-            ?.binaryData
-            ?.inputStream()
-            ?.use(::loadImageBitmap)
-            ?: run {
-                when (source.mediaType) {
-                    Source.MediaType.IMAGE -> decodeImage(
-                        path = path,
-                        mimeType = source.mimeType,
-                        desiredSizeIfVector = 512f
-                    )
-                    Source.MediaType.AUDIO -> defaultAudioImage
-                    else -> null
-                }
-            }
     }
 }

@@ -1,6 +1,7 @@
 package ir.mahozad.cutcon.ui.widget
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -43,6 +45,7 @@ fun Display(
             val imageSize = calculateMaxSizeInFrame(
                 frameWidth = frameSize.width.dp,
                 frameHeight = frameSize.height.dp,
+                displayDensity = LocalDensity.current.density,
                 desiredAspectRatio = aspectRatio.ratio ?: (image.width.toFloat() / image.height)
             )
             Image(
@@ -55,21 +58,54 @@ fun Display(
                 contentDescription = Messages.IMG_DSC_DISPLAY_IMAGE
             )
         }
-        TransitionEffect(isTransitioning = image == null)
+        TransitionEffect2(isTransitioning = image == null)
     }
 }
 
 @Composable
-private fun TransitionEffect(isTransitioning: Boolean) {
+private fun TransitionEffect1(isTransitioning: Boolean) {
     val heightFactor by animateFloatAsState(if (isTransitioning) 1f else 0f)
-    val clipShape = remember(heightFactor) {
+    Transition(0f, heightFactor)
+}
+
+@Composable
+private fun TransitionEffect2(isTransitioning: Boolean) {
+    var top by remember { mutableFloatStateOf(0f) }
+    var bottom by remember { mutableFloatStateOf(0f) }
+    val topFactor by animateFloatAsState(
+        targetValue = top,
+        animationSpec = tween(350),
+        finishedListener = {
+            if (it > 0.5f) {
+                top = 0f
+                bottom = 0f
+            }
+        }
+    )
+    val bottomFactor by animateFloatAsState(
+        targetValue = bottom,
+        animationSpec = tween(350),
+    )
+    LaunchedEffect(isTransitioning) {
+        if (isTransitioning) {
+            bottom = 1f
+        } else {
+            top = 1f
+        }
+    }
+    Transition(topFactor, bottomFactor)
+}
+
+@Composable
+private fun Transition(topFactor: Float, bottomFactor: Float) {
+    val clipShape = remember(topFactor, bottomFactor) {
         GenericShape { size, _ ->
             addRect(
                 Rect(
-                    top = 0f,
+                    top = size.height * topFactor,
                     left = 0f,
                     right = size.width,
-                    bottom = size.height * heightFactor
+                    bottom = size.height * bottomFactor
                 )
             )
         }

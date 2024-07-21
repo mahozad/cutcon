@@ -18,8 +18,8 @@ plugins {
 val appRawFilesPath = rootDir.toPath() / "raw"
 val appResourcesPath = rootDir.toPath() / "asset"
 val vlcDirectoryName = "vlc"
-val isVlcFull = System.getenv("fullVlc").toBooleanLenient() ?: false
-val shouldMinifyVlc = System.getenv("minifyVlc").toBooleanLenient() ?: true
+val isVlcFull = System.getenv("fullVlc").toBooleanLenient() == true
+val shouldMinifyVlc = System.getenv("minifyVlc").toBooleanLenient() == true
 val releaseDate: LocalDate = LocalDate.of(2024, 7, 6)
 
 group = "ir.mahozad"
@@ -36,7 +36,7 @@ sourceSets {
 // Makes the uiTestImplementation configuration extend from testImplementation,
 // which means that all the declared dependencies of the test code (and transitively the main as well)
 // also become dependencies of this new configuration
-val uiTestImplementation by configurations.getting {
+val uiTestImplementation: Configuration by configurations.getting {
     extendsFrom(configurations.testImplementation.get())
 }
 val uiTest = task<Test>("uiTest") {
@@ -160,6 +160,8 @@ tasks.register(
             "plugins/access/libfilesystem_plugin.dll",
             // Along with audio_output/libmmdevice_plugin.dll normalizes audio loudness
             "plugins/audio_filter/libnormvol_plugin.dll",
+            // Needed for MP3 (or audio) files with single (mono) channel
+            "plugins/audio_filter/libtrivial_channel_mixer_plugin.dll",
             "plugins/audio_filter/libscaletempo_pitch_plugin.dll",
             "plugins/audio_filter/libscaletempo_plugin.dll",
             "plugins/audio_output/libdirectsound_plugin.dll",
@@ -209,13 +211,13 @@ tasks.register(
  */
 buildConfig {
     packageName("${project.group}.${project.name.lowercase()}")
-    buildConfigField("String", "APP_NAME", """"${project.name}"""")
-    buildConfigField("String", "APP_VERSION", """"${project.version}"""")
-    buildConfigField("String", "VLC_DIRECTORY_NAME", """"$vlcDirectoryName"""")
+    buildConfigField(name = "APP_NAME", value = project.name)
+    buildConfigField(name = "APP_VERSION", value = "${project.version}")
+    buildConfigField(name = "VLC_DIRECTORY_NAME", value = vlcDirectoryName)
     buildConfigField(
-        "java.time.LocalDate",
-        "APP_RELEASE_DATE",
-        """LocalDate.of(${releaseDate.year}, ${releaseDate.monthValue}, ${releaseDate.dayOfMonth})"""
+        name = "APP_RELEASE_DATE",
+        type = "java.time.LocalDate",
+        expression = """LocalDate.parse("$releaseDate")"""
     )
 }
 
@@ -305,12 +307,20 @@ compose.desktop {
          * It seems that the Windows OS does not respect the GIF speed and no-loop settings and
          * plays the animation at a low frame rate. See https://stackoverflow.com/q/25382400
          */
-        jvmArgs += "-splash:app/resources/splash-screen.gif"
+        jvmArgs += "-splash:${'$'}APPDIR/resources/splash-screen.gif"
         nativeDistributions {
-            // java.naming is to prevent app crash when running the app exe
-            // (introduced with ch.qos.logback:logback-classic version 1.4.5)
-            // jdk.unsupported is for showing the display image when running the app exe
-            modules("java.naming", "jdk.unsupported")
+            modules(
+                // For preventing app crash when running the app exe
+                // (introduced in ch.qos.logback:logback-classic version 1.4.5)
+                "java.naming",
+                // For showing the display image when running the app exe
+                // (introduced in app version 1.5.0 by reimplementing the media player)
+                "jdk.unsupported",
+                // For playing local files when running the app exe (introduced in CMP version 1.6.0)
+                "jdk.accessibility",
+                // For launching the app using "Open with" on a file (required by Apache Tika)
+                "java.sql"
+            )
             targetFormats(Dmg, Msi, Exe, Deb)
             packageVersion = "${project.version}.0.0"
             packageName = project.name

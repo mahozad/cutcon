@@ -35,7 +35,8 @@ val Icons.Custom.SpeedFast: ImageVector
         icon = materialIcon(name = "Custom.Speed") {
             path(
                 fill = null,
-                stroke = SolidColor(defaultIconColor)
+                stroke = SolidColor(defaultIconColor),
+                strokeLineWidth = 2.0f
             ) {
                 moveTo(12.0f, 12.0f)
                 moveToRelative(-9.0f, 0.0f)

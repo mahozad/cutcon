@@ -40,16 +40,16 @@ val Icons.Custom.Star: ImageVector
                 strokeLineWidth = 2.0f,
                 strokeLineJoin = Round
             ) {
-                moveToRelative(12.0f, 4.0f)
-                lineToRelative(2.3511f, 4.7639f)
-                lineToRelative(5.2573f, 0.7639f)
-                lineToRelative(-3.8042f, 3.7082f)
-                lineToRelative(0.8981f, 5.2361f)
-                lineTo(12.0f, 16.0f)
-                lineTo(7.2977f, 18.4721f)
-                lineTo(8.1958f, 13.2361f)
-                lineTo(4.3915f, 9.5279f)
-                lineTo(9.6489f, 8.7639f)
+                moveTo(12.0f, 3.5f)
+                lineToRelative(2.35f, 4.76f)
+                lineToRelative(5.26f, 0.764f)
+                lineToRelative(-3.8f, 3.71f)
+                lineToRelative(0.898f, 5.24f)
+                lineToRelative(-4.7f, -2.47f)
+                lineToRelative(-4.7f, 2.47f)
+                lineToRelative(0.898f, -5.24f)
+                lineToRelative(-3.8f, -3.71f)
+                lineToRelative(5.26f, -0.764f)
                 close()
             }
         }

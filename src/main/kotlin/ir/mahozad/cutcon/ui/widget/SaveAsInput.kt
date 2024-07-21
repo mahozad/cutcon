@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.FrameWindowScope
 import ir.mahozad.cutcon.LocalLanguage
 import ir.mahozad.cutcon.defaultFontSize
-import ir.mahozad.cutcon.localization.LanguageFa
 import ir.mahozad.cutcon.localization.Messages
 import ir.mahozad.cutcon.model.Format
 import ir.mahozad.cutcon.model.Source
@@ -73,6 +72,7 @@ fun FrameWindowScope.SaveAsInput(
     var dialogClosedTime by remember { mutableLongStateOf(0) }
     Row(verticalAlignment = Alignment.CenterVertically) {
         if (lastSaveDirectory != null) {
+            Spacer(Modifier.width(2.dp))
             Tooltip(language.messages.openSaveFolder) {
                 IconButton(onClick = {
                     scope.launch(Dispatchers.IO) {
@@ -126,7 +126,7 @@ fun FrameWindowScope.SaveAsInput(
             Text(
                 text = destination?.trim(maxLength = 35)?.toLtrString() ?: language.messages.btnLblSelectSaveFolder,
                 fontSize = if (destination == null) defaultFontSize else (defaultFontSize.value - 1).sp,
-                modifier = Modifier.padding(top = if (language is LanguageFa) 3.dp else 0.dp)
+                lineHeight = 20.sp
             )
         }
     }

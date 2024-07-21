@@ -1,11 +1,14 @@
 package ir.mahozad.cutcon.ui
 
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLocalization
@@ -52,20 +55,26 @@ fun MainWindow(onExitRequest: () -> Unit) {
     val isAlwaysOnTop by viewModel.isAlwaysOnTop.collectAsState()
     val isFullscreen by viewModel.isFullscreen.collectAsState()
     val windowWidth by viewModel.windowWidth.collectAsState()
+    // FIXME: When the app theme is dark and toggling side panel,
+    //  there is a bit of white flicker on the right side of panel
+    val animatedWindowWidth by animateIntAsState(
+        targetValue = windowWidth.value,
+        animationSpec = if (windowWidth.isAnimated) tween(durationMillis = 240) else snap()
+    )
     val windowHeight by viewModel.windowHeight.collectAsState()
     val windowPosition by viewModel.windowPosition.collectAsState()
     val windowState = rememberWindowState(
         placement = WindowPlacement.Floating,
         position = windowPosition,
-        size = DpSize(windowWidth.dp, windowHeight.dp)
+        size = DpSize(windowWidth.value.dp, windowHeight.dp)
     )
     LaunchedEffect(Unit) {
         snapshotFlow { windowState.position }
             .onEach(viewModel::onWindowPositionChanged)
             .launchIn(this)
     }
-    LaunchedEffect(windowWidth, windowHeight, windowPosition, isFullscreen) {
-        windowState.size = DpSize(windowWidth.dp, windowHeight.dp)
+    LaunchedEffect(animatedWindowWidth, windowHeight, windowPosition, isFullscreen) {
+        windowState.size = DpSize(animatedWindowWidth.dp, windowHeight.dp)
         windowState.position = windowPosition
         windowState.placement = if (isFullscreen) WindowPlacement.Fullscreen else WindowPlacement.Floating
     }
@@ -74,7 +83,7 @@ fun MainWindow(onExitRequest: () -> Unit) {
         icon = painterResource("logo.svg"), // Is used for app icon in taskbar
         state = windowState,
         resizable = false,
-        undecorated = false, // See window decoration component for more information
+        undecorated = true, // See window decoration component for more information
         transparent = false, // See window decoration component for more information
         alwaysOnTop = isAlwaysOnTop,
         // Called when clicking on close button on app taskbar preview

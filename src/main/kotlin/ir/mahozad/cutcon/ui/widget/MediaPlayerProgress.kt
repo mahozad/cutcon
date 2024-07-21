@@ -34,7 +34,7 @@ private fun MediaPlayerProgressPreview() {
  * it may take longer for the first new media progress to start showing on the bar
  * because *the internal seek variable* would still be showing on the bar)
  * The number below is also related to the frequency of media player progress emission
- * (see [DefaultMediaPlayer.createProgressFlow] function)
+ * (see [DefaultMediaPlayer.progressFlow] function)
  */
 private const val PROGRESS_UPDATE_DELAY = 1_000
 

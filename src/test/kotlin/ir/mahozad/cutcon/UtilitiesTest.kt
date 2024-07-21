@@ -1,6 +1,7 @@
 package ir.mahozad.cutcon
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -9,6 +10,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.Image
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -20,11 +23,14 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Path
 import java.time.LocalDate
-import java.util.*
 import java.util.function.Consumer
 import kotlin.io.path.Path
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
+import kotlin.io.path.div
 import kotlin.io.path.inputStream
+import kotlin.io.path.readBytes
+import kotlin.io.path.writeBytes
 import kotlin.time.Duration.Companion.seconds
 
 class UtilitiesTest {
@@ -54,6 +60,109 @@ class UtilitiesTest {
             createTempFile(suffix = "") to null, // No file extension
             Path("non-existent-file.png") to null // Non-existent file
         )
+    }
+
+    @Nested
+    @TestInstance(Lifecycle.PER_CLASS)
+    inner class DecodeImageTest {
+        @Test
+        fun `Decoding a PNG file should produce proper result`() {
+            val file = getResourceAsPath("test.png")
+            val result = decodeImage(file)
+            val resultData = result
+                ?.asSkiaBitmap()
+                ?.let(Image::makeFromBitmap)
+                ?.encodeToData(EncodedImageFormat.PNG) // Stores as PNG to be lossless
+                ?: error("Could not encode image as png")
+            val referencePath = getResourceAsPath("reference/10.png")
+            val actualPath = (createTempDirectory() / "image.png")
+            actualPath.writeBytes(resultData.bytes)
+            assert(resultData.bytes.contentEquals(referencePath.readBytes())) {
+                "The image '$actualPath' does not match the reference '$referencePath'"
+            }
+        }
+
+        @Test
+        fun `Decoding a JPEG file should produce proper result`() {
+            val file = getResourceAsPath("test.jpg")
+            val result = decodeImage(file)
+            val resultData = result
+                ?.asSkiaBitmap()
+                ?.let(Image::makeFromBitmap)
+                ?.encodeToData(EncodedImageFormat.PNG) // Stores as PNG to be lossless
+                ?: error("Could not encode image as png")
+            val referencePath = getResourceAsPath("reference/11.png")
+            val actualPath = (createTempDirectory() / "image.png")
+            actualPath.writeBytes(resultData.bytes)
+            assert(resultData.bytes.contentEquals(referencePath.readBytes())) {
+                "The image '$actualPath' does not match the reference '$referencePath'"
+            }
+        }
+
+        @Test
+        fun `Decoding an SVG file with its intrinsic size should produce proper result`() {
+            val file = getResourceAsPath("test.svg")
+            val result = decodeImage(file)
+            val resultData = result
+                ?.asSkiaBitmap()
+                ?.let(Image::makeFromBitmap)
+                ?.encodeToData(EncodedImageFormat.PNG) // Stores as PNG to be lossless
+                ?: error("Could not encode image as png")
+            val referencePath = getResourceAsPath("reference/12.png")
+            val actualPath = (createTempDirectory() / "image.png")
+            actualPath.writeBytes(resultData.bytes)
+            assert(resultData.bytes.contentEquals(referencePath.readBytes())) {
+                "The image '$actualPath' does not match the reference '$referencePath'"
+            }
+        }
+
+        @Test
+        fun `Decoding an SVG file with overridden size should produce proper result`() {
+            val file = getResourceAsPath("test.svg")
+            val result = decodeImage(file, 73f)
+            val resultData = result
+                ?.asSkiaBitmap()
+                ?.let(Image::makeFromBitmap)
+                ?.encodeToData(EncodedImageFormat.PNG) // Stores as PNG to be lossless
+                ?: error("Could not encode image as png")
+            val referencePath = getResourceAsPath("reference/13.png")
+            val actualPath = (createTempDirectory() / "image.png")
+            actualPath.writeBytes(resultData.bytes)
+            assert(resultData.bytes.contentEquals(referencePath.readBytes())) {
+                "The image '$actualPath' does not match the reference '$referencePath'"
+            }
+        }
+
+        /**
+         * SVGZ is NOT supported by skia (at least yet).
+         */
+        @Test
+        fun `Decoding a compressed SVGZ file should produce null`() {
+            val file = getResourceAsPath("test.svgz")
+            val result = decodeImage(file)
+            assertThat(result).isNull()
+        }
+
+        @Test
+        fun `Decoding an unsupported image format file should produce null`() {
+            val file = getResourceAsPath("test.avif")
+            val result = decodeImage(file)
+            assertThat(result).isNull()
+        }
+
+        @Test
+        fun `Decoding a non-image file should produce null`() {
+            val file = getResourceAsPath("test.ts")
+            val result = decodeImage(file)
+            assertThat(result).isNull()
+        }
+
+        @Test
+        fun `Decoding a non-existent file should produce null`() {
+            val file = Path("non-existent-file.png") // Non-existent file
+            val result = decodeImage(file)
+            assertThat(result).isNull()
+        }
     }
 
     @Nested
@@ -156,6 +265,7 @@ class UtilitiesTest {
             val result = calculateMaxSizeInFrame(
                 frameWidth = 320.dp,
                 frameHeight = 90.dp,
+                displayDensity = 1f,
                 desiredAspectRatio = 16f / 9f
             )
             assertThat(result).isEqualTo(DpSize(160.dp, 90.dp))
@@ -166,6 +276,7 @@ class UtilitiesTest {
             val result = calculateMaxSizeInFrame(
                 frameWidth = 45.dp,
                 frameHeight = 90.dp,
+                displayDensity = 1f,
                 desiredAspectRatio = 16f / 9f
             )
             assertThat(result).isEqualTo(DpSize(45.dp, (45f / AspectRatio.W16H9.ratio!!).dp))
@@ -176,6 +287,7 @@ class UtilitiesTest {
             val result = calculateMaxSizeInFrame(
                 frameWidth = 800.dp,
                 frameHeight = 300.dp,
+                displayDensity = 1f,
                 desiredAspectRatio = 4f / 3f
             )
             assertThat(result).isEqualTo(DpSize((300 * (4f / 3f)).dp, 300.dp))
@@ -186,9 +298,40 @@ class UtilitiesTest {
             val result = calculateMaxSizeInFrame(
                 frameWidth = 200.dp,
                 frameHeight = 300.dp,
+                displayDensity = 1f,
                 desiredAspectRatio = 4f / 3f
             )
             assertThat(result).isEqualTo(DpSize(200.dp, (200 / (4f / 3f)).dp))
+        }
+
+        /**
+         * When the display scaling is something other than 100% (1.0).
+         * This is especially prevalent in laptops.
+         * Display scaling can be changed via OS settings.
+         */
+        @Nested
+        inner class DisplayScaled {
+            @Test
+            fun `When display scaling is 125 percent and the image is taller than the frame`() {
+                val result = calculateMaxSizeInFrame(
+                    frameWidth = 300.dp,
+                    frameHeight = 200.dp,
+                    displayDensity = 1.25f,
+                    desiredAspectRatio = 3f / 6f
+                )
+                assertThat(result).isEqualTo(DpSize(80.dp, 200.dp))
+            }
+
+            @Test
+            fun `When display scaling is 125 percent and the image is wider than the frame`() {
+                val result = calculateMaxSizeInFrame(
+                    frameWidth = 300.dp,
+                    frameHeight = 200.dp,
+                    displayDensity = 1.25f,
+                    desiredAspectRatio = 6f / 3f
+                )
+                assertThat(result).isEqualTo(DpSize(300.dp, 120.dp))
+            }
         }
     }
 
@@ -556,6 +699,12 @@ class UtilitiesTest {
         @Test
         fun `Parsing an empty string should return null`() {
             val duration = "".toDuration()
+            assertThat(duration).isNull()
+        }
+
+        @Test
+        fun `Parsing an invalid string should return null`() {
+            val duration = "N/A".toDuration()
             assertThat(duration).isNull()
         }
 

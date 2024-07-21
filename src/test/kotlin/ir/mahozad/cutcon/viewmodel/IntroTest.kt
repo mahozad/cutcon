@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.io.path.extension
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -54,12 +55,12 @@ abstract class IntroTest {
     fun `When setting intro to a new file, it should reflect in intro properties`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         val viewModel = constructMainViewModel(dispatcher)
-        val image = getResourceAsPath("test.png")
+        val intro = getResourceAsPath("test.png")
         val results = mutableListOf<IntroOptions>()
         backgroundScope.launch(dispatcher) { viewModel.introOptions.toList(results) }
-        viewModel.setIntroFile(image)
+        viewModel.setIntroFile(intro)
         assertThat(results.last()).isEqualTo(
-            defaultIntroOptions.copy(path = image)
+            defaultIntroOptions.copy(path = intro)
         )
     }
 
@@ -67,23 +68,35 @@ abstract class IntroTest {
     fun `When setting intro to a new file, the intro image bitmap should update`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         val viewModel = constructMainViewModel(dispatcher)
-        val cover = getResourceAsPath("test.png")
+        val intro = getResourceAsPath("test.png")
         val results = mutableListOf<ImageBitmap?>()
         backgroundScope.launch(dispatcher) { viewModel.introBitmap.toList(results) }
-        viewModel.setIntroFile(cover)
+        viewModel.setIntroFile(intro)
         assertThat(results.last()).isNotNull()
     }
 
     @Test
+    fun `When setting intro to an SVG file, the image should be converted to PNG because FFmpeg does not support SVG`() =
+        runTest {
+            val dispatcher = UnconfinedTestDispatcher(testScheduler)
+            val viewModel = constructMainViewModel(dispatcher)
+            val intro = getResourceAsPath("test.svg")
+            val results = mutableListOf<IntroOptions>()
+            backgroundScope.launch(dispatcher) { viewModel.introOptions.toList(results) }
+            viewModel.setIntroFile(intro)
+            assertThat(results.last().path?.extension).isEqualToIgnoringCase("png")
+        }
+
+    @Test
     fun `When setting intro to an unsupported file, intro should stay (or update to) null`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val cover = getResourceAsPath("test.mp3")
+        val intro = getResourceAsPath("test.mp3")
         val viewModel = constructMainViewModel(dispatcher).apply {
-            setIntroFile(cover)
+            setIntroFile(intro)
         }
         val results = mutableListOf<IntroOptions>()
         backgroundScope.launch(dispatcher) { viewModel.introOptions.toList(results) }
-        viewModel.setIntroFile(cover)
+        viewModel.setIntroFile(intro)
         assertThat(results.last().path).isNull()
     }
 }

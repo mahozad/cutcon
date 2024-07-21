@@ -5,6 +5,7 @@ import androidx.compose.foundation.LocalScrollbarStyle
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
@@ -17,10 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import ir.mahozad.cutcon.LocalCalendar
 import ir.mahozad.cutcon.LocalLanguage
 import ir.mahozad.cutcon.defaultFontSize
@@ -29,7 +28,6 @@ import ir.mahozad.cutcon.localization.LanguageEn
 import ir.mahozad.cutcon.localization.LanguageFa
 import ir.mahozad.cutcon.localization.Messages
 import ir.mahozad.cutcon.model.*
-import ir.mahozad.cutcon.ui.DialogDecoration
 import ir.mahozad.cutcon.ui.icon.*
 import ir.mahozad.cutcon.ui.theme.AppTheme
 
@@ -61,34 +59,30 @@ private fun ChangelogDialogPreviewEn() {
 
 @Composable
 fun ChangelogDialog(changelog: Changelog, onCloseRequest: () -> Unit) {
-    val language = LocalLanguage.current
-    Dialog(/* Called when clicking outside the dialog: */ onDismissRequest = onCloseRequest) {
-        DialogDecoration(
-            icon = painterResource("logo.svg"),
-            title = { Text(text = language.messages.dlgTitChangelog, fontSize = (defaultFontSize.value - 1).sp) },
-            modifier = Modifier.size(424.dp, 380.dp),
-            onCloseRequest = onCloseRequest
-        ) {
-            Box(modifier = Modifier.padding(bottom = 16.dp, start = 8.dp, end = 8.dp)) {
-                val state = rememberLazyListState()
-                LazyColumn(
-                    state = state,
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    items(
-                        key = { changelog.versions[it].name },
-                        count = changelog.versions.size,
-                        itemContent = { ChangelogVersion(changelog.versions[it]) }
-                    )
-                }
-                VerticalScrollbar(
-                    style = LocalScrollbarStyle.current.copy(minimalHeight = 64.dp),
-                    adapter = rememberScrollbarAdapter(scrollState = state),
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .fillMaxHeight()
+    AnimatedDialog(
+        title = LocalLanguage.current.messages.dlgTitChangelog,
+        modifier = Modifier.size(424.dp, 380.dp),
+        onDismissRequest = onCloseRequest
+    ) {
+        Box(modifier = Modifier.padding(bottom = 16.dp, start = 8.dp, end = 8.dp)) {
+            val state = rememberLazyListState()
+            LazyColumn(
+                state = state,
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                items(
+                    key = { changelog.versions[it].name },
+                    count = changelog.versions.size,
+                    itemContent = { ChangelogVersion(changelog.versions[it]) }
                 )
             }
+            VerticalScrollbar(
+                style = LocalScrollbarStyle.current.copy(minimalHeight = 64.dp),
+                adapter = rememberScrollbarAdapter(scrollState = state),
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+            )
         }
     }
 }

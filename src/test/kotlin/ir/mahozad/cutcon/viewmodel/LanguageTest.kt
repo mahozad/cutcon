@@ -5,6 +5,7 @@ import ir.mahozad.cutcon.constructMainViewModel
 import ir.mahozad.cutcon.defaultLanguage
 import ir.mahozad.cutcon.localization.Language
 import ir.mahozad.cutcon.localization.LanguageEn
+import ir.mahozad.cutcon.localization.LanguageFa
 import ir.mahozad.cutcon.model.PreferenceKeys
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -15,7 +16,6 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import java.util.prefs.Preferences
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -51,15 +51,15 @@ abstract class LanguageTest {
         assertThat(results).containsExactly(LanguageEn)
     }
 
-    @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "Fails on CI; FIXME")
+    // @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "Fails on CI; FIXME")
     @Test
     fun `After changing language, the language should be updated`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         val viewModel = constructMainViewModel(dispatcher)
         val results = mutableListOf<Language>()
         backgroundScope.launch(dispatcher) { viewModel.language.toList(results) }
-        viewModel.setLanguage(LanguageEn)
-        assertThat(results).containsExactly(defaultLanguage, LanguageEn)
+        viewModel.setLanguage(LanguageFa)
+        assertThat(results).containsExactly(defaultLanguage, LanguageFa)
     }
 
     @Test

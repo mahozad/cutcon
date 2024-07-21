@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.io.path.extension
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class CoverTest {
@@ -84,6 +85,18 @@ abstract class CoverTest {
         viewModel.setCoverFile(cover)
         assertThat(results.last()).isNotNull()
     }
+
+    @Test
+    fun `When setting cover to an SVG file, the image should be converted to PNG because FFmpeg does not support SVG`() =
+        runTest {
+            val dispatcher = UnconfinedTestDispatcher(testScheduler)
+            val viewModel = constructMainViewModel(dispatcher)
+            val cover = getResourceAsPath("test.svg")
+            val results = mutableListOf<CoverOptions>()
+            backgroundScope.launch(dispatcher) { viewModel.coverOptions.toList(results) }
+            viewModel.setCoverFile(cover)
+            assertThat(results.last().path?.extension).isEqualToIgnoringCase("png")
+        }
 
     @Test
     fun `When setting cover to an unsupported file, cover should stay (or update to) null`() = runTest {

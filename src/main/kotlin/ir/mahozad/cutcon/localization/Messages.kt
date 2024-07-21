@@ -164,6 +164,7 @@ sealed interface Messages {
     val txtLblRawCoverNotSupported: String
     val txtLblAudioFileIntroNotSupported: String
     val txtLblImageFileIntroNotSupported: String
+    val txtLblInputAlbumArtNotSupported: String
     val txtLblMiscFileIntroNotSupported: String
     val txtLblAudioFileWatermarkNotSupported: String
     val txtLblImageFileWatermarkNotSupported: String

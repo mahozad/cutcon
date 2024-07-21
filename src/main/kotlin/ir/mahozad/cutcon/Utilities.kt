@@ -27,7 +27,6 @@ import java.awt.image.BufferedImage
 import java.io.InputStream
 import java.nio.file.Path
 import java.time.LocalDate
-import java.util.*
 import javax.imageio.ImageIO
 import kotlin.io.path.*
 import kotlin.math.roundToInt
@@ -44,6 +43,7 @@ private val hexFormat = HexFormat {
 }
 private val digitRegex = Regex("[۰-۹0-9٠-٩]") // Farsi | Latin | Arabic
 private val numberRegex = Regex("${digitRegex.pattern}+")
+private val durationRegex = Regex("""^(\d{1,2}:){1,2}\d{1,2}$""")
 private val ipRegex = Regex("""(${digitRegex.pattern}{1,3}\.){3}${digitRegex.pattern}{1,3}""")
 private val dateDelimiterRegex = Regex("""[-و \t_.,،:;؛|/\\]""")
 private val redundantDelimiterRegex = Regex("${dateDelimiterRegex.pattern}+")
@@ -101,21 +101,16 @@ fun parseMarkdownAsChangelog(
         logger.info { "Parsed changelog" }
     }
 
-fun Path.convertSvgToPng(desiredPngSize: Float? = null): Path? {
-    return runCatching {
-        val imageData = decodeImage(
-            path = this,
-            mimeType = "image/svg+xml",
-            desiredSizeIfVector = desiredPngSize
-        )?.toAwtImage()
-        val imagePath = createTempFile(suffix = ".png")
-        imagePath.outputStream().use { ImageIO.write(imageData, "PNG", it) }
-        imagePath
-    }
-        .onSuccess { logger.info { "Converted $this to PNG in $it" } }
-        .onFailure { logger.warn(it) { "Could not convert $this to PNG" } }
-        .getOrNull()
+fun convertSvgToPng(path: Path, size: Float? = null): Path? = runCatching {
+    val imageData = decodeImage(path, size)?.toAwtImage()
+    val imagePath = createTempFile(suffix = ".png")
+    imagePath.outputStream().use { ImageIO.write(imageData, "PNG", it) }
+    imagePath
 }
+    .onSuccess { logger.info { "Converted $path to PNG in $it" } }
+    .onFailure { logger.warn(it) { "Could not convert $path to PNG" } }
+    .getOrNull()
+
 
 /**
  * If changed the parameter from [Path] to [InputStream], pay attention to the following notes.
@@ -128,20 +123,15 @@ fun Path.convertSvgToPng(desiredPngSize: Float? = null): Path? {
  */
 fun decodeImage(
     path: Path,
-    mimeType: String? = null,
-    desiredSizeIfVector: Float? = null
+    sizeOverrideIfVector: Float? = null
 ): ImageBitmap? {
-    val mimeTypeDetected = mimeType ?: path.detectMimeType()
-    return if (mimeTypeDetected == "image/svg+xml") {
-        // Catches exception thrown from stream or if it is .svgz as it is NOT supported by skia (yet)
-        runCatching { path.inputStream().use { loadSvgAsBitmap(it, desiredSizeIfVector) } }.getOrNull()
-    } else if (mimeTypeDetected?.startsWith("image/") == true) {
-        // Catches exceptions thrown from stream or if image format is unsupported
-        runCatching { path.inputStream().use { loadImageBitmap(it) } }.getOrNull()
+    val mimeType = path.detectMimeType()
+    return if (mimeType == "image/svg+xml") {
+        runCatching { path.inputStream().use { loadSvgAsBitmap(it, sizeOverrideIfVector) } }.getOrNull()
     } else {
-        null
+        runCatching { path.inputStream().use(::loadImageBitmap) }.getOrNull()
     }.also {
-        logger.info { "Decoded image $path" }
+        logger.info { "Decoded image $path as $it" }
     }
 }
 
@@ -207,8 +197,13 @@ fun String.normalizeDigits() = replace(numberRegex) { it.value.toLong().toString
 fun String.substringBetween(l: String, r: String) = substringAfter(l).substringBefore(r)
 
 fun String.toDuration(): Duration? {
-    if (isEmpty()) return null
-    val (s, m, h) = split(":").map(String::toInt).reversed() + 0 // Ensure contains hour
+    val (s, m, h) = this
+        .takeIf { it matches durationRegex }
+        ?.split(':')
+        ?.map(String::toInt)
+        ?.reversed()
+        ?.plus(0) // Ensures contains hour
+        ?: return null
     return h.hours + m.minutes + s.seconds
 }
 
@@ -220,13 +215,14 @@ fun Float.toQuality() = Quality
 fun calculateMaxSizeInFrame(
     frameWidth: Dp,
     frameHeight: Dp,
+    displayDensity: Float,
     desiredAspectRatio: Float
 ): DpSize {
     val frameAspectRatio = (frameWidth / frameHeight)
     val (width, height) = if (frameAspectRatio > desiredAspectRatio) {
-        frameHeight * desiredAspectRatio to frameHeight
+        frameHeight * desiredAspectRatio / displayDensity to frameHeight
     } else {
-        frameWidth to frameWidth / desiredAspectRatio
+        frameWidth to frameWidth / desiredAspectRatio / displayDensity
     }
     return DpSize(width, height)
 }
@@ -270,7 +266,7 @@ fun <T> Flow<T>.emitLatestEvery(
  * See https://stackoverflow.com/q/5507565
  */
 fun Path.detectMimeType(): String? {
-    if (extension == "ts") return "video/mp2t"
+    if (extension.lowercase() == "ts") return "video/mp2t"
     return runCatching(tika::detect)
         .onSuccess { logger.info { "Detected mime type $it for $this" } }
         .onFailure { logger.warn(it) { "Could not detect mime type of $this" } }

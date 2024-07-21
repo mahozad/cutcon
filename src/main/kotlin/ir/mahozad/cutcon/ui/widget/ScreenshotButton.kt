@@ -23,21 +23,23 @@ import ir.mahozad.cutcon.ui.icon.CameraFill
 import ir.mahozad.cutcon.ui.icon.CameraOutline
 import ir.mahozad.cutcon.ui.icon.Icons
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.awt.Desktop
 import kotlin.io.path.createDirectories
-import kotlin.time.Duration.Companion.milliseconds
 
 @Preview
 @Composable
 private fun ScreenshotButtonPreview() {
-    ScreenshotButton(isEnabled = true, onClick = {})
+    ScreenshotButton(isEnabled = true, isActive = false, onClick = {})
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ScreenshotButton(isEnabled: Boolean, onClick: () -> Unit) {
+fun ScreenshotButton(
+    isEnabled: Boolean,
+    isActive: Boolean,
+    onClick: () -> Unit
+) {
     val language = LocalLanguage.current
     val scope = rememberCoroutineScope()
     TooltipArea(
@@ -81,7 +83,6 @@ fun ScreenshotButton(isEnabled: Boolean, onClick: () -> Unit) {
             }
         },
         content = {
-            var isScreenshotSaved by remember { mutableStateOf(false) }
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -91,6 +92,7 @@ fun ScreenshotButton(isEnabled: Boolean, onClick: () -> Unit) {
                         enabled = isEnabled,
                         indication = rememberRipple(bounded = false),
                         interactionSource = remember(::MutableInteractionSource),
+                        onClick = onClick,
                         onLongClick = {
                             // Does it asynchronously because creating directories takes a little time
                             scope.launch(Dispatchers.IO) {
@@ -101,15 +103,11 @@ fun ScreenshotButton(isEnabled: Boolean, onClick: () -> Unit) {
                                 defaultScreenshotSaveDirectory.createDirectories()
                                 Desktop.getDesktop().open(defaultScreenshotSaveDirectory.toFile())
                             }
-                        },
-                        onClick = {
-                            onClick()
-                            isScreenshotSaved = true
                         }
                     )
             ) {
                 CustomIcon(
-                    icon = if (isScreenshotSaved) Icons.Custom.CameraFill else Icons.Custom.CameraOutline,
+                    icon = if (isActive) Icons.Custom.CameraFill else Icons.Custom.CameraOutline,
                     description = Messages.ICO_DSC_TAKE_SCREENSHOT,
                     tint = if (isEnabled) {
                         null
@@ -117,11 +115,6 @@ fun ScreenshotButton(isEnabled: Boolean, onClick: () -> Unit) {
                         LocalContentColor.current.copy(alpha = ContentAlpha.disabled)
                     }
                 )
-            }
-            LaunchedEffect(isScreenshotSaved) {
-                if (!isScreenshotSaved) return@LaunchedEffect
-                delay(400.milliseconds)
-                isScreenshotSaved = false
             }
         },
         delayMillis = defaultTooltipDelay.inWholeMilliseconds.toInt(),

@@ -1,6 +1,5 @@
 package ir.mahozad.cutcon.converter
 
-import ir.mahozad.cutcon.model.ConverterFlags
 import ir.mahozad.cutcon.model.CoverOptions
 import ir.mahozad.cutcon.model.IntroOptions
 import ir.mahozad.cutcon.model.Quality

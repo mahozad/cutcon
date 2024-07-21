@@ -28,7 +28,7 @@ sealed interface Source : Labeled {
     val formatName: String
     val fileExtension: String
 
-    enum class MediaType { VIDEO, AUDIO, IMAGE, UNKNOWN }
+    enum class MediaType { VIDEO, AUDIO, IMAGE, OTHER }
 
     data class Local(val path: Path) : Source {
         override val label: (Language) -> String = { it.messages.txtLblSourceLocal }
@@ -39,7 +39,7 @@ sealed interface Source : Labeled {
             mimeType?.startsWith("video/") == true -> MediaType.VIDEO
             mimeType?.startsWith("audio/") == true -> MediaType.AUDIO
             mimeType?.startsWith("image/") == true -> MediaType.IMAGE
-            else -> MediaType.UNKNOWN
+            else -> MediaType.OTHER
         }
     }
 }
@@ -111,11 +111,6 @@ data class IntroOptions(
     val duration: Duration,
 )
 
-data class ConverterFlags(
-    val isInterlacingFixEnabled: Boolean,
-    val isVideoAvailableInInput: Boolean = true
-)
-
 data class Clip(
     val start: Duration,
     val end: Duration
@@ -142,9 +137,6 @@ enum class Speed(val value: Float) {
         return entries[i]
     }
 }
-
-data class DateItem(val date: String, val weekDay: String, val suffix: String?)
-data class TimeItem(val time: String)
 
 enum class Calendar(override val label: (Language) -> String) : Labeled {
     /**

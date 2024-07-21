@@ -1,17 +1,18 @@
 package ir.mahozad.cutcon.ui.widget
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.blur
@@ -21,6 +22,8 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
@@ -62,6 +65,7 @@ private val height = 92.dp
 /**
  * Input for video watermark or audio album art.
  */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun FrameWindowScope.CoverInput(
     isEnabled: Boolean,
@@ -79,13 +83,16 @@ fun FrameWindowScope.CoverInput(
     val language = LocalLanguage.current
     if (
         (targetFormat == Format.RAW) ||
-        (targetFormat == Format.MP4 && source.mediaType != Source.MediaType.VIDEO)
+        (targetFormat == Format.MP4 && source.mediaType != Source.MediaType.VIDEO) ||
+        (targetFormat == Format.MP3 && source.mediaType !in setOf(Source.MediaType.AUDIO, Source.MediaType.VIDEO))
     ) {
         PromptBox(
             isEnabled = isEnabled,
             modifier = modifier,
             text = if (targetFormat == Format.RAW) {
                 language.messages.txtLblRawCoverNotSupported
+            } else if (targetFormat == Format.MP3) {
+                language.messages.txtLblInputAlbumArtNotSupported
             } else if (source.mediaType == Source.MediaType.AUDIO) {
                 language.messages.txtLblAudioFileWatermarkNotSupported
             } else if (source.mediaType == Source.MediaType.IMAGE) {
@@ -94,27 +101,90 @@ fun FrameWindowScope.CoverInput(
                 language.messages.txtLblMiscFileWatermarkNotSupported
             }
         )
-    } else if (image == null) {
-        SelectBox(
-            isEnabled = isEnabled,
-            targetFormat = targetFormat,
-            onFileChange = onFileChange,
-            modifier = modifier,
-            lastOpenDirectory = lastOpenDirectory
-        )
     } else {
-        ConfigBox(
-            isEnabled = isEnabled,
-            image = image,
-            options = options,
-            modifier = modifier,
-            targetFormat = targetFormat,
-            onScaleChange = onScaleChange,
-            onOpacityChange = onOpacityChange,
-            onPositionChange = onPositionChange,
-            onRemoveRequest = { onFileChange(null) }
-        )
+        var isDragging by remember { mutableStateOf(false) }
+        val primaryColor = MaterialTheme.colors.primary
+        val primaryVariantColor = MaterialTheme.colors.primaryVariant
+        Box(modifier = modifier
+            // Uses drawBehind because of the need for dashed stroke
+            .drawBehind {
+                if (isEnabled && (image == null || isDragging)) {
+                    drawBorder(isEnabled, isDragging, 4.dp, primaryColor, primaryVariantColor)
+                }
+            }
+            .clip(RoundedCornerShape(4.dp))
+            .onExternalDrag(
+                onDragStart = { isDragging = true },
+                onDragExit = { isDragging = false },
+                onDrop = { dragState ->
+                    isDragging = false
+                    if (isEnabled) onFileDrop(dragState, onFileChange)
+                }
+            )
+        ) {
+            if (image == null) {
+                SelectBox(
+                    isEnabled = isEnabled,
+                    targetFormat = targetFormat,
+                    onFileChange = onFileChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    lastOpenDirectory = lastOpenDirectory
+                )
+            } else {
+                ConfigBox(
+                    isEnabled = isEnabled,
+                    image = image,
+                    options = options,
+                    modifier = modifier,
+                    targetFormat = targetFormat,
+                    onScaleChange = onScaleChange,
+                    onOpacityChange = onOpacityChange,
+                    onPositionChange = onPositionChange,
+                    onRemoveRequest = { onFileChange(null) }
+                )
+            }
+            if (isEnabled && isDragging) {
+                Box(modifier = Modifier.fillMaxWidth().height(92.dp).background(primaryColor.copy(alpha = 0.2f)))
+            }
+        }
     }
+}
+
+private fun DrawScope.drawBorder(
+    isEnabled: Boolean,
+    isDragging: Boolean,
+    cornerRadius: Dp,
+    primaryColor: Color,
+    primaryVariantColor: Color
+) {
+    val stroke = Stroke(
+        width = if (isDragging) 2.dp.toPx() else 1.dp.toPx(),
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
+    )
+    drawRoundRect(
+        color = if (!isEnabled) {
+            Color.LightGray
+        } else if (isDragging) {
+            primaryVariantColor
+        } else {
+            primaryColor
+        },
+        style = stroke,
+        cornerRadius = CornerRadius(cornerRadius.toPx())
+    )
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+private fun onFileDrop(
+    state: ExternalDragValue,
+    onFileSelected: (Path?) -> Unit
+) {
+    (state.dragData as? DragData.FilesList)
+        ?.readFiles()
+        ?.first()
+        ?.let(::URI)
+        ?.let(URI::toPath)
+        ?.let(onFileSelected)
 }
 
 @Composable
@@ -139,7 +209,6 @@ private fun PromptBox(isEnabled: Boolean, text: String, modifier: Modifier) {
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun FrameWindowScope.SelectBox(
     isEnabled: Boolean,
@@ -150,9 +219,6 @@ private fun FrameWindowScope.SelectBox(
 ) {
     val language = LocalLanguage.current
     val scope = rememberCoroutineScope()
-    val primaryColor = MaterialTheme.colors.primary
-    val primaryVariantColor = MaterialTheme.colors.primaryVariant
-    var isDragging by remember { mutableStateOf(false) }
     var isDialogDisplayed by remember { mutableStateOf(false) }
     /**
      * See [SaveAsInput] for more information about this.
@@ -161,30 +227,11 @@ private fun FrameWindowScope.SelectBox(
     Surface(
         color = if (!isEnabled) {
             Color.LightGray.copy(ContentAlpha.disabled)
-        } else if (isDragging) {
-            MaterialTheme.colors.primary.copy(alpha = 0.3f)
         } else {
             MaterialTheme.colors.primary.copy(alpha = 0.1f)
         },
         modifier = modifier
             .height(height)
-            .drawBehind {
-                val stroke = Stroke(
-                    width = if (isDragging) 2f else 1f,
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
-                )
-                drawRoundRect(
-                    color = if (!isEnabled) {
-                        Color.LightGray
-                    } else if (isDragging) {
-                        primaryVariantColor
-                    } else {
-                        primaryColor
-                    },
-                    style = stroke,
-                    cornerRadius = CornerRadius(4.dp.toPx())
-                )
-            }
             .clickable(enabled = isEnabled) {
                 if (
                     isDialogDisplayed ||
@@ -213,28 +260,11 @@ private fun FrameWindowScope.SelectBox(
                     isDialogDisplayed = false
                 }
             }
-            .onExternalDrag(
-                enabled = isEnabled,
-                onDragStart = { isDragging = true },
-                onDragExit = { isDragging = false },
-                onDrop = { state ->
-                    isDragging = false
-                    val dragData = state.dragData
-                    if (dragData is DragData.FilesList) {
-                        dragData
-                            .readFiles()
-                            .first()
-                            .let(::URI)
-                            .let(URI::toPath)
-                            .let(onFileChange)
-                    }
-                }
-            )
     ) {
         Column(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(start = 14.dp)
+            modifier = Modifier.padding(start = 13.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (isDialogDisplayed) {
@@ -245,7 +275,7 @@ private fun FrameWindowScope.SelectBox(
                         contentDescription = Messages.ICO_DSC_ADD_COVER,
                         modifier = Modifier.size(defaultIconSize),
                         tint = if (isEnabled) {
-                            LocalContentColor.current
+                            LocalContentColor.current.copy(alpha = LocalContentAlpha.current)
                         } else {
                             LocalContentColor.current.copy(alpha = ContentAlpha.disabled)
                         }
@@ -475,19 +505,23 @@ private fun WatermarkPlacementOption(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    RadioButton(
-        selected = isSelected,
-        enabled = isEnabled,
-        onClick = null, // For accessibility with screen readers
+    val colorPrimary by RadioButtonDefaults.colors().radioColor(isEnabled, isSelected)
+    Canvas(
         modifier = Modifier
-            .selectable(
-                selected = isSelected,
+            .padding(4.dp)
+            .size(16.dp)
+            .clickable(
+                onClick = onClick,
                 enabled = isEnabled,
                 interactionSource = remember(::MutableInteractionSource),
-                indication = null,
-                onClick = onClick
+                indication = rememberRipple(bounded = false, radius = 8.dp)
             )
-    )
+    ) {
+        drawCircle(color = colorPrimary, radius = size.minDimension / 2, style = Stroke(2.dp.toPx()))
+        if (isSelected) {
+            drawCircle(color = colorPrimary, radius = size.minDimension / 4, style = Fill)
+        }
+    }
 }
 
 // FIXME: Duplicate of code in timestamp input to some extent

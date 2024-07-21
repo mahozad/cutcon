@@ -7,7 +7,6 @@ import ir.mahozad.cutcon.constructMainViewModel
 import ir.mahozad.cutcon.converter.Converter
 import ir.mahozad.cutcon.converter.ConverterFactory
 import ir.mahozad.cutcon.converter.FFmpegOption
-import ir.mahozad.cutcon.model.ConverterFlags
 import ir.mahozad.cutcon.model.CoverOptions
 import ir.mahozad.cutcon.model.IntroOptions
 import ir.mahozad.cutcon.model.Quality
@@ -20,7 +19,7 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import java.net.URL
+import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.div
 
@@ -117,7 +116,7 @@ abstract class IsFullscreenTest {
                 println("I'm a fake converter and I'm pretending to convert...")
             }
             val converterFactory = ConverterFactory { converter }
-            val urlMaker = UrlMaker { URL("file://") }
+            val urlMaker = UrlMaker { URI("file://localhost").toURL() }
             val saveFile = Path("xyz") / "1.mp4"
             val viewModel = constructMainViewModel(
                 dispatcher = dispatcher,
@@ -149,7 +148,7 @@ abstract class IsFullscreenTest {
                 println("I'm a fake converter and I'm pretending to convert...")
             }
             val converterFactory = ConverterFactory { converter }
-            val urlMaker = UrlMaker { URL("file://") }
+            val urlMaker = UrlMaker { URI("file://localhost").toURL() }
             val saveFile = Path("xyz") / "1.mp4"
             val viewModel = constructMainViewModel(
                 dispatcher = dispatcher,
@@ -215,7 +214,7 @@ abstract class IsFullscreenTest {
                 println("I'm a fake converter and I'm pretending to convert...")
             }
             val converterFactory = ConverterFactory { converter }
-            val urlMaker = UrlMaker { URL("file://") }
+            val urlMaker = UrlMaker { URI("file://localhost").toURL() }
             val saveFile = Path("xyz") / "1.mp4"
             val viewModel = constructMainViewModel(
                 dispatcher = dispatcher,

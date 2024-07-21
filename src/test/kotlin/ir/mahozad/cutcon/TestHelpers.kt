@@ -1,5 +1,6 @@
 package ir.mahozad.cutcon
 
+import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toAwtImage
 import io.mockk.spyk
@@ -16,12 +17,11 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestDispatcher
 import org.bytedeco.ffmpeg.ffmpeg
 import org.bytedeco.javacpp.Loader
+import java.awt.event.KeyEvent
 import java.io.File
 import java.net.URL
 import java.nio.file.Path
 import java.util.prefs.Preferences
-import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
 import kotlin.io.path.toPath
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -35,9 +35,9 @@ fun constructMainViewModel(
     dispatcher: TestDispatcher,
     converterFactory: ConverterFactory = spyk(),
     dateTimeChecker: DateTimeChecker = spyk(),
-    mediaPlayer: MediaPlayer = spyk(),
+    mediaPlayer: MediaPlayer = FakeMediaPlayer(Duration.ZERO),
     settings: Preferences = spyk(),
-    urlMaker: UrlMaker = spyk(),
+    urlMaker: UrlMaker = spyk()
 ) = MainViewModel(
     dispatcher = dispatcher,
     converterFactory = converterFactory,
@@ -66,8 +66,10 @@ fun constructMediaInfo(
 )
 
 class FakeMediaPlayer(private val mediaDuration: Duration) : MediaPlayer {
-    override val video = flowOf(null)
+
+    override val output = flowOf(MediaPlayer.Output.SourceNotStarted)
     override val progress = MutableStateFlow(Progress(0f, mediaDuration))
+    override val isResumed = flowOf(true)
 
     override fun seek(value: Float) {
         progress.value = Progress(value, mediaDuration)
@@ -84,7 +86,7 @@ class FakeMediaPlayer(private val mediaDuration: Duration) : MediaPlayer {
     override fun unMute() {}
     override fun terminate() {}
     override fun takeScreenshot(saveDirectory: File) = true
-    override fun setFinishListener(listener: () -> Unit) {}
+    override fun setFinishListener(listener: (MediaPlayer) -> Unit) {}
 }
 
 fun ImageBitmap?.getPixels(): IntArray? {
@@ -107,8 +109,9 @@ fun getResourceAsPath(name: String): Path = resourceAccessor
  * and https://trac.ffmpeg.org/ticket/9157
  */
 fun getResourceAsURL(name: String): URL {
-    val testResourcesDirectory = Path("src/test/resources").absolutePathString()
-    return URL("file:$testResourcesDirectory/$name")
+    return resourceAccessor
+        .javaClass
+        .getResource("/$name")!!
 }
 
 fun extractFrame(from: Path, time: String, into: Path) {
@@ -117,9 +120,8 @@ fun extractFrame(from: Path, time: String, into: Path) {
             ffmpegPath,
             "-i", from.toString(),
             "-ss", time,
-            "-frames", "1",
-            "-filter:v",
-            "scale=100:-1",
+            "-frames:v", "1",
+            "-filter:v", "scale=100:-1",
             into.toString()
         )
         .start()
@@ -127,3 +129,13 @@ fun extractFrame(from: Path, time: String, into: Path) {
         ?.reader()
         ?.forEachLine { println("Test output: $it") }
 }
+
+fun createKeyPressedEvent(key: Char) = KeyEvent(
+    /* source =      */ ComposeWindow(),
+    /* id =          */ KeyEvent.KEY_PRESSED,
+    /* when =        */ 0,
+    /* modifiers =   */ 0,
+    /* keyCode =     */ key.code,
+    /* keyChar =     */ key,
+    /* keyLocation = */ KeyEvent.KEY_LOCATION_STANDARD
+)

@@ -88,7 +88,7 @@ fun MainPanel() {
                 ExitFullScreenButton()
             }
             if (isDragging) {
-                PlayMediaPreview()
+                PlayMediaIndicator()
             }
         }
         if (isMiniScreen && !isFullscreen) {
@@ -100,7 +100,7 @@ fun MainPanel() {
 }
 
 @Composable
-private fun PlayMediaPreview() {
+private fun PlayMediaIndicator() {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -152,6 +152,7 @@ private fun ControlsForRegularScreen() {
     val clip by viewModel.clip.collectAsState()
     val mediaInfo by viewModel.mediaInfo.collectAsState()
     val isScreenshotInputEnabled by viewModel.isScreenshotInputEnabled.collectAsState()
+    val isScreenshotInputActive by viewModel.isScreenshotInputActive.collectAsState()
     MediaPlayerProgress(
         isWavy = mediaInfo.isResumed,
         progress = mediaInfo.progress,
@@ -177,7 +178,11 @@ private fun ControlsForRegularScreen() {
             }
             Row {
                 SeekBackwardLongButton()
-                ScreenshotButton(isEnabled = isScreenshotInputEnabled, onClick = viewModel::takeScreenshot)
+                ScreenshotButton(
+                    isEnabled = isScreenshotInputEnabled,
+                    isActive = isScreenshotInputActive,
+                    onClick = viewModel::takeScreenshot
+                )
                 SeekForwardLongButton()
             }
         }

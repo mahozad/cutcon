@@ -11,11 +11,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.prefs.Preferences
+import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class AspectRatioTest {
@@ -86,6 +88,7 @@ abstract class AspectRatioTest {
             val results = mutableListOf<AspectRatio>()
             backgroundScope.launch(dispatcher) { viewModel.aspectRatio.toList(results) }
             viewModel.setSourceToLocal(getResourceAsPath("test.png"))
+            advanceTimeBy(1.minutes) // Waits for change to propagate
             assertThat(results).containsExactly(AspectRatio.W16H9, AspectRatio.SOURCE)
         }
 
@@ -99,7 +102,9 @@ abstract class AspectRatioTest {
             val results = mutableListOf<AspectRatio>()
             backgroundScope.launch(dispatcher) { viewModel.aspectRatio.toList(results) }
             viewModel.setSourceToLocal(getResourceAsPath("test.png"))
+            advanceTimeBy(1.minutes) // Waits for change to propagate
             viewModel.setSourceToLocal(getResourceAsPath("test.ts"))
+            advanceTimeBy(1.minutes) // Waits for change to propagate
             assertThat(results).containsExactly(AspectRatio.W16H9, AspectRatio.SOURCE, AspectRatio.W16H9)
         }
 

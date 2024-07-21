@@ -4,10 +4,10 @@ import androidx.compose.ui.text.TextRange
 import io.mockk.*
 import ir.mahozad.cutcon.*
 import ir.mahozad.cutcon.component.DefaultUrlMaker
-import ir.mahozad.cutcon.component.MediaPlayerTest
 import ir.mahozad.cutcon.component.SystemDateTime
 import ir.mahozad.cutcon.component.UrlMaker
 import ir.mahozad.cutcon.converter.Converter
+import ir.mahozad.cutcon.converter.ConvertersTest
 import ir.mahozad.cutcon.converter.DefaultConverterFactory
 import ir.mahozad.cutcon.converter.FFmpegOption
 import ir.mahozad.cutcon.converter.ProgressListener
@@ -20,14 +20,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.CleanupMode
 import org.junit.jupiter.api.io.TempDir
-import java.net.URL
+import java.net.URI
 import java.nio.file.Path
 import java.time.LocalTime
+import java.util.prefs.Preferences
 import kotlin.io.path.Path
 import kotlin.io.path.div
 import kotlin.io.path.fileSize
@@ -37,6 +37,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModelTest {
+
     // See the README
     @Nested inner class ThemeTests : ThemeTest()
     @Nested inner class IntroTests : IntroTest()
@@ -53,20 +54,49 @@ class MainViewModelTest {
     @Nested inner class CalendarTests : CalendarTest()
     @Nested inner class ClipInfoTests : ClipInfoTest()
     @Nested inner class MediaInfoTests : MediaInfoTest()
-    @Nested inner class MediaPlayerTests : MediaPlayerTest()
     @Nested inner class AspectRatioTests : AspectRatioTest()
     @Nested inner class IsMiniScreenTests : IsMiniScreenTest()
     @Nested inner class IsFullscreenTests : IsFullscreenTest()
     @Nested inner class IsAlwaysOnTopTests : IsAlwaysOnTopTest()
+    @Nested inner class WindowWidthTests : WindowWidthTest()
+    @Nested inner class ScreenshotInputTests : ScreenshotInputTest()
     @Nested inner class WindowPositionTests : WindowPositionTest()
     @Nested inner class LastOpenDirectoryTests : LastOpenDirectoryTest()
     @Nested inner class LastSaveDirectoryTests : LastSaveDirectoryTest()
     @Nested inner class IsFinishSoundEnabledTests : IsFinishSoundEnabledTest()
     @Nested inner class IsInterlacedFixEnabledTests : IsInterlacedFixEnabledTest()
     @Nested inner class IsQualityInputApplicableTests : IsQualityInputApplicableTest()
-    @Nested inner class IsScreenshotInputEnabledTests : IsScreenshotInputEnabledTest()
     @Nested inner class IsScreenshotSoundEnabledTests : IsScreenshotSoundEnabledTest()
     @Nested inner class IsChangelogDialogDisplayedTests : IsChangelogDialogDisplayedTest()
+
+    /**
+     * The app should not use the root namespace (for example, like below):
+     *
+     * ```kotlin
+     * Preferences.userNode()
+     * ```
+     *
+     * because that way the preferences may collide or override preferences of
+     * other JVM apps that also use the root node and have the same keys.
+     *
+     * Rather, it should use something specific to the app (like app package name):
+     *
+     * ```kotlin
+     * Preferences.userNodeForPackage({}::class.java)
+     * // OR
+     * Preferences.userRoot().node("/${BuildConfig.APP_NAME}/main")
+     * ```
+     */
+    @Test
+    fun `The app preferences should use a proper app-specific namespace (prefix)`() {
+        // See https://stackoverflow.com/q/71675616
+        val preferencesField = viewModel
+            .javaClass
+            .getDeclaredField("settings")
+            .apply { isAccessible = true }
+        val preferences = preferencesField.get(viewModel) as Preferences
+        assertThat(preferences.absolutePath()).isEqualTo("/ir/mahozad/cutcon")
+    }
 
     @Test
     fun `When the current time minutes and seconds is zero, live seek fraction should be zero, not infinity`() =
@@ -101,13 +131,10 @@ class MainViewModelTest {
         assertThat((tempOutputDirectory / "1.mp3").fileSize()).isGreaterThan(15_000)
     }
 
-    @Disabled(
-        """
-            Fails because we detect files with .ts extension to have video/* mime type.
-            More generally, currently converting any video container format that contains only audio fails.
-            See the main README file for the related FIXME.
-        """
-    )
+    /**
+     * There is a similar unit test in [ConvertersTest.AudioInputTest];
+     * however, this test checks whether the ViewModel chooses proper converter for the input.
+     */
     @Test
     fun `Converting an audio file with TS extension to MP4 format should succeed`(
         @TempDir(cleanup = CleanupMode.ON_SUCCESS) tempOutputDirectory: Path
@@ -149,7 +176,7 @@ class MainViewModelTest {
                     println("Fake conversion in work...")
                 }
             }
-            val urlMaker = UrlMaker { URL("file://") }
+            val urlMaker = UrlMaker { URI("file://localhost").toURL() }
             val saveFileValues = mutableListOf<Path?>()
             val statusValues = mutableListOf<Status>()
             val saveFile = Path("xyz") / "1.mp4"
@@ -205,7 +232,7 @@ class MainViewModelTest {
                     progress += 0.01f
                 }
             }
-            val urlMaker = UrlMaker { URL("file://") }
+            val urlMaker = UrlMaker { URI("file://localhost").toURL() }
             val statusValues = mutableListOf<Status>()
             val saveFile = Path("xyz") / "1.mp4"
             val viewModel = constructMainViewModel(
@@ -259,7 +286,7 @@ class MainViewModelTest {
                     progress += 0.01f
                 }
             }
-            val urlMaker = UrlMaker { URL("file://") }
+            val urlMaker = UrlMaker { URI("file://localhost").toURL() }
             val statusValues = mutableListOf<Status>()
             val saveFile = Path("xyz") / "1.mp4"
             val viewModel = constructMainViewModel(

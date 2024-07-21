@@ -14,12 +14,12 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.jaudiotagger.audio.AudioFileIO
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.CleanupMode.ON_SUCCESS
 import org.junit.jupiter.api.io.TempDir
+import java.net.URI
 import java.net.URL
 import java.nio.file.Path
 import javax.imageio.ImageIO
@@ -76,7 +76,7 @@ class ConvertersTest {
                 intro = defaultIntroOptions,
                 cover = defaultCoverOptions,
                 quality = Quality.MEDIUM,
-                flags = ConverterFlags(isInterlacingFixEnabled = false),
+                fixInterlaced = false,
                 output = output,
                 listener = {}
             )
@@ -105,7 +105,7 @@ class ConvertersTest {
                         position = WatermarkPosition.BOTTOM_MIDDLE
                     ),
                     quality = Quality.MEDIUM,
-                    flags = ConverterFlags(isInterlacingFixEnabled = false),
+                    fixInterlaced = false,
                     output = output,
                     listener = {}
                 )
@@ -133,7 +133,7 @@ class ConvertersTest {
                     ),
                     cover = defaultCoverOptions,
                     quality = Quality.MEDIUM,
-                    flags = ConverterFlags(isInterlacingFixEnabled = false),
+                    fixInterlaced = false,
                     output = output,
                     listener = {}
                 )
@@ -172,7 +172,7 @@ class ConvertersTest {
                         position = WatermarkPosition.BOTTOM_MIDDLE
                     ),
                     quality = Quality.MEDIUM,
-                    flags = ConverterFlags(isInterlacingFixEnabled = false),
+                    fixInterlaced = false,
                     output = output,
                     listener = {}
                 )
@@ -193,8 +193,8 @@ class ConvertersTest {
             runTest(timeout = testTimeout) {
                 val dispatcher = UnconfinedTestDispatcher(testScheduler)
                 val input = getResourceAsURL("test.ts")
-                val intro = getResourceAsPath("test.svg").convertSvgToPng(desiredPngSize = 1000f)
-                val watermark = getResourceAsPath("test.svg").convertSvgToPng(desiredPngSize = 1000f)
+                val intro = convertSvgToPng(getResourceAsPath("test.svg"), size = 1000f)
+                val watermark = convertSvgToPng(getResourceAsPath("test.svg"), size = 1000f)
                 val output = tempDirectory / "result.mp4"
                 Mp4Converter(dispatcher).convert(
                     input = input,
@@ -211,7 +211,7 @@ class ConvertersTest {
                         position = WatermarkPosition.BOTTOM_MIDDLE
                     ),
                     quality = Quality.MEDIUM,
-                    flags = ConverterFlags(isInterlacingFixEnabled = false),
+                    fixInterlaced = false,
                     output = output,
                     listener = {}
                 )
@@ -238,7 +238,7 @@ class ConvertersTest {
                 intro = defaultIntroOptions,
                 cover = defaultCoverOptions,
                 quality = Quality.MEDIUM,
-                flags = ConverterFlags(isInterlacingFixEnabled = false),
+                fixInterlaced = false,
                 output = output,
                 listener = {}
             )
@@ -265,7 +265,7 @@ class ConvertersTest {
                 intro = defaultIntroOptions,
                 cover = defaultCoverOptions.copy(path = image),
                 quality = Quality.MEDIUM,
-                flags = ConverterFlags(isInterlacingFixEnabled = false),
+                fixInterlaced = false,
                 output = output,
                 listener = {}
             )
@@ -291,7 +291,7 @@ class ConvertersTest {
                 intro = defaultIntroOptions,
                 cover = defaultCoverOptions,
                 quality = Quality.MEDIUM,
-                flags = ConverterFlags(isInterlacingFixEnabled = false),
+                fixInterlaced = false,
                 output = output,
                 listener = {}
             )
@@ -314,16 +314,15 @@ class ConvertersTest {
                 intro = defaultIntroOptions,
                 cover = defaultCoverOptions,
                 quality = Quality.MEDIUM,
-                flags = ConverterFlags(isInterlacingFixEnabled = false, isVideoAvailableInInput = false),
+                fixInterlaced = false,
                 output = output,
                 listener = {}
             )
             assertThat(output.fileSize()).isBetween(20_000, 30_000)
         }
 
-        @Disabled("FIXME")
         @Test
-        fun `Converting an MP3 audio file to MP4 should succeed`() = runTest(timeout = testTimeout) {
+        fun `Converting an MP3 audio file with album art to MP4 should succeed`() = runTest(timeout = testTimeout) {
             val dispatcher = UnconfinedTestDispatcher(testScheduler)
             val input = getResourceAsURL("test.mp3")
             val output = tempDirectory / "result.mp4"
@@ -333,11 +332,29 @@ class ConvertersTest {
                 intro = defaultIntroOptions,
                 cover = defaultCoverOptions,
                 quality = Quality.MEDIUM,
-                flags = ConverterFlags(isInterlacingFixEnabled = false, isVideoAvailableInInput = false),
+                fixInterlaced = false,
                 output = output,
                 listener = {}
             )
-            assertThat(output.fileSize()).isBetween(50_000, 100_000)
+            assertThat(output.fileSize()).isBetween(25_000, 50_000)
+        }
+
+        @Test
+        fun `Converting an MP3 audio file with no album art to MP4 should succeed`() = runTest(timeout = testTimeout) {
+            val dispatcher = UnconfinedTestDispatcher(testScheduler)
+            val input = getResourceAsURL("test-no-cover.mp3")
+            val output = tempDirectory / "result.mp4"
+            Mp4Converter(dispatcher).convert(
+                input = input,
+                clip = Clip(1.seconds, 3.seconds),
+                intro = defaultIntroOptions,
+                cover = defaultCoverOptions,
+                quality = Quality.MEDIUM,
+                fixInterlaced = false,
+                output = output,
+                listener = {}
+            )
+            assertThat(output.fileSize()).isBetween(25_000, 50_000)
         }
 
         @Test
@@ -351,7 +368,7 @@ class ConvertersTest {
                 intro = defaultIntroOptions,
                 cover = defaultCoverOptions,
                 quality = Quality.MEDIUM,
-                flags = ConverterFlags(isInterlacingFixEnabled = false, isVideoAvailableInInput = false),
+                fixInterlaced = false,
                 output = output,
                 listener = {}
             )
@@ -378,7 +395,7 @@ class ConvertersTest {
                 intro = defaultIntroOptions,
                 cover = defaultCoverOptions.copy(path = image),
                 quality = Quality.MEDIUM,
-                flags = ConverterFlags(isInterlacingFixEnabled = false, isVideoAvailableInInput = false),
+                fixInterlaced = false,
                 output = output,
                 listener = {}
             )
@@ -404,7 +421,7 @@ class ConvertersTest {
                 intro = defaultIntroOptions,
                 cover = defaultCoverOptions,
                 quality = Quality.MEDIUM,
-                flags = ConverterFlags(isInterlacingFixEnabled = false),
+                fixInterlaced = false,
                 output = output,
                 listener = {}
             )
@@ -416,7 +433,7 @@ class ConvertersTest {
     fun `When conversion is not successful, convert function should throw exception`() =
         runTest(timeout = testTimeout) {
             val dispatcher = UnconfinedTestDispatcher(testScheduler)
-            val input = getResourceAsURL("non-existent-file.ts")
+            val input = URI.create("file:/non-existent-file.ts").toURL()
             val output = createTempDirectory() / "result.mp4"
             assertThrows<Exception> {
                 Mp4Converter(dispatcher).convert(
@@ -425,7 +442,7 @@ class ConvertersTest {
                     intro = defaultIntroOptions,
                     cover = defaultCoverOptions,
                     quality = Quality.MEDIUM,
-                    flags = ConverterFlags(isInterlacingFixEnabled = false),
+                    fixInterlaced = false,
                     output = output,
                     listener = {}
                 )
@@ -435,8 +452,7 @@ class ConvertersTest {
     @Test
     fun `Converting a local file to MP4 should succeed`() = runTest(timeout = testTimeout) {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val path = getResourceAsPath("test.ts")
-        val input = URL("file://localhost/${path.absolutePathString()}")
+        val input = getResourceAsURL("test.ts")
         val output = tempDirectory / "result.mp4"
         Mp4Converter(dispatcher).convert(
             input = input,
@@ -444,7 +460,7 @@ class ConvertersTest {
             intro = defaultIntroOptions,
             cover = defaultCoverOptions,
             quality = Quality.MEDIUM,
-            flags = ConverterFlags(isInterlacingFixEnabled = false),
+            fixInterlaced = false,
             output = output,
             listener = {}
         )
@@ -463,7 +479,7 @@ class ConvertersTest {
             intro = defaultIntroOptions,
             cover = defaultCoverOptions,
             quality = Quality.MEDIUM,
-            flags = ConverterFlags(isInterlacingFixEnabled = false),
+            fixInterlaced = false,
             output = output,
             listener = listener
         )
@@ -490,7 +506,7 @@ class ConvertersTest {
                 intro = defaultIntroOptions,
                 cover = defaultCoverOptions,
                 quality = Quality.MEDIUM,
-                flags = ConverterFlags(isInterlacingFixEnabled = false),
+                fixInterlaced = false,
                 output = output,
                 listener = { hasProgressed = true }
             )
@@ -533,7 +549,7 @@ class ConvertersTest {
                             intro = defaultIntroOptions,
                             cover = defaultCoverOptions,
                             quality = Quality.MEDIUM,
-                            flags = ConverterFlags(isInterlacingFixEnabled = false),
+                            fixInterlaced = false,
                             output = output,
                             listener = { progress = it }
                         )

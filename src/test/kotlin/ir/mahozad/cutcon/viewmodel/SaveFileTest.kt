@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import java.net.URI
 import java.net.URL
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -56,7 +57,7 @@ abstract class SaveFileTest {
                 println("I'm a fake converter and I'm pretending to convert...")
             }
             val converterFactory = ConverterFactory { converter }
-            val urlMaker = UrlMaker { URL("file://") }
+            val urlMaker = UrlMaker { URI("file://localhost").toURL() }
             val saveFile = Path("xyz") / "1.mp4"
             val viewModel = constructMainViewModel(
                 dispatcher = dispatcher,
