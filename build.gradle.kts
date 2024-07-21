@@ -20,10 +20,10 @@ val appResourcesPath = rootDir.toPath() / "asset"
 val vlcDirectoryName = "vlc"
 val isVlcFull = System.getenv("fullVlc").toBooleanLenient() == true
 val shouldMinifyVlc = System.getenv("minifyVlc").toBooleanLenient() == true
-val releaseDate: LocalDate = LocalDate.of(2024, 7, 6)
+val releaseDate: LocalDate = LocalDate.of(2024, 7, 21)
 
 group = "ir.mahozad"
-version = "2"
+version = "3"
 
 sourceSets {
     create("uiTest") {
