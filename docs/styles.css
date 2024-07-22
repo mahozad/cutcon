@@ -28,9 +28,11 @@ main {
 }
 
 .paragraph-with-icon {
-    display: flex;
-    align-items: center;
-    gap: 3px;
+    text-underline-offset: 2px;
+
+    > img {
+        vertical-align: middle;
+    }
 }
 
 #clipper-logo {
@@ -53,10 +55,17 @@ main {
     }
 
     .media {
-        width: 400px;
+        width: 90vw;
+        max-width: 400px;
         border: 1px solid gray;
         border-radius: 6px;
         /*height: 400px;*/
         /*clip-path: inset(5px 5px); !* To hide the black border around video *!*/
+    }
+}
+
+@media (width < 450px) {
+    #container {
+        border: none;
     }
 }
