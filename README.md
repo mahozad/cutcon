@@ -1,3 +1,5 @@
+![GitHub tag check runs](https://img.shields.io/github/check-runs/mahozad/cutcon/prod?label=tests)
+
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="raw/demo-dark.png">
