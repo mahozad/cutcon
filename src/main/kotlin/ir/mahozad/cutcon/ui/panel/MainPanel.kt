@@ -8,9 +8,11 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.Dp
@@ -107,6 +109,7 @@ private fun PlayMediaIndicator() {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colors.surface.copy(alpha = 0.8f))
     ) {
         Icon(
