@@ -3,6 +3,7 @@ package ir.mahozad.cutcon.ui.widget
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.ContentAlpha
+import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Slider
 import androidx.compose.material.Text
@@ -70,7 +71,7 @@ fun QualityInput(
                     textAlign = TextAlign.Center,
                     modifier = Modifier.width(48.dp),
                     color = if (isEnabled) {
-                        LocalContentColor.current
+                        LocalContentColor.current.copy(alpha = LocalContentAlpha.current)
                     } else {
                         LocalContentColor.current.copy(alpha = ContentAlpha.disabled)
                     }

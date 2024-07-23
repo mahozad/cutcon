@@ -117,7 +117,7 @@ private fun CustomTimestampTextField(
         textStyle = LocalTextStyle.current.copy(
             fontSize = defaultFontSize,
             textAlign = TextAlign.Center,
-            color = LocalContentColor.current
+            color = LocalContentColor.current.copy(alpha = ContentAlpha.high)
         ),
         interactionSource = interactionSource,
         enabled = true,

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.ContentAlpha
+import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
@@ -91,10 +92,9 @@ private fun RadioOption(
         )
         Text(
             text = text,
+            color = LocalContentColor.current.copy(alpha = if (isEnabled) LocalContentAlpha.current else ContentAlpha.disabled),
             fontSize = (defaultFontSize.value - 1).sp,
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .alpha(if (isEnabled) LocalContentColor.current.alpha else ContentAlpha.disabled)
+            modifier = Modifier.padding(start = 6.dp)
         )
     }
 }
