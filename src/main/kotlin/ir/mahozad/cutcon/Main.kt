@@ -9,7 +9,7 @@ import ir.mahozad.cutcon.component.DefaultMediaPlayer
 import ir.mahozad.cutcon.converter.DefaultConverterFactory
 import ir.mahozad.cutcon.localization.Messages
 import ir.mahozad.cutcon.ui.MainWindow
-import ir.mahozad.cutcon.ui.errorWindow
+import ir.mahozad.cutcon.ui.showErrorWindow
 import kotlinx.coroutines.Dispatchers
 import java.util.prefs.Preferences
 import kotlin.io.path.Path
@@ -63,7 +63,7 @@ fun main(vararg args: String) {
             MainWindow(onExitRequest = ::terminate)
         }
     }
-    error?.let(::errorWindow)
+    error?.let(::showErrorWindow)
     logger.info { "Application finished" }
 }
 

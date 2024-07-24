@@ -8,9 +8,11 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.Dp
@@ -21,6 +23,7 @@ import ir.mahozad.cutcon.localization.LanguageFa
 import ir.mahozad.cutcon.localization.Messages
 import ir.mahozad.cutcon.model.Shortcut
 import ir.mahozad.cutcon.ui.icon.*
+import ir.mahozad.cutcon.ui.theme.BorderColor
 import ir.mahozad.cutcon.ui.widget.*
 import java.net.URI
 import kotlin.io.path.toPath
@@ -42,7 +45,9 @@ fun MainPanel() {
         modifier = if (isFullscreen) {
             Modifier.fillMaxWidth()
         } else {
-            Modifier.width(DISPLAY_WIDTH.dp)
+            Modifier
+                .width(DISPLAY_WIDTH.dp)
+                .fillMaxHeight() // Needed to prevent window decoration white border in settings panel when in dark theme
         }
     ) {
         Box(
@@ -104,6 +109,7 @@ private fun PlayMediaIndicator() {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colors.surface.copy(alpha = 0.8f))
     ) {
         Icon(
@@ -136,7 +142,7 @@ private fun ExitFullScreenButton() {
             elevation = 0.dp,
             modifier = Modifier
                 .offset(y = offsetOfCloseButtonAnimated)
-                .border(Dp.Hairline, MaterialTheme.colors.onSurface.copy(alpha = 0.5f), CircleShape)
+                .border(Dp.Hairline, BorderColor(), CircleShape)
         ) {
             CustomIcon(
                 icon = Icons.Custom.Close,
@@ -199,8 +205,8 @@ private fun ControlsForRegularScreen() {
                 onChange = viewModel::setSpeed
             )
             Row(
-                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Absolute.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 PinButton(iconPadding = 12.dp)
@@ -443,9 +449,9 @@ private fun ControlsForMiniScreen() {
         onSeek = viewModel::setSeek
     )
     Row(
-        modifier = Modifier.fillMaxWidth().offset(y = (-8).dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier.fillMaxWidth().offset(y = (-8).dp)
     ) {
         PlayPauseButton(iconPadding = 0.dp)
         AudioInput(

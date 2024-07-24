@@ -3,8 +3,8 @@ package ir.mahozad.cutcon.ui.widget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
 import androidx.compose.material.IconButton
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -88,7 +88,7 @@ fun FrameWindowScope.SaveAsInput(
             }
             Spacer(Modifier.width(4.dp))
         }
-        Button(
+        OutlinedButton(
             enabled = isEnabled,
             modifier = Modifier.weight(1f),
             onClick = {
@@ -96,7 +96,7 @@ fun FrameWindowScope.SaveAsInput(
                     isDialogDisplayed ||
                     System.currentTimeMillis() - dialogClosedTime < 300
                 ) {
-                    return@Button
+                    return@OutlinedButton
                 }
                 dialogClosedTime = System.currentTimeMillis()
                 isDialogDisplayed = true

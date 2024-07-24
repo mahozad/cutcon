@@ -1,4 +1,6 @@
 -keep class kotlinx.coroutines.** { *; }
+# See https://github.com/JetBrains/compose-multiplatform/issues/4391
+-keep class androidx.compose.runtime.** { *; }
 
 # Our own code is less than 1 MB; keep it all
 -keep class ir.mahozad.cutcon.** { *; }
@@ -17,7 +19,6 @@
 
 # Obfuscation breaks coroutines/ktor for some reason
 -dontobfuscate
-# Optimization breaks Compose classes for some reason
--dontoptimize
+#-dontoptimize
 #-dontshrink
 #-dontpreverify

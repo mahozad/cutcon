@@ -18,6 +18,7 @@ import ir.mahozad.cutcon.defaultChipHeight
 import ir.mahozad.cutcon.defaultDurationConverter
 import ir.mahozad.cutcon.defaultFontSize
 import ir.mahozad.cutcon.model.Clip
+import ir.mahozad.cutcon.ui.theme.BorderColor
 import kotlin.time.Duration.Companion.seconds
 
 @Preview
@@ -36,7 +37,7 @@ fun ClipLength(clip: Clip) {
             modifier = Modifier
                 .width(152.dp)
                 .height(defaultChipHeight)
-                .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.5f), RoundedCornerShape(percent = 50))
+                .border(1.dp, BorderColor(), RoundedCornerShape(percent = 50))
         ) {
             Text(text = language.messages.txtLblClipLength, fontSize = defaultFontSize)
             Spacer(Modifier.width(4.dp))

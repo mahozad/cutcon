@@ -44,6 +44,7 @@ import ir.mahozad.cutcon.ui.dialog.showOpenFileDialog
 import ir.mahozad.cutcon.ui.icon.Curtain
 import ir.mahozad.cutcon.ui.icon.Delete
 import ir.mahozad.cutcon.ui.icon.Icons
+import ir.mahozad.cutcon.ui.theme.BorderColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.URI
@@ -189,7 +190,7 @@ private fun PromptBox(isEnabled: Boolean, text: String, modifier: Modifier) {
             fontSize = (defaultFontSize.value - 1).sp,
             modifier = Modifier.padding(horizontal = 12.dp),
             color = if (isEnabled) {
-                LocalContentColor.current
+                LocalContentColor.current.copy(alpha = LocalContentAlpha.current)
             } else {
                 LocalContentColor.current.copy(alpha = ContentAlpha.disabled)
             }
@@ -270,7 +271,7 @@ private fun FrameWindowScope.SelectBox(
                     text = language.messages.txtLblSelectIntroImage,
                     fontSize = (defaultFontSize.value - 1).sp,
                     color = if (isEnabled) {
-                        LocalContentColor.current
+                        LocalContentColor.current.copy(alpha = LocalContentAlpha.current)
                     } else {
                         LocalContentColor.current.copy(alpha = ContentAlpha.disabled)
                     }
@@ -281,7 +282,7 @@ private fun FrameWindowScope.SelectBox(
                 text = language.messages.txtLblDragFileHere,
                 fontSize = (defaultFontSize.value - 3).sp,
                 color = if (isEnabled) {
-                    LocalContentColor.current
+                    LocalContentColor.current.copy(alpha = LocalContentAlpha.current)
                 } else {
                     LocalContentColor.current.copy(alpha = ContentAlpha.disabled)
                 }
@@ -295,7 +296,7 @@ private fun FrameWindowScope.SelectBox(
                 },
                 fontSize = (defaultFontSize.value - 3).sp,
                 color = if (isEnabled) {
-                    LocalContentColor.current
+                    LocalContentColor.current.copy(alpha = LocalContentAlpha.current)
                 } else {
                     LocalContentColor.current.copy(alpha = ContentAlpha.disabled)
                 }
@@ -361,7 +362,7 @@ private fun IntroImage(
             },
             modifier = Modifier
                 .size(INTRO_PREVIEW_SIZE.dp)
-                .border(Dp.Hairline, MaterialTheme.colors.onSurface.copy(alpha = 0.5f))
+                .border(Dp.Hairline, BorderColor())
                 .blur(if (isImageHovered && isEnabled) 8.dp else 0.dp)
                 .drawBehind { drawRect(color = backgroundColor) }
         )
@@ -434,7 +435,7 @@ private fun BackgroundColor(
                 color = if (isSelected) {
                     MaterialTheme.colors.primary
                 } else {
-                    MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                    BorderColor()
                 }
             )
     )
@@ -458,7 +459,7 @@ private fun CustomTextField(isEnabled: Boolean, value: Int, onValueChange: (Int)
         textStyle = LocalTextStyle.current.copy(
             fontSize = 11.sp,
             textAlign = TextAlign.Center,
-            color = LocalContentColor.current
+            color = LocalContentColor.current.copy(alpha = ContentAlpha.high)
         ),
         interactionSource = interactionSource,
         visualTransformation = SuffixTransformer1(" ${language.messages.second}"),

@@ -28,7 +28,7 @@ import ir.mahozad.cutcon.ui.widget.StackTrace
 import ir.mahozad.cutcon.viewModel
 import kotlin.system.exitProcess
 
-fun errorWindow(throwable: Throwable?) {
+fun showErrorWindow(throwable: Throwable?) {
     val theme = viewModel.theme.value
     val language = viewModel.language.value
     singleWindowApplication(

@@ -30,6 +30,7 @@ import ir.mahozad.cutcon.localization.Messages
 import ir.mahozad.cutcon.model.*
 import ir.mahozad.cutcon.ui.icon.*
 import ir.mahozad.cutcon.ui.theme.AppTheme
+import ir.mahozad.cutcon.ui.theme.BorderColor
 
 @Preview
 @Composable
@@ -91,13 +92,14 @@ fun ChangelogDialog(changelog: Changelog, onCloseRequest: () -> Unit) {
 private fun ChangelogVersion(version: ChangelogVersion) {
     val language = LocalLanguage.current
     val calendar = LocalCalendar.current
+    val borderColor = BorderColor().copy(alpha = 0.2f)
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Divider(Modifier.weight(1f))
+            Divider(color = borderColor, modifier = Modifier.weight(1f))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f), RoundedCornerShape(50))
+                    .border(1.dp, borderColor, RoundedCornerShape(50))
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(text = language.messages.versionPrefix, fontSize = 14.sp)
@@ -109,7 +111,7 @@ private fun ChangelogVersion(version: ChangelogVersion) {
                     fontSize = 14.sp
                 )
             }
-            Divider(Modifier.weight(1f))
+            Divider(color = borderColor, modifier = Modifier.weight(1f))
         }
         Spacer(Modifier.height(8.dp))
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {

@@ -248,8 +248,10 @@ private fun TextWithLink(annotatedString: AnnotatedString) {
     var mousePinterIcon by remember { mutableStateOf(PointerIcon.Default) }
     ClickableText(
         text = annotatedString,
-        // FIXME: The text seems a little bit more bold than other regular texts in the app
-        style = LocalTextStyle.current.copy(fontSize = entryFontSize, color = LocalContentColor.current),
+        style = LocalTextStyle.current.copy(
+            fontSize = entryFontSize,
+            color = LocalContentColor.current.copy(LocalContentAlpha.current)
+        ),
         modifier = Modifier.pointerHoverIcon(icon = mousePinterIcon),
         onHover = { offset ->
             annotatedString
