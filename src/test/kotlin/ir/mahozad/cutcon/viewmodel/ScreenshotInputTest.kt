@@ -71,7 +71,7 @@ abstract class ScreenshotInputTest {
             assertThat(viewModel.isScreenshotInputActive.first()).isEqualTo(false)
         }
 
-        @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "Fails on CI; FIXME")
+        @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "FIXME: Fails on CI")
         @Test
         fun `When calling takeScreenshot, isScreenshotInputActive should be changed to true`() = runTest {
             val dispatcher = UnconfinedTestDispatcher(testScheduler)
@@ -85,7 +85,7 @@ abstract class ScreenshotInputTest {
             assertThat(results).containsExactly(false, true, false)
         }
 
-        @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "Fails on CI; FIXME")
+        @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "FIXME: Fails on CI")
         @Test
         fun `When calling takeScreenshot, isScreenshotInputActive should be changed to false after a small period`() =
             runTest {
@@ -100,7 +100,7 @@ abstract class ScreenshotInputTest {
                 assertThat(results).containsExactly(false, true, false)
             }
 
-        @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "Fails on CI; FIXME")
+        @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "FIXME: Fails on CI")
         @Test
         fun `When pressing screenshot shortcut, isScreenshotInputActive should be changed to true and then false after a small period`() =
             runTest {
