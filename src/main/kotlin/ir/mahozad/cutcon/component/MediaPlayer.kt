@@ -224,9 +224,9 @@ class DefaultMediaPlayer : MediaPlayer {
         } else if (mimeType?.startsWith("video") == true) {
             output.tryEmit(MediaPlayer.Output.Video(videoSurface.imageFlow))
         } else if (mimeType?.startsWith("audio") == true) {
-            output.tryEmit(generateAudioOutput(path))
+            output.tryEmit(generateOutputForAudio(path))
         } else if (mimeType?.startsWith("image") == true) {
-            output.tryEmit(generateImageOutput(path))
+            output.tryEmit(generateOutputForImage(path))
         } else {
             output.tryEmit(MediaPlayer.Output.SourceHasNoImage)
         }
@@ -235,13 +235,13 @@ class DefaultMediaPlayer : MediaPlayer {
         vlcMediaPlayer.media().play(urlString)
     }
 
-    private fun generateImageOutput(path: Path): MediaPlayer.Output {
+    private fun generateOutputForImage(path: Path): MediaPlayer.Output {
         return decodeImage(path)
             ?.let(MediaPlayer.Output::Image)
             ?: MediaPlayer.Output.SourceHasNoImage
     }
 
-    private fun generateAudioOutput(path: Path): MediaPlayer.Output {
+    private fun generateOutputForAudio(path: Path): MediaPlayer.Output {
         return path
             .toFile()
             .runCatching(AudioFileIO::read)
@@ -361,7 +361,7 @@ private class SkiaBitmapVideoSurface : VideoSurface(VideoSurfaceAdapters.getVide
     private val videoSurface = SkiaBitmapVideoSurface()
 
     /**
-     * Uses [Channel] instead of [StateFlow] or [SharedFlow] so that
+     * Instead of [StateFlow] or [SharedFlow], a [Channel] is used so that
      * the flow can be indicated finished (closed) for consumers of the flow.
      */
     private var bitmap = Channel<ImageBitmap?>(capacity = Channel.CONFLATED)
