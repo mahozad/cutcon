@@ -27,10 +27,10 @@ import ir.mahozad.cutcon.ui.icon.Config
 import ir.mahozad.cutcon.ui.icon.Icons
 import ir.mahozad.cutcon.ui.icon.Info
 import ir.mahozad.cutcon.ui.icon.Settings
-import ir.mahozad.cutcon.viewModel
+import ir.mahozad.cutcon.MainViewModel
 
 @Composable
-fun FrameWindowScope.SidePanel() {
+fun FrameWindowScope.SidePanel(viewModel: MainViewModel) {
     val sidePanelSelectedTabIndex by viewModel.sidePanelSelectedTabIndex.collectAsState()
     Box(modifier = Modifier/* For width animation: */.clipToBounds()) {
         Column(modifier = Modifier/* For width animation: */.requiredWidth(SIDE_PANEL_WIDTH.dp)) {
@@ -77,7 +77,7 @@ fun FrameWindowScope.SidePanel() {
             CompositionLocalProvider(LocalLayoutDirection provides LocalLanguage.current.layoutDirection) {
                 when (sidePanelSelectedTabIndex) {
                     0 -> ConfigPanel(viewModel)
-                    1 -> SettingsPanel()
+                    1 -> SettingsPanel(viewModel)
                     2 -> AboutPanel()
                 }
             }

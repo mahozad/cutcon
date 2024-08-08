@@ -6,10 +6,12 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import ir.mahozad.cutcon.component.DefaultDurationConverter
 import ir.mahozad.cutcon.component.SystemDateTime
 import ir.mahozad.cutcon.localization.Language
 import ir.mahozad.cutcon.localization.LanguageEn
+import ir.mahozad.cutcon.localization.Messages
 import ir.mahozad.cutcon.model.*
 import java.net.URI
 import java.nio.file.Path
@@ -30,6 +32,14 @@ const val WINDOW_WIDTH_NO_PANEL = DISPLAY_WIDTH + 2 * /* Paddings */ 8
 const val WINDOW_HEIGHT_REGULAR = DISPLAY_HEIGHT + (4 /* Rows of components */ * 48) + 34
 const val WINDOW_WIDTH_MINI = 372
 const val WINDOW_HEIGHT_MINI = 314
+
+private val logger = logger(name = "Defaults")
+
+val assetsPath = System
+    .getProperty("compose.application.resources.dir")
+    ?.let(::Path)
+    ?.also { logger.debug { "Custom assets path: $it" } }
+    ?: error(Messages.ERR_COMPOSE_RES_DIR_NOT_SET)
 
 val defaultMusicCoverArt by lazy { decodeImage(path = assetsPath / "music.svg") }
 

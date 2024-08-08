@@ -34,7 +34,7 @@ import kotlin.time.Duration.Companion.seconds
     ExperimentalComposeUiApi::class,
 )
 @Composable
-fun MainPanel() {
+fun MainPanel(viewModel: MainViewModel) {
     val image by viewModel.displayImage.collectAsState(null)
     val aspectRatio by viewModel.aspectRatio.collectAsState()
     val isFullscreen by viewModel.isFullscreen.collectAsState()
@@ -90,16 +90,16 @@ fun MainPanel() {
                     )
             )
             if (isFullscreen) {
-                ExitFullScreenButton()
+                ExitFullScreenButton(viewModel::exitFullscreen)
             }
             if (isDragging) {
                 PlayMediaIndicator()
             }
         }
         if (isMiniScreen && !isFullscreen) {
-            ControlsForMiniScreen()
+            ControlsForMiniScreen(viewModel)
         } else if (!isFullscreen) {
-            ControlsForRegularScreen()
+            ControlsForRegularScreen(viewModel)
         }
     }
 }
@@ -122,7 +122,7 @@ private fun PlayMediaIndicator() {
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
 @Composable
-private fun ExitFullScreenButton() {
+private fun ExitFullScreenButton(onClick: () -> Unit) {
     // Do not move this up and outside the if block
     // (so the offset resets automatically when fullscreen exits)
     var offsetOfCloseButton by remember { mutableStateOf((-48).dp) }
@@ -138,7 +138,7 @@ private fun ExitFullScreenButton() {
         Surface(
             color = MaterialTheme.colors.surface.copy(alpha = 0.66f),
             shape = CircleShape,
-            onClick = viewModel::exitFullscreen,
+            onClick = onClick,
             elevation = 0.dp,
             modifier = Modifier
                 .offset(y = offsetOfCloseButtonAnimated)
@@ -154,7 +154,7 @@ private fun ExitFullScreenButton() {
 }
 
 @Composable
-private fun ControlsForRegularScreen() {
+private fun ControlsForRegularScreen(viewModel: MainViewModel) {
     val clip by viewModel.clip.collectAsState()
     val mediaInfo by viewModel.mediaInfo.collectAsState()
     val isScreenshotInputEnabled by viewModel.isScreenshotInputEnabled.collectAsState()
@@ -167,8 +167,8 @@ private fun ControlsForRegularScreen() {
     Row {
         Box(modifier = Modifier.width(4 * 48.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                TimestampInputs()
-                ClipControls()
+                TimestampInputs(viewModel)
+                ClipControls(viewModel)
                 Spacer(Modifier.height(7.dp))
                 ClipLength(clip)
             }
@@ -178,18 +178,18 @@ private fun ControlsForRegularScreen() {
             modifier = Modifier.weight(1f)
         ) {
             Row {
-                SeekBackwardShortButton()
-                PlayPauseButton(iconPadding = 10.dp)
-                SeekForwardShortButton()
+                SeekBackwardShortButton(viewModel)
+                PlayPauseButton(viewModel, iconPadding = 10.dp)
+                SeekForwardShortButton(viewModel)
             }
             Row {
-                SeekBackwardLongButton()
+                SeekBackwardLongButton(viewModel)
                 ScreenshotButton(
                     isEnabled = isScreenshotInputEnabled,
                     isActive = isScreenshotInputActive,
                     onClick = viewModel::takeScreenshot
                 )
-                SeekForwardLongButton()
+                SeekForwardLongButton(viewModel)
             }
         }
         Column(modifier = Modifier.width(192.dp)) {
@@ -209,17 +209,17 @@ private fun ControlsForRegularScreen() {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                PinButton(iconPadding = 12.dp)
-                FullscreenEnterButton()
-                MiniScreenEnterButton()
-                SidePanelToggleButton()
+                PinButton(viewModel, iconPadding = 12.dp)
+                FullscreenEnterButton(viewModel::enterFullscreen)
+                MiniScreenEnterButton(viewModel::toggleMiniScreen)
+                SidePanelToggleButton(viewModel)
             }
         }
     }
 }
 
 @Composable
-private fun SeekBackwardShortButton() {
+private fun SeekBackwardShortButton(viewModel: MainViewModel) {
     val language = LocalLanguage.current
     val mediaInfo by viewModel.mediaInfo.collectAsState()
     Tooltip(
@@ -242,7 +242,7 @@ private fun SeekBackwardShortButton() {
 }
 
 @Composable
-private fun SeekBackwardLongButton() {
+private fun SeekBackwardLongButton(viewModel: MainViewModel) {
     val language = LocalLanguage.current
     val mediaInfo by viewModel.mediaInfo.collectAsState()
     Tooltip(
@@ -266,7 +266,7 @@ private fun SeekBackwardLongButton() {
 }
 
 @Composable
-private fun SeekForwardShortButton() {
+private fun SeekForwardShortButton(viewModel: MainViewModel) {
     val language = LocalLanguage.current
     val mediaInfo by viewModel.mediaInfo.collectAsState()
     Tooltip(
@@ -289,7 +289,7 @@ private fun SeekForwardShortButton() {
 }
 
 @Composable
-private fun SeekForwardLongButton() {
+private fun SeekForwardLongButton(viewModel: MainViewModel) {
     val language = LocalLanguage.current
     val mediaInfo by viewModel.mediaInfo.collectAsState()
     Tooltip(
@@ -313,13 +313,13 @@ private fun SeekForwardLongButton() {
 }
 
 @Composable
-private fun FullscreenEnterButton() {
+private fun FullscreenEnterButton(onClick: () -> Unit) {
     Tooltip(
         LocalLanguage.current.messages.switchToFullscreen,
         Shortcut.FULLSCREEN_TOGGLE.symbol,
         Shortcut.FULLSCREEN_EXIT.symbol
     ) {
-        IconButton(onClick = viewModel::enterFullscreen) {
+        IconButton(onClick = onClick) {
             CustomIcon(
                 icon = Icons.Custom.FullScreenEnter,
                 description = Messages.ICO_DSC_ENTER_FULLSCREEN
@@ -329,12 +329,12 @@ private fun FullscreenEnterButton() {
 }
 
 @Composable
-private fun MiniScreenEnterButton() {
+private fun MiniScreenEnterButton(onClick: () -> Unit) {
     Tooltip(
         LocalLanguage.current.messages.switchToMiniMode,
         Shortcut.MINI_MODE_TOGGLE.symbol
     ) {
-        IconButton(onClick = viewModel::toggleMiniScreen) {
+        IconButton(onClick = onClick) {
             CustomIcon(
                 icon = Icons.Custom.MiniScreen,
                 description = Messages.ICO_DSC_ENTER_MINI_SCREEN
@@ -344,7 +344,7 @@ private fun MiniScreenEnterButton() {
 }
 
 @Composable
-private fun SidePanelToggleButton() {
+private fun SidePanelToggleButton(viewModel: MainViewModel) {
     val language = LocalLanguage.current
     val isSidePanelDisplayed by viewModel.isSidePanelDisplayed.collectAsState()
     Tooltip(
@@ -365,7 +365,7 @@ private fun SidePanelToggleButton() {
 }
 
 @Composable
-private fun TimestampInputs() {
+private fun TimestampInputs(viewModel: MainViewModel) {
     val clipStartMinuteInput by viewModel.clipStartMinuteInput.collectAsState()
     val clipStartSecondInput by viewModel.clipStartSecondInput.collectAsState()
     val clipEndMinuteInput by viewModel.clipEndMinuteInput.collectAsState()
@@ -390,7 +390,7 @@ private fun TimestampInputs() {
 }
 
 @Composable
-private fun ClipControls() {
+private fun ClipControls(viewModel: MainViewModel) {
     val language = LocalLanguage.current
     val mediaInfo by viewModel.mediaInfo.collectAsState()
     val isLoopToggleable by viewModel.isLoopToggleable.collectAsState()
@@ -441,7 +441,7 @@ private fun ClipControls() {
 }
 
 @Composable
-private fun ControlsForMiniScreen() {
+private fun ControlsForMiniScreen(viewModel: MainViewModel) {
     val mediaInfo by viewModel.mediaInfo.collectAsState()
     MediaPlayerProgress(
         isWavy = mediaInfo.isResumed,
@@ -453,14 +453,14 @@ private fun ControlsForMiniScreen() {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth().offset(y = (-8).dp)
     ) {
-        PlayPauseButton(iconPadding = 0.dp)
+        PlayPauseButton(viewModel, iconPadding = 0.dp)
         AudioInput(
             viewModel = viewModel,
             iconPadding = 0.dp,
             mainModifier = Modifier,
             sliderModifier = Modifier.width(100.dp).offset(x = (-8).dp)
         )
-        PinButton(iconPadding = 0.dp)
+        PinButton(viewModel, iconPadding = 0.dp)
         Tooltip(
             LocalLanguage.current.messages.switchToNormalMode,
             Shortcut.MINI_MODE_TOGGLE.symbol
@@ -477,7 +477,7 @@ private fun ControlsForMiniScreen() {
 }
 
 @Composable
-private fun PlayPauseButton(iconPadding: Dp) {
+private fun PlayPauseButton(viewModel: MainViewModel, iconPadding: Dp) {
     val mediaInfo by viewModel.mediaInfo.collectAsState()
     Tooltip(
         if (mediaInfo.isResumed) {
@@ -498,7 +498,7 @@ private fun PlayPauseButton(iconPadding: Dp) {
 }
 
 @Composable
-private fun PinButton(iconPadding: Dp) {
+private fun PinButton(viewModel: MainViewModel, iconPadding: Dp) {
     val isAlwaysOnTop by viewModel.isAlwaysOnTop.collectAsState()
     Tooltip(
         if (isAlwaysOnTop) {

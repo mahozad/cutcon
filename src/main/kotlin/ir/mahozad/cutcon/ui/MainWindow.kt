@@ -48,7 +48,7 @@ private val taskbar by lazy {
 }
 
 @Composable
-fun MainWindow(onExitRequest: () -> Unit) {
+fun MainWindow(viewModel: MainViewModel, onExitRequest: () -> Unit) {
     val theme by viewModel.theme.collectAsState()
     val language by viewModel.language.collectAsState()
     val calendar by viewModel.calendar.collectAsState()
@@ -101,8 +101,8 @@ fun MainWindow(onExitRequest: () -> Unit) {
                 LocalLocalization provides language.contextMenuLocalization,
                 LocalLayoutDirection provides LayoutDirection.Ltr
             ) {
-                Taskbar()
-                Dialogs { viewModel.onAppExitRequest(forceExit = true, exit = onExitRequest) }
+                Taskbar(viewModel.status.collectAsState().value)
+                Dialogs(viewModel) { viewModel.onAppExitRequest(forceExit = true, exit = onExitRequest) }
                 WindowDecoration(
                     isDecorationVisible = !isFullscreen,
                     title = { WindowTitle(it) },
@@ -110,7 +110,7 @@ fun MainWindow(onExitRequest: () -> Unit) {
                     isMinimizable = true,
                     onCloseRequest = { viewModel.onAppExitRequest(forceExit = false, exit = onExitRequest) }
                 ) {
-                    MainContent()
+                    MainContent(viewModel)
                 }
             }
         }
@@ -118,8 +118,7 @@ fun MainWindow(onExitRequest: () -> Unit) {
 }
 
 @Composable
-private fun FrameWindowScope.Taskbar() {
-    val status by viewModel.status.collectAsState()
+private fun FrameWindowScope.Taskbar(status: Status) {
     LaunchedEffect(status) {
         val state = when (status) {
             is Status.Initializing -> Taskbar.State.INDETERMINATE
@@ -155,7 +154,12 @@ private fun MainContentPreview() {
     val fakeWindowScope = object : FrameWindowScope {
         override val window get() = TODO("Not implemented") // OR ComposeWindow()
     }
-    with(fakeWindowScope) { MainContent() }
+    val viewModel = Class
+        .forName("ir.mahozad.cutcon.MainKt")
+        .getDeclaredField("viewModel")
+        .apply { isAccessible = true }
+        .get(null /* because a top-level property is static */) as MainViewModel
+    with(fakeWindowScope) { MainContent(viewModel) }
 }
 
 /**
@@ -169,16 +173,16 @@ private fun MainContentPreview() {
  * and its subsequent comments.
  */
 @Composable
-private fun FrameWindowScope.MainContent() {
+private fun FrameWindowScope.MainContent(viewModel: MainViewModel) {
     val isFullscreen by viewModel.isFullscreen.collectAsState()
     val isSidePanelDisplayed by viewModel.isSidePanelDisplayed.collectAsState()
     Row(
         modifier = Modifier.padding(horizontal = if (isFullscreen) 0.dp else 8.dp),
         horizontalArrangement = Arrangement.Absolute.spacedBy(8.dp)
     ) {
-        MainPanel()
+        MainPanel(viewModel)
         if (isSidePanelDisplayed) {
-            SidePanel()
+            SidePanel(viewModel)
         }
     }
 }
@@ -195,7 +199,7 @@ private fun FrameWindowScope.MainContent() {
  * This was evident in the darker dialog scrim because of the two overlapping each other.
  */
 @Composable
-private fun Dialogs(onCloseRequest: () -> Unit) {
+private fun Dialogs(viewModel: MainViewModel, onCloseRequest: () -> Unit) {
     val status by viewModel.status.collectAsState()
     val language = LocalLanguage.current
     val isFinishSoundEnabled by viewModel.isFinishSoundEnabled.collectAsState()

@@ -89,12 +89,19 @@ class MainViewModelTest {
      */
     @Test
     fun `The app preferences should use a proper app-specific namespace (prefix)`() {
-        // See https://stackoverflow.com/q/71675616
-        val preferencesField = viewModel
+        // See https://stackoverflow.com/q/78937193
+        // and https://stackoverflow.com/q/47675033
+        val viewModel = Class
+            .forName("ir.mahozad.cutcon.MainKt")
+            // .kotlin.something
+            .getDeclaredField("viewModel")
+            .apply { isAccessible = true }
+            .get(null /* because a top-level property is static */) as MainViewModel
+        val preferences = viewModel
             .javaClass
             .getDeclaredField("settings")
             .apply { isAccessible = true }
-        val preferences = preferencesField.get(viewModel) as Preferences
+            .get(viewModel) as Preferences
         assertThat(preferences.absolutePath()).isEqualTo("/ir/mahozad/cutcon")
     }
 

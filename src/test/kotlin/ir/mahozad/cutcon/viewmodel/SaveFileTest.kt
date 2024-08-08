@@ -7,8 +7,10 @@ import ir.mahozad.cutcon.constructMainViewModel
 import ir.mahozad.cutcon.converter.Converter
 import ir.mahozad.cutcon.converter.ConverterFactory
 import ir.mahozad.cutcon.converter.FFmpegOption
-import ir.mahozad.cutcon.model.*
-import ir.mahozad.cutcon.viewModel
+import ir.mahozad.cutcon.model.CoverOptions
+import ir.mahozad.cutcon.model.Format
+import ir.mahozad.cutcon.model.IntroOptions
+import ir.mahozad.cutcon.model.Quality
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
@@ -21,7 +23,6 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.net.URI
-import java.net.URL
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.div
@@ -133,7 +134,7 @@ abstract class SaveFileTest {
     fun `When save file is not specified, changing the format should not update the save file`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         val viewModel = constructMainViewModel(dispatcher).apply {
-            viewModel.setFormat(Format.MP4)
+            setFormat(Format.MP4)
         }
         val results = mutableListOf<Path?>()
         backgroundScope.launch(dispatcher) { viewModel.saveFile.toList(results) }

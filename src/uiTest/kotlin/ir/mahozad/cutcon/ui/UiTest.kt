@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import ir.mahozad.cutcon.defaultLanguage
-import ir.mahozad.cutcon.ui.panel.SidePanel
+import ir.mahozad.cutcon.ui.panel.AboutPanel
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
@@ -70,7 +70,7 @@ class UiTest {
         }
         with(fakeWindowScope) {
             composeTestRule.setContent {
-                SidePanel()
+                AboutPanel()
             }
         }
 

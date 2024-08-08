@@ -36,7 +36,7 @@ private enum class LanguageEnum : Labeled {
 }
 
 @Composable
-fun SettingsPanel() {
+fun SettingsPanel(viewModel: MainViewModel) {
     Column {
         val language = LocalLanguage.current
         val scope = rememberCoroutineScope()

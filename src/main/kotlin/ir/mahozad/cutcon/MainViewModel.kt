@@ -509,13 +509,7 @@ class MainViewModel(
 
     fun setFormat(newFormat: Format) {
         _format.value = newFormat
-        _saveFile.update {
-            it
-                ?.toString()
-                ?.substringBeforeLast('.')
-                ?.plus(".${_format.value.extension(_source.value)}")
-                ?.let(::Path)
-        }
+        updateSaveFileName()
     }
 
     fun setIntroFile(path: Path?) {
@@ -845,6 +839,10 @@ class MainViewModel(
                 _aspectRatio.value = AspectRatio.SOURCE
             }
         }
+        updateSaveFileName()
+    }
+
+    private fun updateSaveFileName() {
         _saveFile.update {
             it
                 ?.toString()

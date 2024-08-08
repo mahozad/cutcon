@@ -25,17 +25,18 @@ import ir.mahozad.cutcon.model.Theme
 import ir.mahozad.cutcon.openAppLogFolder
 import ir.mahozad.cutcon.ui.theme.AppTheme
 import ir.mahozad.cutcon.ui.widget.StackTrace
-import ir.mahozad.cutcon.viewModel
 import kotlin.system.exitProcess
 
-fun showErrorWindow(throwable: Throwable?) {
-    val theme = viewModel.theme.value
-    val language = viewModel.language.value
+fun showErrorWindow(error: Throwable?, theme: Theme, language: Language) {
+    val icon = object {}
+        .javaClass
+        .getResourceAsStream("/logo-red.svg")
+        ?.let { loadSvgPainter(it, Density(1f)) }
     singleWindowApplication(
         alwaysOnTop = true,
         undecorated = true,
         resizable = false,
-        icon = loadSvgPainter(object {}::class.java.getResourceAsStream("/logo.svg"), Density(2f)),
+        icon = icon,
         title = language.messages.appName,
         state = WindowState(
             width = 464.dp,
@@ -46,7 +47,7 @@ fun showErrorWindow(throwable: Throwable?) {
         AppTheme(isDark = theme == Theme.DARK) {
             WindowDecoration(
                 isDecorationVisible = true,
-                icon = painterResource("logo.svg"),
+                icon = painterResource("logo-red.svg"),
                 title = { Title(language, it) },
                 isMinimizable = false,
                 onCloseRequest = { exitProcess(status = 1) }
@@ -64,7 +65,7 @@ fun showErrorWindow(throwable: Throwable?) {
                         Spacer(Modifier.height(8.dp))
                         // Makes the error message selectable for copying
                         SelectionContainer {
-                            StackTrace(throwable)
+                            StackTrace(error)
                         }
                     }
                 }
