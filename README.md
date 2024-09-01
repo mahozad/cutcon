@@ -30,6 +30,7 @@ Represents the capitalized name of the app, **CUTCON**.
 ## Similar apps
   - LosslessCut: https://github.com/mifi/lossless-cut
   - simple-video-cutter: https://github.com/bartekmotyl/simple-video-cutter
+  - HandBrake: https://github.com/HandBrake/HandBrake
   - VidCutter: https://github.com/ozmartian/vidcutter
   - Shotcut: https://github.com/mltframework/shotcut
   - Olive: https://github.com/olive-editor/olive
