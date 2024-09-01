@@ -17,6 +17,7 @@ plugins {
 
 val appRawFilesPath = rootDir.toPath() / "raw"
 val appResourcesPath = rootDir.toPath() / "asset"
+val vlcUncompressPath = appRawFilesPath / "vlc"
 val vlcDirectoryName = "vlc"
 val isVlcFull = System.getenv("fullVlc").toBooleanLenient() == true
 val shouldMinifyVlc = System.getenv("minifyVlc").toBooleanLenient() == true
@@ -71,6 +72,7 @@ tasks.withType<Test> {
 
 @OptIn(ExperimentalPathApi::class)
 tasks.clean {
+    delete += setOf(vlcUncompressPath)
     delete += appResourcesPath
         .walk(PathWalkOption.INCLUDE_DIRECTORIES)
         .filter(Path::isDirectory)
@@ -111,7 +113,7 @@ val unzipVlc by tasks.register(
         eachFile { relativePath = RelativePath(true, *relativePath.segments.drop(1).toTypedArray()) }
         includeEmptyDirs = false // Deletes empty remainder directories
     }
-    into(appRawFilesPath / "vlc")
+    into(vlcUncompressPath)
 }
 
 val downloadUpx by tasks.register(
