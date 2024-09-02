@@ -3,9 +3,9 @@
     <ExternalSystemSettings>
       <option name="env">
         <map>
-          <entry key="fullVlc" value="false" />
           <entry key="loggingLevel" value="debug" />
-          <entry key="minifyVlc" value="true" />
+          <entry key="vlcAllPlugins" value="false" />
+          <entry key="vlcCompression" value="true" />
         </map>
       </option>
       <option name="executionName" />

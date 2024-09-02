@@ -49,4 +49,3 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
-buildDownload = { id = "de.undercouch.download", version.ref = "buildDownload" }

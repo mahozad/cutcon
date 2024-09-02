@@ -3,8 +3,8 @@
     <ExternalSystemSettings>
       <option name="env">
         <map>
-          <entry key="fullVlc" value="true" />
-          <entry key="minifyVlc" value="true" />
+          <entry key="vlcAllPlugins" value="true" />
+          <entry key="vlcCompression" value="true" />
         </map>
       </option>
       <option name="executionName" />
