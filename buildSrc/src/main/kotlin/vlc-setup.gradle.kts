@@ -13,34 +13,38 @@ plugins {
 // See https://github.com/gradle/gradle/issues/15383
 val libs = the<LibrariesForLibs>()
 
-interface VlcBuilder {
-    val versionToUse: Property<String>
-    val tempDownloadPath: Property<Path>
-    val windowsTargetPath: Property<Path>
-    val shouldCompressPlugins: Property<Boolean>
-    val shouldIncludeAllPlugins: Property<Boolean>
+/**
+ * Could have instead made this an interface and set the
+ *  default values after crating an instace like this:
+ *  vlcSetup.shouldCompressPlugins.convention(true)
+ *
+ * See https://github.com/JetBrains/compose-multiplatform/blob/master/gradle-plugins/compose/src/main/kotlin/org/jetbrains/compose/desktop/application/dsl/ProguardSettings.kt
+ * and https://github.com/gradle/gradle/issues/8423
+ */
+abstract class VlcSetupExtension @Inject constructor(project: Project) {
+    companion object { val pluginName = "vlcSetup" }
+    val defaultTempDownloadPath = project.gradle.gradleUserHomeDir.toPath() / pluginName
+    val versionToUse = project.objects.property<String>().value("3.0.21")
+    val tempDownloadPath = project.objects.property<Path?>().value(defaultTempDownloadPath)
+    val windowsTargetPath = project.objects.property<Path?>().value(null)
+    val shouldCompressPlugins = project.objects.property<Boolean>().value(true)
+    val shouldIncludeAllPlugins = project.objects.property<Boolean>().value(false)
 }
 
-val pluginName = "vlcBuilder"
-val vlcBuilder = project
-    .extensions
-    .create(pluginName, VlcBuilder::class)
-    .apply {
-        versionToUse.convention("3.0.21")
-        tempDownloadPath.convention(gradle.gradleUserHomeDir.toPath() / pluginName)
-        shouldCompressPlugins.convention(true)
-        shouldIncludeAllPlugins.convention(false)
-    }
+val vlcSetup = project.extensions.create(
+    name = VlcSetupExtension.pluginName,
+    type = VlcSetupExtension::class
+)
 
 val downloadVlc by tasks.register(
     name = "downloadVlc",
     type = Download::class
 ) {
     val baseUrl = "https://get.videolan.org"
-    val version = vlcBuilder.versionToUse.get()
+    val version = vlcSetup.versionToUse.get()
     // Make sure to download the 64-bit version of VLC
     src("$baseUrl/vlc/$version/win64/vlc-$version-win64.zip")
-    dest((vlcBuilder.tempDownloadPath.get() / "vlc-$version.zip").toFile())
+    dest((vlcSetup.tempDownloadPath.get() / "vlc-$version.zip").toFile())
     overwrite(false) // Prevents re-download every time
 }
 
@@ -53,11 +57,11 @@ val unzipVlc by tasks.register(
     from(zipTree(downloadVlc.dest)) {
         // All the below is to copy only the contents of the root directory
         // in the archive and not the root directory itself
-        // See https://docs.gradle.org/current/userguide/working_with_files.html#ex-unpacking-a-subset-of-a-zip-file
+        // See https://docs.gradle.org/current/userguide/working_with_files.html#sec:unpacking_archives_example
         eachFile { relativePath = RelativePath(true, *relativePath.segments.drop(1).toTypedArray()) }
         includeEmptyDirs = false // Deletes empty remainder directories
     }
-    into(vlcBuilder.tempDownloadPath.get() / "unzipped")
+    into(vlcSetup.tempDownloadPath.get() / "unzipped")
 }
 
 val downloadUpx by tasks.register(
@@ -66,7 +70,7 @@ val downloadUpx by tasks.register(
 ) {
     val version = libs.versions.upx.get()
     src("https://github.com/upx/upx/releases/download/v$version/upx-$version-win64.zip")
-    dest((vlcBuilder.tempDownloadPath.get() / "upx-$version.zip").toFile())
+    dest((vlcSetup.tempDownloadPath.get() / "upx-$version.zip").toFile())
     overwrite(false) // Prevents re-download every time
 }
 
@@ -78,21 +82,21 @@ val unzipUpx by tasks.register(
     from(zipTree(downloadUpx.dest)) {
         // All the below is to copy only the contents of the root directory
         // in the archive and not the root directory itself
-        // See https://docs.gradle.org/current/userguide/working_with_files.html#ex-unpacking-a-subset-of-a-zip-file
+        // See https://docs.gradle.org/current/userguide/working_with_files.html#sec:unpacking_archives_example
         eachFile { relativePath = RelativePath(true, *relativePath.segments.drop(1).toTypedArray()) }
         includeEmptyDirs = false // Deletes empty remainder directories
     }
     include("**/upx.exe")
-    into(vlcBuilder.tempDownloadPath.get().toFile())
+    into(vlcSetup.tempDownloadPath.get().toFile())
 }
 
 // See <PROJECT_ROOT>/README.md for more info.
-tasks.register(
+val prepareVlcPlugins = tasks.register(
     name = "prepareVlcPlugins",
     type = Copy::class
 ) {
-    check(vlcBuilder.windowsTargetPath.isPresent) {
-        "Specify ${vlcBuilder::windowsTargetPath.name} in $pluginName{}"
+    check(vlcSetup.windowsTargetPath.isPresent) {
+        "Specify ${vlcSetup::windowsTargetPath.name} in ${VlcSetupExtension.pluginName}{}"
     }
     dependsOn(unzipVlc)
     dependsOn(unzipUpx)
@@ -101,7 +105,7 @@ tasks.register(
     // (i.e. the includes become more restrictive)
     // or if we directly remove include(s) or modify their patterns in a way that removes some files, then
     // the task will not remove those now-not-needed files. For these scenarios, clean the project first
-    if (vlcBuilder.shouldIncludeAllPlugins.get()) {
+    if (vlcSetup.shouldIncludeAllPlugins.get()) {
         include("*.dll")
         include("plugins/**/*.dll")
     } else {
@@ -142,28 +146,27 @@ tasks.register(
             "plugins/video_output/libvmem_plugin.dll"
         )
     }
-    if (vlcBuilder.shouldCompressPlugins.get()) {
+    if (vlcSetup.shouldCompressPlugins.get()) {
         eachFile {
             ProcessBuilder()
-                .command("${vlcBuilder.tempDownloadPath.get() / "upx.exe"}", "unzipped/$path")
-                .directory(vlcBuilder.tempDownloadPath.get().toFile())
+                .command("${vlcSetup.tempDownloadPath.get() / "upx.exe"}", "unzipped/$path")
+                .directory(vlcSetup.tempDownloadPath.get().toFile())
                 .start()
                 .inputReader()
                 .forEachLine(::println)
         }
     }
-    into(vlcBuilder.windowsTargetPath.get())
+    into(vlcSetup.windowsTargetPath.get())
 }
 
 /**
  * See <PROJECT_ROOT>/README.md -> Embedding VLC DLL files section for more info
  * and also https://docs.gradle.org/current/userguide/working_with_files.html
  */
-afterEvaluate {
-    tasks.named("prepareAppResources") {
-        dependsOn("prepareVlcPlugins")
-    }
-}
+tasks
+    .withType(Sync::class)
+    .matching { it.name == "prepareAppResources" }
+    .all { dependsOn(prepareVlcPlugins) }
 
 tasks.withType<Test> {
     // See <PROJECT_ROOT>/assets/README.md for more info.
@@ -180,7 +183,7 @@ tasks.withType<Test> {
 @OptIn(ExperimentalPathApi::class)
 tasks.named("clean", type = Delete::class) {
     delete += setOf(
-        vlcBuilder.tempDownloadPath.get() / "unzipped",
-        vlcBuilder.windowsTargetPath.get()
+        vlcSetup.tempDownloadPath.get() / "unzipped",
+        vlcSetup.windowsTargetPath.get()
     )
 }

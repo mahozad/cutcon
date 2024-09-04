@@ -2,7 +2,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 // See the section about tests in README.
 // See https://discuss.gradle.org/t/how-do-i-add-directories-to-the-main-resources-sourceset-in-a-gradle-plugin/5953
-val sourceSets = properties["sourceSets"] as SourceSetContainer;
+val sourceSets = properties["sourceSets"] as SourceSetContainer
 sourceSets {
     create("uiTest") {
         // Adds files from the main source set to the compile classpath and runtime classpath of this new source set.

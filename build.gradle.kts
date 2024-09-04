@@ -10,10 +10,10 @@ plugins {
     // Alternative: https://github.com/yshrsmz/BuildKonfig
     alias(libs.plugins.buildConfig)
     id("ui-test-setup")
-    id("vlc-builder")
+    id("vlc-setup")
 }
 
-val appRawFilesPath = rootDir.toPath() / "raw"
+val appIconFilePath = rootDir.toPath() / "raw" / "logo.ico"
 val appResourcesPath = rootDir.toPath() / "asset"
 val vlcDirectoryName = "vlc"
 val releaseDate: LocalDate = LocalDate.of(2024, 7, 21)
@@ -21,19 +21,11 @@ val releaseDate: LocalDate = LocalDate.of(2024, 7, 21)
 group = "ir.mahozad"
 version = "3"
 
-vlcBuilder {
+vlcSetup {
     versionToUse = libs.versions.vlc.get()
     windowsTargetPath = appResourcesPath / "windows" / vlcDirectoryName
     shouldCompressPlugins = System.getenv("vlcCompression").toBooleanLenient() ?: true
     shouldIncludeAllPlugins = System.getenv("vlcAllPlugins").toBooleanLenient() ?: false
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
-tasks.processResources {
-    from(rootDir.toPath() / "CHANGELOG.md")
 }
 
 /**
@@ -67,6 +59,24 @@ kotlin {
     // and https://blog.jetbrains.com/kotlin/2021/11/gradle-jvm-toolchain-support-in-the-kotlin-plugin/
     // and https://kotlinlang.org/docs/gradle-compiler-options.html#all-compiler-options
     jvmToolchain(libs.versions.jvm.get().toInt())
+}
+
+/**
+ * Modifies the process[Main]Resources task to copy the changelog file.
+ */
+tasks.processResources {
+    from(rootDir.toPath() / "CHANGELOG.md")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+tasks.wrapper {
+    gradleVersion = libs.versions.gradle.get()
+    networkTimeout = 60_000 // milliseconds
+    distributionType = DistributionType.ALL
+    validateDistributionUrl = false
 }
 
 dependencies {
@@ -158,7 +168,7 @@ compose.desktop {
             packageName = project.name
             vendor = "Mahdi Hosseinzadeh"
             windows {
-                iconFile = (appRawFilesPath / "logo.ico").toFile()
+                iconFile = appIconFilePath.toFile()
                 menuGroup = project.name // Start menu shortcut
             }
             appResourcesRootDir = appResourcesPath.toFile()
@@ -168,11 +178,4 @@ compose.desktop {
             }
         }
     }
-}
-
-tasks.wrapper {
-    gradleVersion = libs.versions.gradle.get()
-    networkTimeout = 60_000 // milliseconds
-    distributionType = DistributionType.ALL
-    validateDistributionUrl = false
 }
