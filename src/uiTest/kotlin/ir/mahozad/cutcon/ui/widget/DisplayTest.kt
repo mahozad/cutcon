@@ -68,7 +68,6 @@ class DisplayTest {
             }
         }
 
-    @Disabled("FIXME: If the scaling of the OS screen is a custom value, the display image distorts")
     @Test
     fun `When screen scaling (density) is not 1 and the aspect ratio is source, image should have its intrinsic aspect ratio`() =
         runDesktopComposeUiTest(width = 300, height = 200) {
@@ -82,7 +81,7 @@ class DisplayTest {
                 }
             }
 
-            val referencePath = javaClass.getResource("/reference/3.png")?.toURI()?.toPath()
+            val referencePath = javaClass.getResource("/reference/1.png")?.toURI()?.toPath()
             val screenshot = Image.makeFromBitmap(captureToImage().asSkiaBitmap())
             val actualPath = createTempDirectory() / "screenshot.png"
             val actualData = screenshot.encodeToData(EncodedImageFormat.PNG) ?: error("Could not encode image as png")
@@ -93,7 +92,6 @@ class DisplayTest {
             }
         }
 
-    @Disabled("FIXME: If the scaling of the OS screen is a custom value, the display image distorts")
     @Test
     fun `When screen scaling (density) is not 1 and the aspect ratio is W16H9, image should have 16 to 9 aspect ratio`() =
         runDesktopComposeUiTest(width = 300, height = 200) {
@@ -107,7 +105,7 @@ class DisplayTest {
                 }
             }
 
-            val referencePath = javaClass.getResource("/reference/4.png")?.toURI()?.toPath()
+            val referencePath = javaClass.getResource("/reference/2.png")?.toURI()?.toPath()
             val screenshot = Image.makeFromBitmap(captureToImage().asSkiaBitmap())
             val actualPath = createTempDirectory() / "screenshot.png"
             val actualData = screenshot.encodeToData(EncodedImageFormat.PNG) ?: error("Could not encode image as png")
