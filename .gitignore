@@ -1,5 +1,4 @@
 asset/windows/vlc
-raw/vlc/*
 
 .gradle
 build/

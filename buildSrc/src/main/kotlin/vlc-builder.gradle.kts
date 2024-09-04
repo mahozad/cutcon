@@ -13,19 +13,21 @@ plugins {
 // See https://github.com/gradle/gradle/issues/15383
 val libs = the<LibrariesForLibs>()
 
-interface VlcBuilderExtension {
+interface VlcBuilder {
     val versionToUse: Property<String>
     val tempDownloadPath: Property<Path>
-    val windowsPluginsPath: Property<Path>
+    val windowsTargetPath: Property<Path>
     val shouldCompressPlugins: Property<Boolean>
     val shouldIncludeAllPlugins: Property<Boolean>
 }
 
+val pluginName = "vlcBuilder"
 val vlcBuilder = project
     .extensions
-    .create<VlcBuilderExtension>("vlcBuilder")
+    .create(pluginName, VlcBuilder::class)
     .apply {
         versionToUse.convention("3.0.21")
+        tempDownloadPath.convention(gradle.gradleUserHomeDir.toPath() / pluginName)
         shouldCompressPlugins.convention(true)
         shouldIncludeAllPlugins.convention(false)
     }
@@ -55,7 +57,7 @@ val unzipVlc by tasks.register(
         eachFile { relativePath = RelativePath(true, *relativePath.segments.drop(1).toTypedArray()) }
         includeEmptyDirs = false // Deletes empty remainder directories
     }
-    into(vlcBuilder.tempDownloadPath.get() / "uncompressed")
+    into(vlcBuilder.tempDownloadPath.get() / "unzipped")
 }
 
 val downloadUpx by tasks.register(
@@ -89,6 +91,9 @@ tasks.register(
     name = "prepareVlcPlugins",
     type = Copy::class
 ) {
+    check(vlcBuilder.windowsTargetPath.isPresent) {
+        "Specify ${vlcBuilder::windowsTargetPath.name} in $pluginName{}"
+    }
     dependsOn(unzipVlc)
     dependsOn(unzipUpx)
     from(unzipVlc.outputs)
@@ -140,14 +145,14 @@ tasks.register(
     if (vlcBuilder.shouldCompressPlugins.get()) {
         eachFile {
             ProcessBuilder()
-                .command("${vlcBuilder.tempDownloadPath.get() / "upx.exe"}", "uncompressed/$path")
+                .command("${vlcBuilder.tempDownloadPath.get() / "upx.exe"}", "unzipped/$path")
                 .directory(vlcBuilder.tempDownloadPath.get().toFile())
                 .start()
                 .inputReader()
                 .forEachLine(::println)
         }
     }
-    into(vlcBuilder.windowsPluginsPath.get())
+    into(vlcBuilder.windowsTargetPath.get())
 }
 
 /**
@@ -175,7 +180,7 @@ tasks.withType<Test> {
 @OptIn(ExperimentalPathApi::class)
 tasks.named("clean", type = Delete::class) {
     delete += setOf(
-        vlcBuilder.tempDownloadPath.get() / "uncompressed",
-        vlcBuilder.windowsPluginsPath.get()
+        vlcBuilder.tempDownloadPath.get() / "unzipped",
+        vlcBuilder.windowsTargetPath.get()
     )
 }
