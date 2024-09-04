@@ -1,16 +1,15 @@
-import de.undercouch.gradle.tasks.download.Download
-import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.api.tasks.wrapper.Wrapper.DistributionType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat.*
 import org.jetbrains.kotlin.cli.common.toBooleanLenient
 import java.time.LocalDate
-import kotlin.io.path.*
+import kotlin.io.path.div
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.compose.multiplatform)
     // Alternative: https://github.com/yshrsmz/BuildKonfig
     alias(libs.plugins.buildConfig)
+    id("ui-test-setup")
     id("vlc-builder")
 }
 
@@ -18,6 +17,9 @@ val appRawFilesPath = rootDir.toPath() / "raw"
 val appResourcesPath = rootDir.toPath() / "asset"
 val vlcDirectoryName = "vlc"
 val releaseDate: LocalDate = LocalDate.of(2024, 7, 21)
+
+group = "ir.mahozad"
+version = "3"
 
 vlcBuilder {
     versionToUse = libs.versions.vlc.get()
@@ -27,43 +29,12 @@ vlcBuilder {
     shouldIncludeAllPlugins = System.getenv("vlcAllPlugins").toBooleanLenient() ?: false
 }
 
-group = "ir.mahozad"
-version = "3"
-
-sourceSets {
-    create("uiTest") {
-        // Adds files from the main source set to the compile classpath and runtime classpath of this new source set.
-        // sourceSets.main.output is a collection of all the directories containing compiled main classes and resources
-        compileClasspath += sourceSets.main.get().output
-        runtimeClasspath += sourceSets.main.get().output
-    }
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
-// Makes the uiTestImplementation configuration extend from testImplementation,
-// which means that all the declared dependencies of the test code (and transitively the main as well)
-// also become dependencies of this new configuration
-val uiTestImplementation: Configuration by configurations.getting {
-    extendsFrom(configurations.testImplementation.get())
-}
-val uiTest = task<Test>("uiTest") {
-    description = "Runs UI tests."
-    group = "verification"
-
-    testClassesDirs = sourceSets["uiTest"].output.classesDirs
-    classpath = sourceSets["uiTest"].runtimeClasspath
-    shouldRunAfter("test")
-
-    testLogging {
-        events(TestLogEvent.PASSED)
-    }
-}
-tasks.check { dependsOn(uiTest) }
 
 tasks.processResources {
     from(rootDir.toPath() / "CHANGELOG.md")
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }
 
 /**
