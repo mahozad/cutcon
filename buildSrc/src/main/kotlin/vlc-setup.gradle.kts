@@ -1,5 +1,6 @@
 import de.undercouch.gradle.tasks.download.Download
 import org.gradle.accessors.dm.LibrariesForLibs
+import org.gradle.kotlin.dsl.property
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.deleteIfExists
@@ -9,6 +10,8 @@ import kotlin.io.path.extension
 import kotlin.io.path.walk
 
 // See https://docs.gradle.org/current/userguide/implementing_gradle_plugins_precompiled.html#sec:applying_external_plugins
+// An easy and informative way to debug the tasks and why they are up to date or not is to add
+// --info to the gradle command so that it shows the info logs (such as why a task was skipped)
 
 plugins {
     id("de.undercouch.download")
@@ -102,6 +105,7 @@ val prepareVlcPlugins by tasks.register(
     check(vlcSetup.windowsTargetPath.isPresent) {
         "Specify ${vlcSetup::windowsTargetPath.name} in ${VlcSetupExtension.pluginName}{}"
     }
+    inputs.property(vlcSetup::shouldCompressPlugins.name, vlcSetup.shouldCompressPlugins)
     dependsOn(unzipVlc)
     dependsOn(unzipUpx)
     from(unzipVlc.outputs)
@@ -159,30 +163,17 @@ val prepareVlcPlugins by tasks.register(
             "plugins/video_output/libvmem_plugin.dll"
         )
     }
-    into(vlcSetup.windowsTargetPath.get())
-}
-
-// TODO: Re-embed this code into the prepareVlcPlugins task above to prevent
-//  the tasks to be executed because each changes the output files of the other
-val compressVlcPlugins by tasks.register(name = "compressVlcPlugins") {
-    inputs.property(vlcSetup::shouldCompressPlugins.name, vlcSetup.shouldCompressPlugins)
-    outputs.dir(prepareVlcPlugins.outputs)
-    dependsOn(prepareVlcPlugins)
-    dependsOn(unzipUpx)
-    doLast {
-        prepareVlcPlugins
-            .outputs
-            .files
-            .takeIf { vlcSetup.shouldCompressPlugins.get() }
-            ?.asFileTree
-            ?.forEach { file ->
-                ProcessBuilder()
-                    .command("${vlcSetup.tempDownloadPath.get() / "upx.exe"}", file.absolutePath)
-                    .start()
-                    .inputReader()
-                    .forEachLine(logger::info)
-            }
+    if (vlcSetup.shouldCompressPlugins.get()) {
+        eachFile {
+            ProcessBuilder()
+                .command("${vlcSetup.tempDownloadPath.get() / "upx.exe"}", "unzipped/$path")
+                .directory(vlcSetup.tempDownloadPath.get().toFile())
+                .start()
+                .inputReader()
+                .forEachLine(logger::info)
+        }
     }
+    into(vlcSetup.windowsTargetPath.get())
 }
 
 /**
@@ -191,7 +182,7 @@ val compressVlcPlugins by tasks.register(name = "compressVlcPlugins") {
 tasks
     .withType(Sync::class)
     .matching { it.name == "prepareAppResources" }
-    .all { dependsOn(compressVlcPlugins) }
+    .all { dependsOn(prepareVlcPlugins) }
 
 tasks.withType<Test> {
     // See https://github.com/JetBrains/compose-multiplatform/issues/3244
