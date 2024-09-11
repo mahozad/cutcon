@@ -2,7 +2,11 @@ import de.undercouch.gradle.tasks.download.Download
 import org.gradle.accessors.dm.LibrariesForLibs
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
+import kotlin.io.path.extension
+import kotlin.io.path.walk
 
 // See https://docs.gradle.org/current/userguide/implementing_gradle_plugins_precompiled.html#sec:applying_external_plugins
 
@@ -90,8 +94,8 @@ val unzipUpx by tasks.register(
     into(vlcSetup.tempDownloadPath.get().toFile())
 }
 
-// See <PROJECT_ROOT>/README.md for more info.
-val prepareVlcPlugins = tasks.register(
+@OptIn(ExperimentalPathApi::class)
+val prepareVlcPlugins by tasks.register(
     name = "prepareVlcPlugins",
     type = Copy::class
 ) {
@@ -101,10 +105,19 @@ val prepareVlcPlugins = tasks.register(
     dependsOn(unzipVlc)
     dependsOn(unzipUpx)
     from(unzipVlc.outputs)
-    // If shouldIncludeAllPlugins == true and then in a later execution shouldIncludeAllPlugins == false
-    // (i.e. the includes become more restrictive)
-    // or if we directly remove include(s) or modify their patterns in a way that removes some files, then
-    // the task will not remove those now-not-needed files. For these scenarios, clean the project first
+    doFirst {
+        // If shouldIncludeAllPlugins == true and then in a later execution shouldIncludeAllPlugins == false
+        // (i.e. the includes become more restrictive)
+        // or if we directly remove include(s) or modify their patterns in a way that removes some files, then
+        // the task will not remove those now-not-needed files. This is for these scenarios.
+        // Do NOT use vlcSetup.windowsTargetPath.get().deleteRecursively() as it is so dangerous
+        vlcSetup
+            .windowsTargetPath
+            .get()
+            .walk()
+            .filter { it.extension == "dll" }
+            .forEach { it.deleteIfExists() }
+    }
     if (vlcSetup.shouldIncludeAllPlugins.get()) {
         include("*.dll")
         include("plugins/**/*.dll")
@@ -146,31 +159,42 @@ val prepareVlcPlugins = tasks.register(
             "plugins/video_output/libvmem_plugin.dll"
         )
     }
-    if (vlcSetup.shouldCompressPlugins.get()) {
-        eachFile {
-            ProcessBuilder()
-                .command("${vlcSetup.tempDownloadPath.get() / "upx.exe"}", "unzipped/$path")
-                .directory(vlcSetup.tempDownloadPath.get().toFile())
-                .start()
-                .inputReader()
-                .forEachLine(::println)
-        }
-    }
     into(vlcSetup.windowsTargetPath.get())
 }
 
+// TODO: Re-embed this code into the prepareVlcPlugins task above to prevent
+//  the tasks to be executed because each changes the output files of the other
+val compressVlcPlugins by tasks.register(name = "compressVlcPlugins") {
+    inputs.property(vlcSetup::shouldCompressPlugins.name, vlcSetup.shouldCompressPlugins)
+    outputs.dir(prepareVlcPlugins.outputs)
+    dependsOn(prepareVlcPlugins)
+    dependsOn(unzipUpx)
+    doLast {
+        prepareVlcPlugins
+            .outputs
+            .files
+            .takeIf { vlcSetup.shouldCompressPlugins.get() }
+            ?.asFileTree
+            ?.forEach { file ->
+                ProcessBuilder()
+                    .command("${vlcSetup.tempDownloadPath.get() / "upx.exe"}", file.absolutePath)
+                    .start()
+                    .inputReader()
+                    .forEachLine(logger::info)
+            }
+    }
+}
+
 /**
- * See <PROJECT_ROOT>/README.md -> Embedding VLC DLL files section for more info
- * and also https://docs.gradle.org/current/userguide/working_with_files.html
+ * See https://docs.gradle.org/current/userguide/working_with_files.html
  */
 tasks
     .withType(Sync::class)
     .matching { it.name == "prepareAppResources" }
-    .all { dependsOn(prepareVlcPlugins) }
+    .all { dependsOn(compressVlcPlugins) }
 
 tasks.withType<Test> {
-    // See <PROJECT_ROOT>/assets/README.md for more info.
-    // and https://github.com/JetBrains/compose-multiplatform/issues/3244
+    // See https://github.com/JetBrains/compose-multiplatform/issues/3244
     dependsOn("prepareAppResources")
     afterEvaluate {
         systemProperty(
