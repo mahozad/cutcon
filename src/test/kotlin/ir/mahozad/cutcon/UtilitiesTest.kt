@@ -742,6 +742,30 @@ class UtilitiesTest {
         }
 
         @Test
+        fun `parseDate should return null when input is not valid date`() {
+            val date = "meow-to-it".parseAsDate()
+            assertThat(date).isNull()
+        }
+
+        @Test
+        fun `parseDate should return null when date misses month or day number`() {
+            val date = "1401--10".parseAsDate()
+            assertThat(date).isNull()
+        }
+
+        @Test
+        fun `parseDate should return null when date misses month or day part`() {
+            val date = "1401-10".parseAsDate()
+            assertThat(date).isNull()
+        }
+
+        @Test
+        fun `parseDate should return null when date misses year part`() {
+            val date = "10-10".parseAsDate()
+            assertThat(date).isNull()
+        }
+
+        @Test
         fun `parseDate should return null when day is zero`() {
             val date = "1401-06-0".parseAsDate()
             assertThat(date).isNull()

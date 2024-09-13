@@ -142,19 +142,13 @@ fun decodeImage(
  * and https://stackoverflow.com/q/4251383
  */
 private fun loadSvgAsBitmap(
-    stream: InputStream,
+    inputStream: InputStream,
     desiredSize: Float? = null
 ): ImageBitmap {
     val density = Density(1f)
-    val image = loadSvgPainter(stream, density).run {
+    val image = loadSvgPainter(inputStream, density).run {
         val aspectRatio = intrinsicSize.width / intrinsicSize.height
-        val size = if (desiredSize == null) {
-            intrinsicSize
-        } else if (aspectRatio > 1f) {
-            Size(desiredSize, desiredSize / aspectRatio)
-        } else {
-            Size(desiredSize * aspectRatio, desiredSize)
-        }
+        val size = desiredSize?.let { Size(it, it / aspectRatio) } ?: intrinsicSize
         toAwtImage(density, LayoutDirection.Ltr, size)
     }
     val bufferedImage = BufferedImage(
@@ -304,26 +298,24 @@ fun Path.toLtrString(): String {
         .also { logger.info { "Converted path $this to LTR" } }
 }
 
-fun String.parseAsDate(): LocalDate? = runCatching {
+@Suppress("LiftReturnOrAssignment")
+fun String.parseAsDate(): LocalDate? {
     val (year, month, day) = this
         .trim()
         .replace(dateDelimiterRegex, "-")
         .replace(redundantDelimiterRegex, "-")
         .split("-")
+        .mapNotNull(String::toIntOrNull)
         .takeIf { it.size == 3 }
-        ?.map(String::toInt)
-        ?: return@runCatching null
+        ?: return null
     if (day !in 1..31 || month !in 1..12) {
-        return@runCatching null
+        return null
     } else if (year < 1800) {
-        return@runCatching PersianDate.of(year, month, day).toGregorian()
+        return PersianDate.of(year, month, day).toGregorian()
     } else {
-        return@runCatching LocalDate.of(year, month, day)
+        return LocalDate.of(year, month, day)
     }
 }
-    .onSuccess { logger.info { "Parsed $this as date $it" } }
-    .onFailure { logger.debug(it) { "Could not parse $this as date" } }
-    .getOrNull()
 
 @Suppress("LiftReturnOrAssignment")
 fun handleInputForTimeSecond(
