@@ -84,9 +84,9 @@ fun FrameWindowScope.ConfigPanel(viewModel: MainViewModel) {
     val format by viewModel.format.collectAsState()
     val quality by viewModel.quality.collectAsState()
     val saveFile by viewModel.saveFile.collectAsState()
-    val coverBitmap by viewModel.coverBitmap.collectAsState()
+    val coverPreview by viewModel.coverPreview.collectAsState()
     val coverOptions by viewModel.coverOptions.collectAsState()
-    val introBitmap by viewModel.introBitmap.collectAsState()
+    val introPreview by viewModel.introPreview.collectAsState()
     val introOptions by viewModel.introOptions.collectAsState()
     val lastOpenDirectory by viewModel.lastOpenDirectory.collectAsState()
     val lastSaveDirectory by viewModel.lastSaveDirectory.collectAsState()
@@ -120,9 +120,9 @@ fun FrameWindowScope.ConfigPanel(viewModel: MainViewModel) {
             IntroInput(
                 source = source,
                 isEnabled = isInputEnabled,
-                image = introBitmap,
-                targetFormat = format,
+                preview = introPreview,
                 options = introOptions,
+                targetFormat = format,
                 lastOpenDirectory = lastOpenDirectory,
                 modifier = Modifier.width(118.dp),
                 onFileChange = viewModel::setIntroFile,
@@ -132,9 +132,9 @@ fun FrameWindowScope.ConfigPanel(viewModel: MainViewModel) {
             CoverInput(
                 source = source,
                 isEnabled = isInputEnabled,
-                image = coverBitmap,
-                targetFormat = format,
+                preview = coverPreview,
                 options = coverOptions,
+                targetFormat = format,
                 lastOpenDirectory = lastOpenDirectory,
                 modifier = Modifier.weight(1f),
                 onFileChange = viewModel::setCoverFile,

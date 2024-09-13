@@ -144,8 +144,8 @@ class MainViewModel(
     private var lastNonDefaultSpeed = defaultFastSpeed
     private val _coverOptions = MutableStateFlow(defaultCoverOptions)
     private val _introOptions = MutableStateFlow(defaultIntroOptions)
-    private val _coverBitmap = MutableStateFlow<ImageBitmap?>(null)
-    private val _introBitmap = MutableStateFlow<ImageBitmap?>(null)
+    private val _coverPreview = MutableStateFlow<ImageBitmap?>(null)
+    private val _introPreview = MutableStateFlow<ImageBitmap?>(null)
     private val _isScreenshotInputActive = MutableStateFlow(false)
     private var wasSidePanelDisplayedBeforeChangingScreen = _isSidePanelDisplayed.value
     private var wasMiniScreen = _isMiniScreen.value
@@ -258,8 +258,8 @@ class MainViewModel(
     val lastSaveDirectory = _lastSaveDirectory.asStateFlow()
     val coverOptions = _coverOptions.asStateFlow()
     val introOptions = _introOptions.asStateFlow()
-    val coverBitmap = _coverBitmap.asStateFlow()
-    val introBitmap = _introBitmap.asStateFlow()
+    val coverPreview = _coverPreview.asStateFlow()
+    val introPreview = _introPreview.asStateFlow()
     val mediaInfo = _mediaInfo.asStateFlow()
     val isLoopToggleable = _isLoopToggleable.asStateFlow()
 
@@ -517,7 +517,7 @@ class MainViewModel(
             _lastOpenDirectory.update { path?.parent ?: it }
             val newPath = convertImageToSupportedFormatIfNeeded(path)
             _introOptions.update { it.copy(path = newPath) }
-            _introBitmap.value = getImageBitmap(path, INTRO_PREVIEW_SIZE) {
+            _introPreview.value = getImagePreview(path, INTRO_PREVIEW_SIZE) {
                 logger.warn { "Could not create intro preview for $path" }
             }
         }
@@ -528,7 +528,7 @@ class MainViewModel(
             _lastOpenDirectory.update { path?.parent ?: it }
             val newPath = convertImageToSupportedFormatIfNeeded(path)
             _coverOptions.update { it.copy(path = newPath) }
-            _coverBitmap.value = getImageBitmap(path, COVER_PREVIEW_SIZE) {
+            _coverPreview.value = getImagePreview(path, COVER_PREVIEW_SIZE) {
                 logger.warn { "Could not create watermark/album art preview for $path" }
             }
         }
@@ -545,7 +545,7 @@ class MainViewModel(
         }
     }
 
-    private fun getImageBitmap(
+    private fun getImagePreview(
         path: Path?,
         desiredSizeIfVector: Float,
         onFailure: () -> Unit

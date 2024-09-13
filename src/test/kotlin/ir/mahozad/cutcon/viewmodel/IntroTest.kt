@@ -70,7 +70,7 @@ abstract class IntroTest {
         val viewModel = constructMainViewModel(dispatcher)
         val intro = getResourceAsPath("test.png")
         val results = mutableListOf<ImageBitmap?>()
-        backgroundScope.launch(dispatcher) { viewModel.introBitmap.toList(results) }
+        backgroundScope.launch(dispatcher) { viewModel.introPreview.toList(results) }
         viewModel.setIntroFile(intro)
         assertThat(results.last()).isNotNull()
     }

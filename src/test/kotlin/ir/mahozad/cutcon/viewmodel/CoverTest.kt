@@ -81,7 +81,7 @@ abstract class CoverTest {
         val viewModel = constructMainViewModel(dispatcher)
         val cover = getResourceAsPath("test.png")
         val results = mutableListOf<ImageBitmap?>()
-        backgroundScope.launch(dispatcher) { viewModel.coverBitmap.toList(results) }
+        backgroundScope.launch(dispatcher) { viewModel.coverPreview.toList(results) }
         viewModel.setCoverFile(cover)
         assertThat(results.last()).isNotNull()
     }

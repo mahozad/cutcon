@@ -70,7 +70,7 @@ private val height = 92.dp
 @Composable
 fun FrameWindowScope.CoverInput(
     isEnabled: Boolean,
-    image: ImageBitmap?,
+    preview: ImageBitmap?,
     options: CoverOptions,
     source: Source,
     targetFormat: Format,
@@ -109,7 +109,7 @@ fun FrameWindowScope.CoverInput(
         Box(modifier = modifier
             // Uses drawBehind because of the need for dashed stroke
             .drawBehind {
-                if (isEnabled && (image == null || isDragging)) {
+                if (isEnabled && (preview == null || isDragging)) {
                     drawBorder(isEnabled, isDragging, 4.dp, primaryColor, primaryVariantColor)
                 }
             }
@@ -123,7 +123,7 @@ fun FrameWindowScope.CoverInput(
                 }
             )
         ) {
-            if (image == null) {
+            if (preview == null) {
                 SelectBox(
                     isEnabled = isEnabled,
                     targetFormat = targetFormat,
@@ -134,7 +134,7 @@ fun FrameWindowScope.CoverInput(
             } else {
                 ConfigBox(
                     isEnabled = isEnabled,
-                    image = image,
+                    preview = preview,
                     options = options,
                     modifier = modifier,
                     targetFormat = targetFormat,
@@ -328,7 +328,7 @@ private fun FrameWindowScope.SelectBox(
 @Composable
 private fun ConfigBox(
     isEnabled: Boolean,
-    image: ImageBitmap,
+    preview: ImageBitmap,
     options: CoverOptions,
     targetFormat: Format,
     modifier: Modifier,
@@ -343,7 +343,7 @@ private fun ConfigBox(
         modifier = modifier.height(height)
     ) {
         CoverImage(
-            image = image,
+            image = preview,
             isEnabled = isEnabled,
             onRemoveRequest = onRemoveRequest
         )
