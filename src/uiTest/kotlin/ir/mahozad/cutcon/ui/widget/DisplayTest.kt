@@ -13,7 +13,6 @@ import ir.mahozad.cutcon.defaultMusicCoverArt
 import ir.mahozad.cutcon.model.AspectRatio
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.io.path.*
 

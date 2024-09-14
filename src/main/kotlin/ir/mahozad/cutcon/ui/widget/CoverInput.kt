@@ -110,7 +110,7 @@ fun FrameWindowScope.CoverInput(
             // Uses drawBehind because of the need for dashed stroke
             .drawBehind {
                 if (isEnabled && (preview == null || isDragging)) {
-                    drawBorder(isEnabled, isDragging, 4.dp, primaryColor, primaryVariantColor)
+                    drawBorder(isDragging, 4.dp, primaryColor, primaryVariantColor)
                 }
             }
             .clip(RoundedCornerShape(4.dp))
@@ -152,7 +152,6 @@ fun FrameWindowScope.CoverInput(
 }
 
 private fun DrawScope.drawBorder(
-    isEnabled: Boolean,
     isDragging: Boolean,
     cornerRadius: Dp,
     primaryColor: Color,
@@ -163,9 +162,7 @@ private fun DrawScope.drawBorder(
         pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
     )
     drawRoundRect(
-        color = if (!isEnabled) {
-            Color.LightGray
-        } else if (isDragging) {
+        color = if (isDragging) {
             primaryVariantColor
         } else {
             primaryColor

@@ -4,7 +4,6 @@ import org.gradle.kotlin.dsl.property
 import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.deleteIfExists
-import kotlin.io.path.deleteRecursively
 import kotlin.io.path.div
 import kotlin.io.path.extension
 import kotlin.io.path.walk
@@ -29,8 +28,8 @@ val libs = the<LibrariesForLibs>()
  * and https://github.com/gradle/gradle/issues/8423
  */
 abstract class VlcSetupExtension @Inject constructor(project: Project) {
-    companion object { val pluginName = "vlcSetup" }
-    val defaultTempDownloadPath = project.gradle.gradleUserHomeDir.toPath() / pluginName
+    companion object { const val PLUGIN_NAME = "vlcSetup" }
+    val defaultTempDownloadPath = project.gradle.gradleUserHomeDir.toPath() / PLUGIN_NAME
     val versionToUse = project.objects.property<String>().value("3.0.21")
     val tempDownloadPath = project.objects.property<Path?>().value(defaultTempDownloadPath)
     val windowsTargetPath = project.objects.property<Path?>().value(null)
@@ -39,7 +38,7 @@ abstract class VlcSetupExtension @Inject constructor(project: Project) {
 }
 
 val vlcSetup = project.extensions.create(
-    name = VlcSetupExtension.pluginName,
+    name = VlcSetupExtension.PLUGIN_NAME,
     type = VlcSetupExtension::class
 )
 
@@ -103,7 +102,7 @@ val prepareVlcPlugins by tasks.register(
     type = Copy::class
 ) {
     check(vlcSetup.windowsTargetPath.isPresent) {
-        "Specify ${vlcSetup::windowsTargetPath.name} in ${VlcSetupExtension.pluginName}{}"
+        "Specify ${vlcSetup::windowsTargetPath.name} in ${VlcSetupExtension.PLUGIN_NAME}{}"
     }
     inputs.property(vlcSetup::shouldCompressPlugins.name, vlcSetup.shouldCompressPlugins)
     dependsOn(unzipVlc)

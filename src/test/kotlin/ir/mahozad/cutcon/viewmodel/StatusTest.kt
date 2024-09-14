@@ -375,7 +375,7 @@ abstract class StatusTest {
                 setFormat(Format.MP4)
             }
             backgroundScope.launch(dispatcher) { viewModel.status.toList(results) }
-            for (i in 1..5) {
+            repeat(5) {
                 viewModel.setSaveFile(saveFile)
                 viewModel.startProcess()
             }
