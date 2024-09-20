@@ -23,7 +23,7 @@ version = "3"
 
 vlcSetup {
     versionToUse = libs.versions.vlc.get()
-    windowsTargetPath = appResourcesPath / "windows" / vlcDirectoryName
+    windowsCopyPath = (appResourcesPath / "windows" / vlcDirectoryName).toFile()
     shouldCompressPlugins = System.getenv("vlcCompression").toBooleanLenient() ?: true
     shouldIncludeAllPlugins = System.getenv("vlcAllPlugins").toBooleanLenient() ?: false
 }

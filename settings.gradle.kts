@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("plugins/vlc-setup")
     repositories {
         google()
         gradlePluginPortal()
