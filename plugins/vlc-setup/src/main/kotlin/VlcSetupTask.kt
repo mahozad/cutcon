@@ -86,11 +86,16 @@ abstract class VlcSetupTask : DefaultTask() {
                 )
             }
             if (shouldCompressPlugins.get()) {
-                copy.eachFile { file ->
+                val upxFile = upxDirectory.get().resolve("upx.exe")
+                copy.eachFile { dllFile ->
                     // TODO: Save the compressed files in a separate directory so that the original files are not modified
                     //  and the vlcUnzip task is not executed every time because its output has been modifier/changed
                     ProcessBuilder()
-                        .command("${upxDirectory.get().resolve("upx.exe")}", file.path)
+                        .command(
+                            upxFile.path,
+                            "--best", // Compression
+                            dllFile.path
+                        )
                         .directory(vlcDirectory.get())
                         .start()
                         .inputReader()
