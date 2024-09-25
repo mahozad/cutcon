@@ -67,7 +67,9 @@ fun ScreenshotButton(
                         )
                         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                             Text(
-                                text = defaultScreenshotSaveDirectory.trim(maxLength = 70).toLtrString(),
+                                text = remember(defaultScreenshotSaveDirectory) {
+                                    defaultScreenshotSaveDirectory.trim(maxLength = 70).toLtrString()
+                                },
                                 color = MaterialTheme.colors.primary,
                                 fontSize = (defaultFontSize.value - 2).sp
                             )

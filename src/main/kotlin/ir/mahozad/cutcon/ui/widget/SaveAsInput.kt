@@ -124,7 +124,9 @@ fun FrameWindowScope.SaveAsInput(
                 }
             }
             Text(
-                text = destination?.trim(maxLength = 35)?.toLtrString() ?: language.messages.btnLblSelectSaveFolder,
+                text = remember(destination) {
+                    destination?.trim(maxLength = 35)?.toLtrString() ?: language.messages.btnLblSelectSaveFolder
+                },
                 fontSize = if (destination == null) defaultFontSize else (defaultFontSize.value - 1).sp,
                 lineHeight = 20.sp
             )
