@@ -22,7 +22,7 @@ group = "ir.mahozad"
 version = "3"
 
 vlcSetup {
-    versionToUse = libs.versions.vlc.get()
+    vlcVersion = libs.versions.vlc.get()
     windowsCopyPath = (appResourcesPath / "windows" / vlcDirectoryName).toFile()
     shouldCompressPlugins = System.getenv("vlcCompression").toBooleanLenient() ?: true
     shouldIncludeAllPlugins = System.getenv("vlcAllPlugins").toBooleanLenient() ?: false

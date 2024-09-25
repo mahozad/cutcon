@@ -1,18 +1,17 @@
 import org.gradle.api.file.RelativePath
-import org.gradle.api.provider.Provider
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
 import java.io.File
-import javax.inject.Inject
 
-abstract class VlcUnzipTask @Inject constructor(
+abstract class VlcUnzipTask : Copy() {
+
     @get:InputFile
-    var zipFile: Provider<File>,
+    abstract val zipFile: Property<File>
 
     @get:OutputDirectory
-    var unzipDirectory: Provider<File>
-) : Copy() {
+    abstract val unzipDirectory: Property<File>
 
     init {
         from(project.zipTree(zipFile)) {

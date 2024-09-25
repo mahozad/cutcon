@@ -15,40 +15,30 @@ abstract class VlcSetupPlugin : Plugin<Project> {
             VlcSetupExtension.PLUGIN_NAME,
             VlcSetupExtension::class.java
         )
-        val vlcDownload = project.tasks.register(
-            "vlcDownload",
-            VlcDownloadTask::class.java,
-            vlcSetupExtension.versionToUse
-        )
-        val upxDownload = project.tasks.register(
-            "upxDownload",
-            UpxDownloadTask::class.java,
-            project.objects.property(String::class.java).value("4.2.4")
-        )
-        val vlcUnzip = project.tasks.register(
-            "vlcUnzip",
-            VlcUnzipTask::class.java,
-            vlcDownload.get().vlcZipFile,
-            vlcDownload.get().tempDownloadDirectory.map { it.resolve("vlc") }
-        ).also { task -> task.configure { it.dependsOn(vlcDownload) } }
-        val upxUnzip = project.tasks.register(
-            "upxUnzip",
-            UpxUnzipTask::class.java,
-            upxDownload.get().upxZipFile,
-            upxDownload.get().tempDownloadDirectory.map { it.resolve("upx") }
-        ).also { task -> task.configure { it.dependsOn(upxDownload) } }
-        val vlcSetup = project.tasks.register(
-            "vlcSetup",
-            VlcSetupTask::class.java,
-            vlcUnzip.get().unzipDirectory,
-            upxUnzip.get().unzipDirectory,
-            vlcSetupExtension.shouldCompressPlugins,
-            vlcSetupExtension.shouldIncludeAllPlugins,
-            vlcSetupExtension.windowsCopyPath
-        )
-        vlcSetup.configure {
-            it.dependsOn(upxUnzip)
-            it.dependsOn(vlcUnzip)
+        val vlcDownload = project.tasks.register("vlcDownload", VlcDownloadTask::class.java) {
+            it.vlcVersion.set(vlcSetupExtension.vlcVersion)
+        }
+        val upxDownload = project.tasks.register("upxDownload", UpxDownloadTask::class.java) {
+            it.upxVersion.set(vlcSetupExtension.upxVersion)
+        }
+        val vlcUnzip = project.tasks.register("vlcUnzip", VlcUnzipTask::class.java) {
+            it.dependsOn(vlcDownload)
+            it.mustRunAfter(upxDownload)
+            it.zipFile.set(vlcDownload.get().vlcZipFile)
+            it.unzipDirectory.set(vlcDownload.get().tempDownloadDirectory.map { it.resolve("vlc") })
+        }
+        val upxUnzip = project.tasks.register("upxUnzip", UpxUnzipTask::class.java) {
+            it.dependsOn(upxDownload)
+            it.mustRunAfter(vlcDownload)
+            it.zipFile.set(upxDownload.get().upxZipFile)
+            it.unzipDirectory.set(upxDownload.get().tempDownloadDirectory.map { it.resolve("upx") })
+        }
+        val vlcSetup = project.tasks.register("vlcSetup", VlcSetupTask::class.java) {
+            it.vlcDirectory.set(vlcUnzip.get().unzipDirectory)
+            it.upxDirectory.set(upxUnzip.get().unzipDirectory)
+            it.windowsCopyPath.set(vlcSetupExtension.windowsCopyPath)
+            it.shouldCompressPlugins.set(vlcSetupExtension.shouldCompressPlugins)
+            it.shouldIncludeAllPlugins.set(vlcSetupExtension.shouldIncludeAllPlugins)
         }
 
         /**
@@ -74,8 +64,8 @@ abstract class VlcSetupPlugin : Plugin<Project> {
 
         project.tasks.named("clean", Delete::class.java) {
             it.delete += setOf(
-                upxUnzip.get().unzipDirectory,   // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
-                vlcUnzip.get().unzipDirectory,   // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
+                upxUnzip.get().unzipDirectory, // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
+                vlcUnzip.get().unzipDirectory, // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
                 vlcSetup.get().windowsCopyPath // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
             )
         }
