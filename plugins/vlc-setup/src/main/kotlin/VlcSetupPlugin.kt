@@ -45,7 +45,8 @@ abstract class VlcSetupPlugin : Plugin<Project> {
          * See <PROJECT_ROOT>/README.md -> Embedding VLC DLL files section for more info
          * and also https://docs.gradle.org/current/userguide/working_with_files.html
          */
-        project.tasks
+        project
+            .tasks
             .withType(Sync::class.java)
             .matching { it.name == "prepareAppResources" }
             .all { it.dependsOn(vlcSetup) }
@@ -62,12 +63,16 @@ abstract class VlcSetupPlugin : Plugin<Project> {
             }
         }
 
-        project.tasks.named("clean", Delete::class.java) {
-            it.delete += setOf(
-                upxUnzip.get().unzipDirectory, // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
-                vlcUnzip.get().unzipDirectory, // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
-                vlcSetup.get().windowsCopyPath // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
-            )
-        }
+        project
+            .tasks
+            .withType(Delete::class.java)
+            .matching { it.name == "clean" }
+            .all {
+                it.delete += setOf(
+                    upxUnzip.get().unzipDirectory, // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
+                    vlcUnzip.get().unzipDirectory, // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
+                    vlcSetup.get().windowsCopyPath // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
+                )
+            }
     }
 }
