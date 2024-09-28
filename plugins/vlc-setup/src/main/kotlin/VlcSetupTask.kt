@@ -10,6 +10,10 @@ import kotlin.sequences.forEach
 // See <PROJECT_ROOT>/README.md for more info.
 abstract class VlcSetupTask : DefaultTask() {
 
+    init {
+        group = "compose desktop"
+    }
+
     @get:InputDirectory
     abstract val vlcDirectory: Property<File>
 

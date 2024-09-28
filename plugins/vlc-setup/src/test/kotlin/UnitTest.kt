@@ -20,6 +20,13 @@ class UnitTest {
     }
 
     @Test
+    fun `The vlcSetup task should have the same Gradle group as Compose Multiplatform Desktop tasks`() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply("vlc-setup")
+        assertThat(project.tasks.getByName("vlcSetup").group).isEqualTo("compose desktop")
+    }
+
+    @Test
     fun `When user project applies the plugin, the vlcSetup extension should be available in the build script`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply("vlc-setup")
