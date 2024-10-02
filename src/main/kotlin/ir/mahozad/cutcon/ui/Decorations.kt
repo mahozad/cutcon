@@ -262,7 +262,7 @@ private class CustomWindowProcedure(private val windowHandle: HWND) : WindowProc
         .onFailure { logger.warn(it) { "Could not load user32 library" } }
         .getOrNull()
     // The default window procedure to call its methods when the default method behaviour is desired/sufficient
-    private var defaultWndProc = if (is64Bit()) {
+    private val defaultWndProc = if (is64Bit()) {
         USER32EX?.SetWindowLongPtr(windowHandle, GWLP_WNDPROC, this) ?: LONG_PTR(-1)
     } else {
         USER32EX?.SetWindowLong(windowHandle, GWLP_WNDPROC, this) ?: LONG_PTR(-1)

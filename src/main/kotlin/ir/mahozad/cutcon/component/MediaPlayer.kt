@@ -108,12 +108,12 @@ class DefaultMediaPlayer : MediaPlayer {
         "--no-avcodec-corrupted"
     )
 
-    private var vlcMediaPlayerFactory = initializeVlcMediaPlayerFactory()
-    private var finishListener: ((MediaPlayer) -> Unit)? = null
     private var clipToLoop: Clip? = null
+    private var finishListener: ((MediaPlayer) -> Unit)? = null
+    private val vlcMediaPlayerFactory = initializeVlcMediaPlayerFactory()
     private val videoSurface = SkiaBitmapVideoSurface()
     private val eventListener = EventListener()
-    private var vlcMediaPlayer = vlcMediaPlayerFactory
+    private val vlcMediaPlayer = vlcMediaPlayerFactory
         .mediaPlayers()
         .newEmbeddedMediaPlayer()
         .apply { videoSurface().set(videoSurface) }

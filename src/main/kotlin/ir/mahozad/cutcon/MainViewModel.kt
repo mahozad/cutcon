@@ -127,15 +127,15 @@ class MainViewModel(
     private val _isMiniScreen = MutableStateFlow(defaultIsMiniScreen)
     private val _isSidePanelDisplayed = MutableStateFlow(defaultIsSidePanelDisplayed)
     private val _sidePanelSelectedTabIndex = MutableStateFlow(defaultSidePanelDisplayedTab)
-    private var _format = MutableStateFlow(defaultFormat)
+    private val _format = MutableStateFlow(defaultFormat)
     private val _isAlwaysOnTop = MutableStateFlow(defaultIsAlwaysOnTop)
     private val _saveFile = MutableStateFlow(defaultSaveFilePath)
-    private var _lastOpenDirectory = MutableStateFlow(
+    private val _lastOpenDirectory = MutableStateFlow(
         settings[PREF_LAST_OPEN_DIRECTORY, null]
             ?.let(::Path)
             ?.takeIf(Path::exists)
     )
-    private var _lastSaveDirectory = MutableStateFlow(
+    private val _lastSaveDirectory = MutableStateFlow(
         settings[PREF_LAST_SAVE_DIRECTORY, null]
             ?.let(::Path)
             ?.takeIf(Path::exists)
@@ -172,10 +172,10 @@ class MainViewModel(
         )
     )
     private val _conversion = MutableStateFlow<ConversionStatus>(ConversionStatus.None)
-    private var _clipStartMinuteInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
-    private var _clipStartSecondInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
-    private var _clipEndMinuteInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
-    private var _clipEndSecondInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
+    private val _clipStartMinuteInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
+    private val _clipStartSecondInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
+    private val _clipEndMinuteInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
+    private val _clipEndSecondInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
     // NOTE: Do not use .flowOn(dispatcher); It degrades UI performance
     val displayImage = mediaPlayer.output.transform {
         if (it is MediaPlayer.Output.SourceNotStarted) {
