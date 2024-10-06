@@ -38,7 +38,7 @@ private val viewModel = MainViewModel(
  * and https://github.com/JetBrains/compose-multiplatform/issues/4233
  */
 @OptIn(ExperimentalComposeUiApi::class)
-val ApplicationScope.exceptionHandlerProvider
+private val ApplicationScope.exceptionHandlerProvider
     get() = LocalWindowExceptionHandlerFactory.provides(
         WindowExceptionHandlerFactory {
             WindowExceptionHandler {
