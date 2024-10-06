@@ -14,7 +14,7 @@ plugins {
 }
 
 val appIconFilePath = rootDir.toPath() / "raw" / "logo.ico"
-val appResourcesPath = rootDir.toPath() / "asset"
+val appResourcesPath = rootDir.toPath() / "src" / "asset"
 val vlcDirectoryName = "vlc"
 val releaseDate: LocalDate = LocalDate.of(2024, 7, 21)
 

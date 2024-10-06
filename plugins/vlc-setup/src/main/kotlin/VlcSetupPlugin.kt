@@ -52,8 +52,7 @@ abstract class VlcSetupPlugin : Plugin<Project> {
             .all { it.dependsOn(vlcSetup) }
 
         project.tasks.withType(Test::class.java) { test ->
-            // See <PROJECT_ROOT>/assets/README.md for more info.
-            // and https://github.com/JetBrains/compose-multiplatform/issues/3244
+            // See https://github.com/JetBrains/compose-multiplatform/issues/3244
             test.dependsOn("prepareAppResources")
             project.afterEvaluate {
                 test.systemProperty(
