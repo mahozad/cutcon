@@ -2,6 +2,7 @@ rootProject.name = "Cutcon"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
+    includeBuild("vlc-setup-linux")
     repositories {
         google()
         gradlePluginPortal()
