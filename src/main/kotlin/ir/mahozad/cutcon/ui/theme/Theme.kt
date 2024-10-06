@@ -23,8 +23,7 @@ private val DarkColors = darkColors(
     primaryVariant = Color(0xff208bb2)
 )
 
-@Composable
-fun BorderColor() = MaterialTheme.colors.onSurface.copy(ContentAlpha.medium)
+val borderColor @Composable get() = MaterialTheme.colors.onSurface.copy(ContentAlpha.medium)
 
 @Composable
 fun AppTheme(
