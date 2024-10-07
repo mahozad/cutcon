@@ -1,7 +1,14 @@
-Links for downloading all the versions of VLC (source or installer):
+Links for downloading all versions of VLC (source code or packaged):
   - https://get.videolan.org/vlc/
   - https://download.videolan.org/pub/vlc/
   - http://ftp.videolan.org/pub/videolan/vlc
+Very useful code/issues of a multiplatform app implementing a video player:
+  - https://github.com/JetBrains/compose-multiplatform/issues/1089
+  - https://github.com/simplex-chat/simplex-chat/pull/3052
+  - https://github.com/simplex-chat/simplex-chat/pull/3120
+  - https://github.com/simplex-chat/simplex-chat/pull/3130
+  - https://github.com/simplex-chat/simplex-chat/pull/3136
+  - https://github.com/simplex-chat/simplex-chat/scripts/desktop/prepare-vlc-linux.sh
 How to build VLC from source:
   - https://wiki.videolan.org/Category:Building/
 How to build/embed for Linux:
@@ -11,8 +18,6 @@ How to build/embed for Android:
   - https://github.com/masterwok/simple-vlc-player
   - https://github.com/mrmaffen/vlc-android-sdk
   - https://stackoverflow.com/questions/39311753/embed-libvlc-into-my-android-app-is-not-playing-video-only-audio-is-being-playe
-List of VLC libraries/plugins:
-  - https://wiki.videolan.org/Contrib_Status/
 Hardware video acceleration (see https://wiki.archlinux.org/index.php/Hardware_video_acceleration):
   - NVIDIA "vdpau" (mesa-vdpau-drivers;libvdpau)
   - intel "vaapi"(libva )
@@ -22,27 +27,16 @@ Hardware video acceleration (see https://wiki.archlinux.org/index.php/Hardware_v
 ---
 
 
-See
+## Setup VLC for Linux
+VLC provides installers for Windows and macOS but provides just the source code for Linux (and some installers; read below).
+See:
+  - List of VLC libraries/plugins: https://wiki.videolan.org/Contrib_Status/
   - https://unix.stackexchange.com/questions/227910/will-my-linux-binary-work-on-all-distros
   - https://stackoverflow.com/questions/78000488/is-there-a-list-of-shared-libraries-available-in-any-linux
   - https://askubuntu.com/questions/350068/where-does-ubuntu-look-for-shared-libraries
   - https://www.tecmint.com/understanding-shared-libraries-in-linux/
   - https://github.com/conan-io/conan/issues/11465#Sharing-binaries-across-different-linux-distros
 
-
-https://github.com/JetBrains/compose-multiplatform/issues/1089
-https://github.com/simplex-chat/simplex-chat/pull/3052
-https://github.com/simplex-chat/simplex-chat/pull/3120
-https://github.com/simplex-chat/simplex-chat/pull/3130
-https://github.com/simplex-chat/simplex-chat/pull/3136
-https://github.com/simplex-chat/simplex-chat/scripts/desktop/prepare-vlc-linux.sh
-
-
----
-
-
-## Setup VLC for Linux
-VLC provides installers for Windows and macOS but provides just the source code for Linux (and some installers; read below).
 
 ### Build VLC from source code
   - Download the VLC release archive (see the links above)
@@ -65,6 +59,7 @@ VLC provides installers for Windows and macOS but provides just the source code 
       `make`  
   - `./configure` (make sure it executes and ends with no error)
   - `./compile`
+
 
 ### Use VLC packages/installers
 Different Linux distributions have different package management systems.
@@ -99,8 +94,8 @@ to see all errors and warnings from VLC when running the app.
 
 Here are the steps to embed VLC in the app for Linux:
 
-1. Remove the default installed VLC (if any) on Ubuntu:
-   https://askubuntu.com/q/572865
+1. Remove the default installed VLC (if any) on Ubuntu:  
+   https://askubuntu.com/questions/572865/how-to-fully-remove-vlc-player
    - sudo apt autoremove
    - sudo apt remove vlc-nox
    - sudo apt remove vlc
@@ -109,8 +104,8 @@ Here are the steps to embed VLC in the app for Linux:
    which vlc
    whereis vlc
 
-3. Inspect available versions of VLC in SNAP format:
-   https://askubuntu.com/q/1268615
+3. Inspect available versions of VLC in SNAP format:  
+   https://askubuntu.com/questions/1268615/snap-install-specific-old-version
    - snap info vlc
 
 4. Download the snap package of VLC (instead of directly installing it)
@@ -118,8 +113,8 @@ Here are the steps to embed VLC in the app for Linux:
    - sudo snap download vlc --channel=latest/stable
    (can also install vlc with sudo snap install vlc --channel=latest/stable)
 
-5. Mount the downloaded vlc snap file
-   https://askubuntu.com/q/1162798
+5. Mount the downloaded vlc snap file  
+   https://askubuntu.com/questions/1162798/how-do-i-view-the-contents-of-a-snap-file
    - mkdir <mount-folder-name>
    - sudo mount -t squashfs -o ro /path/to/my.snap /path/to/<mount-folder-name>
 
@@ -153,12 +148,9 @@ Here are the steps to embed VLC in the app for Linux:
     rm -r <project-path>/asset/linux/vlc/x86_64-linux-gnu/
 
 
----
-
-
 #### What is rpath (DT_RPATH) and runpath (DT_RUNPATH)?
 See this good explanation:
-https://unix.stackexchange.com/q/22926
+https://unix.stackexchange.com/questions/22926/where-do-executables-look-for-shared-objects-at-runtime
 
 rpath designates the run-time search path hard-coded in an executable file or library.
 
@@ -166,13 +158,13 @@ The rpath is stored in the executable (it's the DT_RPATH or DT_RUNPATH dynamic a
 It can contain absolute paths or relative paths or paths starting with $ORIGIN.
 Relative paths are relative to the terminal or process working directory whereas $ORIGIN is the location of the file
 (e.g. if the file is in /opt/myapp/bin and its rpath is $ORIGIN/../lib:$ORIGIN/../plugins then the dynamic linker will look in /opt/myapp/lib and /opt/myapp/plugins).
-https://stackoverflow.com/q/38058041
+https://stackoverflow.com/questions/38058041/correct-usage-of-rpath-relative-vs-absolute
 
 rpath was deprecated in favor of runpath.
-https://stackoverflow.com/q/7967848
+https://stackoverflow.com/questions/7967848/use-rpath-but-not-runpath
 
 patchelf vs chrpath (for viewing, changing, deleting rpath)
-https://stackoverflow.com/q/13769141
+https://stackoverflow.com/questions/13769141/can-i-change-rpath-in-an-already-compiled-binary
 
 using objdump -x libvlc.so or objdump -p libvlc.so | grep NEEDED to inspect an so file
 https://en.wikipedia.org/wiki/Rpath
@@ -180,34 +172,13 @@ https://en.wikipedia.org/wiki/Ldd_(Unix)
 
 using ldd mylib.so file to inspect references
 it is a way to view what/which libraries are bound to your executable
-https://stackoverflow.com/q/29422614
+https://stackoverflow.com/questions/29422614/how-to-set-the-path-that-a-so-library-will-search-for-other-so-libraries
 
 ldd vs readelf
-https://stackoverflow.com/q/6242761
+https://stackoverflow.com/questions/6242761/determine-direct-shared-object-dependencies-of-a-linux-binary
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
----
-
-
-List of files after deleting some of them so that VLC still worked in the app: 
-
+#### List of files after deleting some of them so that VLC still worked in the app
 IdeaProjects/cutcon/asset/linux/vlc/
 ├── avahi
 │   └── service-types.db
