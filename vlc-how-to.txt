@@ -201,7 +201,7 @@ Embed libVLC in Android: https://stackoverflow.com/q/39311753
 
 
 build for linux (https://wiki.videolan.org/UnixCompile/):
-- download the release archive: https://get.videolan.org/vlc/3.0.20/
+- download the release archive: https://get.videolan.org/vlc/3.0.20/    or    http://ftp.videolan.org/pub/videolan/vlc/3.0.20/
 - extract it: tar xJf vlc-3.0.20.tar.xz
 - cd vlc-3.0.20
 - sudo apt install g++ make libtool automake autopoint pkg-config flex bison lua5.2

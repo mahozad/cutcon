@@ -13,11 +13,11 @@ abstract class VlcSetupPlugin : Plugin<Project> {
             // it.vlcVersion.set(vlcSetupExtension.vlcVersion)
             it.vlcVersion.set("3.0.21")
         }
-        val vlcUnzip = project.tasks.register("vlcUnzipLinux", VlcUnzipLinuxTask::class.java) {
+        val vlcUntar = project.tasks.register("vlcUntarLinux", VlcUntarLinuxTask::class.java) {
             it.dependsOn(vlcDownload)
             // it.mustRunAfter(upxDownload)
-            it.zipFile.set(vlcDownload.get().vlcZipFile)
-            it.unzipDirectory.set(vlcDownload.get().tempDownloadDirectory.map { it.resolve("vlc") })
+            it.tarFile.set(vlcDownload.get().vlcTarFile)
+            it.untarDirectory.set(vlcDownload.get().tempDownloadDirectory.map { it.resolve("vlc") })
         }
 
         /**
@@ -28,6 +28,6 @@ abstract class VlcSetupPlugin : Plugin<Project> {
             .tasks
             // .withType(Sync::class.java)
             .matching { it.name == "assemble" }
-            .all { it.dependsOn(vlcUnzip) }
+            .all { it.dependsOn(vlcUntar) }
     }
 }

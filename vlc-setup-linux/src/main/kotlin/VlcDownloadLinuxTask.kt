@@ -23,14 +23,14 @@ abstract class VlcDownloadLinuxTask : Download() {
     )
 
     @get:OutputFile
-    val vlcZipFile = tempDownloadDirectory.zip(vlcVersion) { directory, version ->
+    val vlcTarFile = tempDownloadDirectory.zip(vlcVersion) { directory, version ->
         directory.resolve("vlc-$version.tar.xz")
     }
 
     init {
         val baseUrl = "https://get.videolan.org"
         src(vlcVersion.map { "$baseUrl/vlc/${it}/vlc-${it}.tar.xz" })
-        dest(vlcZipFile)
+        dest(vlcTarFile)
         overwrite(false) // Prevents re-download every time
     }
 }

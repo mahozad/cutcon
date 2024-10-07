@@ -5,13 +5,13 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
-abstract class VlcUnzipLinuxTask : DefaultTask() {
+abstract class VlcUntarLinuxTask : DefaultTask() {
 
     @get:InputFile
-    abstract val zipFile: Property<File>
+    abstract val tarFile: Property<File>
 
     @get:OutputDirectory
-    abstract val unzipDirectory: Property<File>
+    abstract val untarDirectory: Property<File>
 
     @TaskAction
     fun execute() {
@@ -19,8 +19,8 @@ abstract class VlcUnzipLinuxTask : DefaultTask() {
             it.commandLine(
                 "tar",
                 "xJf",
-                zipFile.get(),
-                "--directory", unzipDirectory.get(),
+                tarFile.get(),
+                "--directory", untarDirectory.get(),
                 "--strip-components=1" // Omits the parent directory in archive from the extracted files
             )
         }
