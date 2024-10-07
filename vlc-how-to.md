@@ -1,34 +1,33 @@
-/*
-Link to download vlc:
-    https://get.videolan.org/vlc/
-    https://download.videolan.org/pub/vlc/
-    http://ftp.videolan.org/pub/videolan/vlc
-How to build vlc from source:
-    https://wiki.videolan.org/Category:Building/
-How to build for Linux:
-    https://wiki.videolan.org/UnixCompile/
-How to build for Android:
-        https://wiki.videolan.org/AndroidCompile/
-        https://github.com/masterwok/simple-vlc-player
-        https://github.com/mrmaffen/vlc-android-sdk
-List of vlc libraries/plugins: https://wiki.videolan.org/Contrib_Status/
+Links for downloading all the versions of VLC (source or installer):
+  - https://get.videolan.org/vlc/
+  - https://download.videolan.org/pub/vlc/
+  - http://ftp.videolan.org/pub/videolan/vlc
+How to build VLC from source:
+  - https://wiki.videolan.org/Category:Building/
+How to build/embed for Linux:
+  - https://wiki.videolan.org/UnixCompile/
+How to build/embed for Android:
+  - https://wiki.videolan.org/AndroidCompile/
+  - https://github.com/masterwok/simple-vlc-player
+  - https://github.com/mrmaffen/vlc-android-sdk
+  - https://stackoverflow.com/questions/39311753/embed-libvlc-into-my-android-app-is-not-playing-video-only-audio-is-being-playe
+List of VLC libraries/plugins:
+  - https://wiki.videolan.org/Contrib_Status/
+Hardware video acceleration (see https://wiki.archlinux.org/index.php/Hardware_video_acceleration):
+  - NVIDIA "vdpau" (mesa-vdpau-drivers;libvdpau)
+  - intel "vaapi"(libva )
+  - AMD "vaapi" and "vdpau"
 
 
-
-
-
-
-===================================================================
-
-
+---
 
 
 See
-  - https://unix.stackexchange.com/q/227910
-  - https://stackoverflow.com/q/78000488
-  - https://askubuntu.com/q/350068
+  - https://unix.stackexchange.com/questions/227910/will-my-linux-binary-work-on-all-distros
+  - https://stackoverflow.com/questions/78000488/is-there-a-list-of-shared-libraries-available-in-any-linux
+  - https://askubuntu.com/questions/350068/where-does-ubuntu-look-for-shared-libraries
   - https://www.tecmint.com/understanding-shared-libraries-in-linux/
-  - https://github.com/conan-io/conan/issues/11465
+  - https://github.com/conan-io/conan/issues/11465#Sharing-binaries-across-different-linux-distros
 
 
 https://github.com/JetBrains/compose-multiplatform/issues/1089
@@ -39,28 +38,43 @@ https://github.com/simplex-chat/simplex-chat/pull/3136
 https://github.com/simplex-chat/simplex-chat/scripts/desktop/prepare-vlc-linux.sh
 
 
+---
 
 
+## Setup VLC for Linux
+VLC provides installers for Windows and macOS but provides just the source code for Linux (and some installers; read below).
 
+### Build VLC from source code
+  - Download the VLC release archive (see the links above)
+  - extract it: `tar xJf vlc-3.0.20.tar.xz`
+  - `cd vlc-3.0.20`
+  - `sudo apt install g++ make libtool automake autopoint pkg-config flex bison lua5.2`
+  - Enable sources with either of these ways:
+    + Open *Software & Updates* app and enable the *Sources* checkbox and click close and click reload
+    + In `/etc/apt/sources.list` uncomment lines that start with `deb-src` and then `sudo apt update`
+  - `./bootstrap`
+  - Link against libraries:
+    + To link against dynamic libraries (meaning libraries installed or available on the OS):
+      `sudo apt build-dep vlc`
+    + To link statically (that is, provide the libraries along with the vlc):
+      `sudo apt install subversion yasm cvs cmake ragel`  
+      `cd contrib`  
+      `mkdir native`  
+      `cd native`  
+      `../bootstrap`  
+      `make`  
+  - `./configure` (make sure it executes and ends with no error)
+  - `./compile`
 
+### Use VLC packages/installers
+Different Linux distributions have different package management systems.
 
+Debian and distributions derived from it (like Ubuntu (and its variants like Kubuntu, Xubuntu etc.), Mint, Kali, etc.)
+use a packaging format called **.deb**. The tool to deal with this format is called **apt**.
 
+RedHat (RHEL) and distributions derived from it (like CentOS, Fedora, openSUSE, etc.) use a packaging format called **.rpm**.
 
-VLC provides installers for Windows (and macOS?) but provides just the source code for Linux.
-List of download of installers and source code for all the versions of VLC is available here: https://get.videolan.org/vlc/
-Building for linux is easy (it's just running a single command).
-To build for the linux, see https://wiki.videolan.org/UnixCompile
-
-Another way is to use VLC packages for the desired Linux distribution.
-
-Different Linux distributions may have different package management systems.
-
-The Debian and distributions derived from it (like Ubuntu (and its variants like Kubuntu, Xubuntu etc.), Mint, Kali, etc.)
-use a packaging format called .deb. The tool to deal with this format is called apt.
-
-The RedHat (RHEL) and distributions derived from it (like CentOS, Fedora, openSUSE, etc.) use a packaging format called .rpm.
-
-Arch linux and manjaro use pacman for package management.
+Arch linux and manjaro use **pacman** for package management.
 
 The deb and rpm formats typically do not include all the required dependencies of a program.
 Instead, they just include the main program files and the instructions to download/install/use
@@ -139,17 +153,10 @@ Here are the steps to embed VLC in the app for Linux:
     rm -r <project-path>/asset/linux/vlc/x86_64-linux-gnu/
 
 
+---
 
 
-
-========================================================
-
-
-
-
-
-What is rpath (DT_RPATH) and runpath (DT_RUNPATH)?
-
+#### What is rpath (DT_RPATH) and runpath (DT_RUNPATH)?
 See this good explanation:
 https://unix.stackexchange.com/q/22926
 
@@ -178,13 +185,6 @@ https://stackoverflow.com/q/29422614
 ldd vs readelf
 https://stackoverflow.com/q/6242761
 
-Hardware video acceleration
-    NVIDIA "vdpau" (mesa-vdpau-drivers;libvdpau)
-    intel "vaapi"(libva )
-    AMD "vaapi" and "vdpau"
-See https://wiki.archlinux.org/index.php/Hardware_video_acceleration
-
-Embed libVLC in Android: https://stackoverflow.com/q/39311753
 
 
 
@@ -200,38 +200,13 @@ Embed libVLC in Android: https://stackoverflow.com/q/39311753
 
 
 
-build for linux (https://wiki.videolan.org/UnixCompile/):
-- download the release archive: https://get.videolan.org/vlc/3.0.20/    or    http://ftp.videolan.org/pub/videolan/vlc/3.0.20/
-- extract it: tar xJf vlc-3.0.20.tar.xz
-- cd vlc-3.0.20
-- sudo apt install g++ make libtool automake autopoint pkg-config flex bison lua5.2
-
-- open software & updates app and enable the sources checkbox and click close and click reload
-  OR
-  in /etc/apt/sources.list uncomment lines that start with `deb-src`
-  then sudo apt update
-
-- ./bootstrap
-
-- To link against dynamic libraries (meaning libraries installed or available on the OS):
-  sudo apt build-dep vlc
-  To link statically (that is, provide the libraries along with the vlc):
-  sudo apt install subversion yasm cvs cmake ragel
-  cd contrib
-  mkdir native
-  cd native
-  ../bootstrap
-  make
-
-- ./configure (make sure it ends with no error)
-- ./compile
 
 
-==========================================================
-==========================================================
-==========================================================
 
-Using the snap version:
+---
+
+
+List of files after deleting some of them so that VLC still worked in the app: 
 
 IdeaProjects/cutcon/asset/linux/vlc/
 ├── avahi
