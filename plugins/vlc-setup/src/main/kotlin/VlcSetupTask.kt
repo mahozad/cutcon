@@ -34,10 +34,6 @@ abstract class VlcSetupTask : DefaultTask() {
         check(windowsCopyPath.isPresent) {
             "${::windowsCopyPath.name} is not specified. Set it in ${VlcSetupExtension.PLUGIN_NAME}{} block."
         }
-        // If shouldIncludeAllPlugins == true and then in a later execution shouldIncludeAllPlugins == false
-        // (i.e. the includes become more restrictive)
-        // or if we directly remove include(s) or modify their patterns in a way that removes some files, then
-        // the task will not remove those now-not-needed files. This is for these scenarios.
         // Do NOT use vlcSetup.windowsTargetPath.get().deleteRecursively() as it is so dangerous
         windowsCopyPath
             .get()

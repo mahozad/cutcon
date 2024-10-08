@@ -70,6 +70,14 @@ tasks.processResources {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    // See https://github.com/JetBrains/compose-multiplatform/issues/3244
+    dependsOn("prepareAppResources")
+    project.afterEvaluate {
+        systemProperty(
+            "compose.application.resources.dir",
+            project.tasks.named("prepareAppResources", Sync::class.java).get().destinationDir
+        )
+    }
 }
 
 tasks.wrapper {

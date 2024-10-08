@@ -1,8 +1,6 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Delete
-import org.gradle.api.tasks.Sync
-import org.gradle.api.tasks.testing.Test
 
 // See https://docs.gradle.org/current/userguide/implementing_gradle_plugins_precompiled.html#sec:applying_external_plugins
 // An easy and informative way to debug the tasks and why they are up to date or not is to add
@@ -42,25 +40,21 @@ abstract class VlcSetupPlugin : Plugin<Project> {
         }
 
         /**
-         * See <PROJECT_ROOT>/README.md -> Embedding VLC DLL files section for more info
-         * and also https://docs.gradle.org/current/userguide/working_with_files.html
+         * See https://docs.gradle.org/current/userguide/working_with_files.html
          */
         project
             .tasks
-            .withType(Sync::class.java)
-            .matching { it.name == "prepareAppResources" }
+            .matching { it.name == "processResources" }
             .all { it.dependsOn(vlcSetup) }
 
-        project.tasks.withType(Test::class.java) { test ->
-            // See https://github.com/JetBrains/compose-multiplatform/issues/3244
-            test.dependsOn("prepareAppResources")
-            project.afterEvaluate {
-                test.systemProperty(
-                    "compose.application.resources.dir",
-                    project.tasks.named("prepareAppResources", Sync::class.java).get().destinationDir
-                )
-            }
-        }
+        // If the windowsCopyPath is inside the path defined as Compose Multiplatform resources directory then
+        // it makes the task prepareAppResources implicitly depend on vlcSetup task because its input directory
+        // contains output files/directories (windowsCopyPath) of vlcSetup task.
+        // So, here, the prepareAppResources task (if/when it exists) is configured to run after vlcSetup task.
+        project
+            .tasks
+            .matching { it.name == "prepareAppResources" }
+            .all { it.mustRunAfter(vlcSetup) }
 
         project
             .tasks

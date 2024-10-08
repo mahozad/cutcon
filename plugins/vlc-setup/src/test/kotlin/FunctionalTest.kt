@@ -151,6 +151,72 @@ class FunctionalTest {
     }
 
     @Test
+    fun `When the shouldCompressPlugins was true and is set to false and then running the task again, plugins in windowsCopyPath should update`() {
+        println("testUserProjectDirectory = $testUserProjectDirectory")
+        val windowsCopyPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
+        (testUserProjectDirectory / "settings.gradle.kts").writeText(settingsContent)
+        (testUserProjectDirectory / "gradle.properties").writeText(propertiesContent)
+        (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
+            /*language=kotlin*/
+            """
+                vlcSetup {
+                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
+                    shouldCompressPlugins = true
+                }
+            """
+        })
+
+        val gradleExecutionResult1 = runGradle("vlcSetup", "--stacktrace")
+        (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
+            /*language=kotlin*/
+            """
+                vlcSetup {
+                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
+                    shouldCompressPlugins = false
+                }
+            """
+        })
+        val gradleExecutionResult2 = runGradle("vlcSetup", "--stacktrace")
+
+        assertThat(windowsCopyPath.resolve("libvlccore.dll").length()).isBetween(2_700_000, 3_000_000)
+        assertThat(gradleExecutionResult1.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(gradleExecutionResult2.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
+    }
+
+    @Test
+    fun `When the shouldCompressPlugins was false and is set to true and then running the task again, plugins in windowsCopyPath should update`() {
+        println("testUserProjectDirectory = $testUserProjectDirectory")
+        val windowsCopyPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
+        (testUserProjectDirectory / "settings.gradle.kts").writeText(settingsContent)
+        (testUserProjectDirectory / "gradle.properties").writeText(propertiesContent)
+        (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
+            /*language=kotlin*/
+            """
+                vlcSetup {
+                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
+                    shouldCompressPlugins = false
+                }
+            """
+        })
+
+        val gradleExecutionResult1 = runGradle("vlcSetup", "--stacktrace")
+        (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
+            /*language=kotlin*/
+            """
+                vlcSetup {
+                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
+                    shouldCompressPlugins = true
+                }
+            """
+        })
+        val gradleExecutionResult2 = runGradle("vlcSetup", "--stacktrace")
+
+        assertThat(windowsCopyPath.resolve("libvlccore.dll").length()).isBetween(1_300_000, 1_600_000)
+        assertThat(gradleExecutionResult1.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(gradleExecutionResult2.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
+    }
+
+    @Test
     fun `When a plugin is deleted manually from the windowsCopyPath and then running the task again, should copy the missing file to windowsCopyPath`() {
         println("testUserProjectDirectory = $testUserProjectDirectory")
         val windowsCopyPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
@@ -171,6 +237,44 @@ class FunctionalTest {
         val gradleExecutionResult2 = runGradle("vlcSetup", "--stacktrace")
 
         assertThat(windowsCopyPath.resolve("libvlccore.dll")).exists()
+        assertThat(gradleExecutionResult1.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
+        assertThat(gradleExecutionResult2.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
+    }
+
+    @Test
+    fun `When setting shouldIncludeAllPlugins from true to false (less plugins being included) and then running the task again, should remove the additional plugins in windowsCopyPath`() {
+        println("testUserProjectDirectory = $testUserProjectDirectory")
+        val windowsCopyPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
+        (testUserProjectDirectory / "settings.gradle.kts").writeText(settingsContent)
+        (testUserProjectDirectory / "gradle.properties").writeText(propertiesContent)
+        (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
+            /*language=kotlin*/
+            """
+                vlcSetup {
+                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
+                    shouldCompressPlugins = false
+                    shouldIncludeAllPlugins = true
+                }
+            """
+        })
+
+        val gradleExecutionResult1 = runGradle("vlcSetup", "--stacktrace")
+        val samplePlugin = windowsCopyPath.resolve("plugins/gui/libqt_plugin.dll")
+        assertThat(samplePlugin).exists()
+        (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
+            /*language=kotlin*/
+            """
+                vlcSetup {
+                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
+                    shouldCompressPlugins = false
+                    shouldIncludeAllPlugins = false
+                }
+            """
+        })
+        val gradleExecutionResult2 = runGradle("vlcSetup", "--stacktrace")
+
+        assertThat(samplePlugin).doesNotExist()
+        assertThat(gradleExecutionResult1.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
         assertThat(gradleExecutionResult2.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
     }
 }
