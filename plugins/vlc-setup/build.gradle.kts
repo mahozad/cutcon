@@ -10,6 +10,8 @@ dependencies {
     implementation("de.undercouch.download:de.undercouch.download.gradle.plugin:5.6.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.1")
     testImplementation("org.assertj:assertj-core:3.26.3")
+    testImplementation("org.jetbrains.compose:compose-gradle-plugin:1.6.0")
+    testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
 }
 
 tasks.withType<Test> {
