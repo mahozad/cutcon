@@ -19,6 +19,7 @@ abstract class VlcSetupPlugin : Plugin<Project> {
             it.tarFile.set(vlcDownload.get().vlcTarFile)
             it.untarDirectory.set(vlcDownload.get().tempDownloadDirectory.map { it.resolve("vlc") })
         }
+        val vlcInstallTools = project.tasks.register("vlcInstallTools", VlcInstallToolsLinuxTask::class.java)
 
         /**
          * See <PROJECT_ROOT>/README.md -> Embedding VLC DLL files section for more info
@@ -28,6 +29,6 @@ abstract class VlcSetupPlugin : Plugin<Project> {
             .tasks
             // .withType(Sync::class.java)
             .matching { it.name == "assemble" }
-            .all { it.dependsOn(vlcUntar) }
+            .all { it.dependsOn(vlcInstallTools) }
     }
 }
