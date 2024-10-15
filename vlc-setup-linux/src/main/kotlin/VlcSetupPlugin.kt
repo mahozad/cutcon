@@ -9,8 +9,10 @@ abstract class VlcSetupPlugin : Plugin<Project> {
         //     VlcSetupExtension.PLUGIN_NAME,
         //     VlcSetupExtension::class.java
         // )
+        val vlcInstallTools = project.tasks.register("vlcInstallTools", VlcInstallToolsLinuxTask::class.java)
         val vlcDownload = project.tasks.register("vlcDownloadLinux", VlcDownloadLinuxTask::class.java) {
             // it.vlcVersion.set(vlcSetupExtension.vlcVersion)
+            it.dependsOn(vlcInstallTools)
             it.vlcVersion.set("3.0.21")
         }
         val vlcUntar = project.tasks.register("vlcUntarLinux", VlcUntarLinuxTask::class.java) {
@@ -19,7 +21,10 @@ abstract class VlcSetupPlugin : Plugin<Project> {
             it.tarFile.set(vlcDownload.get().vlcTarFile)
             it.untarDirectory.set(vlcDownload.get().tempDownloadDirectory.map { it.resolve("vlc") })
         }
-        val vlcInstallTools = project.tasks.register("vlcInstallTools", VlcInstallToolsLinuxTask::class.java)
+        val prepareLibraries = project.tasks.register("vlcPrepareLibraries", VlcPrepareLibrariesLinuxTask::class.java) {
+            it.dependsOn(vlcUntar)
+            it.vlcDirectory.set(vlcUntar.get().untarDirectory)
+        }
 
         /**
          * See <PROJECT_ROOT>/README.md -> Embedding VLC DLL files section for more info
@@ -29,6 +34,6 @@ abstract class VlcSetupPlugin : Plugin<Project> {
             .tasks
             // .withType(Sync::class.java)
             .matching { it.name == "assemble" }
-            .all { it.dependsOn(vlcInstallTools) }
+            .all { it.dependsOn(prepareLibraries) }
     }
 }

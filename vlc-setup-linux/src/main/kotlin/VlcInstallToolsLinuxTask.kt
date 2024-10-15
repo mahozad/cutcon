@@ -24,7 +24,15 @@ abstract class VlcInstallToolsLinuxTask : DefaultTask() {
                     "pkg-config",
                     "flex",
                     "bison",
-                    "lua5.2"
+                    "lua5.2",
+                    //
+                    //
+                    //
+                    "subversion",
+                    "yasm",
+                    "cvs",
+                    "cmake",
+                    "ragel"
                 )
                 .setStandardInput(System.`in`)
         }
