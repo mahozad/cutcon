@@ -39,6 +39,7 @@ See:
 
 
 ### Build VLC from source code
+(See how the VLC for Android builds itself probably for a better solution: https://code.videolan.org/videolan/vlc-android/)
   - Download the VLC release archive (see the links above)
   - extract it: `tar xJf vlc-3.0.20.tar.xz`
   - `cd vlc-3.0.20`

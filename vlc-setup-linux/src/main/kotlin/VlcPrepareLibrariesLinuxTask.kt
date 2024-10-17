@@ -10,22 +10,21 @@ abstract class VlcPrepareLibrariesLinuxTask : DefaultTask() {
     @get:InputDirectory
     abstract val vlcDirectory: Property<File>
 
+    private val script: File by lazy {
+        val destination = temporaryDir.resolve("script.sh")
+        javaClass.getResourceAsStream("/script.sh")?.use { input ->
+            destination.outputStream().use(input::copyTo)
+        }
+        destination
+    }
+
     @TaskAction
     fun execute() {
-        val nativeDirectory = vlcDirectory
-            .get()
-            .resolve("contrib")
-            .resolve("native")
-            .also { it.toPath().createDirectories() }
         project.exec {
             it
-                .commandLine("../bootstrap")
-                .workingDir(nativeDirectory)
-        }
-        project.exec {
-            it
-                .commandLine("make")
-                .workingDir(nativeDirectory)
+                .commandLine("sh", "$script")
+                .setStandardInput(System.`in`)
+                .workingDir(vlcDirectory.get())
         }
     }
 }

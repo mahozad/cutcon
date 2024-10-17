@@ -8,3 +8,7 @@
 #sudo -S apt-get update
 #sudo -S apt remove nasm
 #sudo -S apt install nasm=2.14.02-1ubuntu1
+
+sudo -S apt build-dep vlc
+./configure
+./compile

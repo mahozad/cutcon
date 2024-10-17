@@ -46,11 +46,12 @@ abstract class VlcInstallToolsLinuxTask : DefaultTask() {
                 .setStandardInput(System.`in`)
         }
 
-        project.exec {
-            it
-                .commandLine("sh", "$script")
-                .setStandardInput(System.`in`)
-        }
+        // project.exec {
+        //     it
+        //         .commandLine("sh", "$script")
+        //         .workingDir()
+        //         .setStandardInput(System.`in`)
+        // }
 
 //        project.exec {
 //            it.commandLine(
