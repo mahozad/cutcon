@@ -1,7 +1,16 @@
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 
 abstract class VlcInstallToolsLinuxTask : DefaultTask() {
+
+    private val script: File by lazy {
+        val destination = temporaryDir.resolve("script.sh")
+        javaClass.getResourceAsStream("/script.sh")?.use { input ->
+            destination.outputStream().use(input::copyTo)
+        }
+        destination
+    }
 
     @TaskAction
     fun execute() {
@@ -36,5 +45,45 @@ abstract class VlcInstallToolsLinuxTask : DefaultTask() {
                 )
                 .setStandardInput(System.`in`)
         }
+
+        project.exec {
+            it
+                .commandLine("sh", "$script")
+                .setStandardInput(System.`in`)
+        }
+
+//        project.exec {
+//            it.commandLine(
+//                "sudo", "-S", "apt", "build-dep", "vlc"
+//            ).setStandardInput(System.`in`)
+//        }
+//
+//        project.exec {
+//            it.commandLine(
+//                "sudo", "-S", "apt", "remove", "meson"
+//            ).setStandardInput(System.`in`)
+//        }
+//
+//        project.exec {
+//            it.commandLine(
+//                "sudo", "-S", "apt", "install", "python3-pip"
+//            ).setStandardInput(System.`in`)
+//        }
+//
+//        project.exec {
+//            it.commandLine(
+//                "sudo", "-S", "pip3", "install", "meson"
+//            ).setStandardInput(System.`in`)
+//        }
+//
+//        // https://github.com/xiph/rav1e/issues/2289
+//        project.exec {
+//            it.commandLine("sudo add-apt-repository ppa:team-xbmc/ppa")
+//        }
+//        project.exec {
+//            it.commandLine(
+//                "sudo", "-S", "apt", "install", "nasm=2.14.02"
+//            ).setStandardInput(System.`in`)
+//        }
     }
 }

@@ -22,10 +22,10 @@ abstract class VlcPrepareLibrariesLinuxTask : DefaultTask() {
                 .commandLine("../bootstrap")
                 .workingDir(nativeDirectory)
         }
-//        project.exec {
-//            it
-//                .commandLine("make")
-//                .workingDir(nativeDirectory)
-//        }
+        project.exec {
+            it
+                .commandLine("make")
+                .workingDir(nativeDirectory)
+        }
     }
 }
