@@ -85,9 +85,13 @@ Also see https://github.com/cmatomic/VLCplayer-AppImage and https://github.com/f
 
 Note that apps can publish different variants (called channels) on the Snap repository.
 For example, a stable channel, a beta channel, an old channel etc.
-Now, each channel only has the latest version of an app, so there seems
+Unfortunately, each channel only has the latest version of an app, so there seems
 to be no way to download, for example, a previous stable version of VLC.
-So, upload vlc snap files to maven repository as a library or keep a backup of them if/when VLC snap gets updated.
+
+We also can probably build the snap package ourselves like how VLC itself builds it:  
+https://github.com/videolan/vlc/blob/master/extras/package/snap/snapcraft.yaml
+
+Another option would be to upload vlc snap files to maven repository as a library or keep a backup of them if/when VLC snap gets updated.
 
 Make sure to remove the option "--quiet" and pass the options "--verbose", "2" to vlc (through vlcj MediaPlayerFactory)
 to see all errors and warnings from VLC when running the app.
