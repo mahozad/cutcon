@@ -1,11 +1,14 @@
 package ir.mahozad.cutcon.viewmodel
 
+import androidx.compose.ui.InternalComposeUiApi
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
 import io.mockk.every
 import io.mockk.spyk
 import io.mockk.verify
 import ir.mahozad.cutcon.component.MediaPlayer
 import ir.mahozad.cutcon.constructMainViewModel
-import ir.mahozad.cutcon.createKeyPressedEvent
 import ir.mahozad.cutcon.model.MediaInfo
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -19,10 +22,6 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class KeyEventTest {
 
-    private val keyEventEscapePressed = createKeyPressedEvent(27.toChar())
-    private val keyEventSpacePressed = createKeyPressedEvent(' ')
-    private val keyEventFPressed = createKeyPressedEvent('F')
-
     @Test
     fun `When media is resumed and hitting Space bar, the media player toggleResume or pause should be called`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
@@ -31,7 +30,8 @@ abstract class KeyEventTest {
         val viewModel = constructMainViewModel(dispatcher, mediaPlayer = mediaPlayer)
         val results = mutableListOf<MediaInfo>()
         backgroundScope.launch(dispatcher) { viewModel.mediaInfo.toList(results) }
-        val keyEvent = androidx.compose.ui.input.key.KeyEvent(keyEventSpacePressed)
+        @OptIn(InternalComposeUiApi::class)
+        val keyEvent = KeyEvent(Key.Spacebar, KeyEventType.KeyDown)
         viewModel.onKeyboardEvent(keyEvent)
         // TODO: See https://github.com/mockk/mockk/issues/1257
         verify(exactly = 1) { mediaPlayer.toggleResume() }
@@ -45,7 +45,8 @@ abstract class KeyEventTest {
         val viewModel = constructMainViewModel(dispatcher, mediaPlayer = mediaPlayer)
         val results = mutableListOf<MediaInfo>()
         backgroundScope.launch(dispatcher) { viewModel.mediaInfo.toList(results) }
-        val keyEvent = androidx.compose.ui.input.key.KeyEvent(keyEventSpacePressed)
+        @OptIn(InternalComposeUiApi::class)
+        val keyEvent = KeyEvent(Key.Spacebar, KeyEventType.KeyDown)
         viewModel.onKeyboardEvent(keyEvent)
         // TODO: See https://github.com/mockk/mockk/issues/1257
         verify(exactly = 1) { mediaPlayer.toggleResume() }
@@ -57,7 +58,8 @@ abstract class KeyEventTest {
         val viewModel = constructMainViewModel(dispatcher)
         val results = mutableListOf<Boolean>()
         backgroundScope.launch(dispatcher) { viewModel.isFullscreen.toList(results) }
-        val keyEvent = androidx.compose.ui.input.key.KeyEvent(keyEventFPressed)
+        @OptIn(InternalComposeUiApi::class)
+        val keyEvent = KeyEvent(Key.F, KeyEventType.KeyDown)
         viewModel.onKeyboardEvent(keyEvent)
         assertThat(results).containsExactly(false, true)
     }
@@ -70,7 +72,8 @@ abstract class KeyEventTest {
         }
         val results = mutableListOf<Boolean>()
         backgroundScope.launch(dispatcher) { viewModel.isFullscreen.toList(results) }
-        val keyEvent = androidx.compose.ui.input.key.KeyEvent(keyEventFPressed)
+        @OptIn(InternalComposeUiApi::class)
+        val keyEvent = KeyEvent(Key.F, KeyEventType.KeyDown)
         viewModel.onKeyboardEvent(keyEvent)
         assertThat(results).containsExactly(true, false)
     }
@@ -83,7 +86,8 @@ abstract class KeyEventTest {
         }
         val results = mutableListOf<Boolean>()
         backgroundScope.launch(dispatcher) { viewModel.isFullscreen.toList(results) }
-        val keyEvent = androidx.compose.ui.input.key.KeyEvent(keyEventEscapePressed)
+        @OptIn(InternalComposeUiApi::class)
+        val keyEvent = KeyEvent(Key.Escape, KeyEventType.KeyDown)
         viewModel.onKeyboardEvent(keyEvent)
         assertThat(results).containsExactly(true, false)
     }

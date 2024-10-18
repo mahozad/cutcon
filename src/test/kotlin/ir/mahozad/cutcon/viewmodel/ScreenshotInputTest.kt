@@ -1,7 +1,10 @@
 package ir.mahozad.cutcon.viewmodel
 
+import androidx.compose.ui.InternalComposeUiApi
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
 import ir.mahozad.cutcon.constructMainViewModel
-import ir.mahozad.cutcon.createKeyPressedEvent
 import ir.mahozad.cutcon.getResourceAsPath
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -110,11 +113,13 @@ abstract class ScreenshotInputTest {
                 }
                 val results = mutableListOf<Boolean>()
                 backgroundScope.launch(dispatcher) { viewModel.isScreenshotInputActive.toList(results) }
-                val keyEvent = androidx.compose.ui.input.key.KeyEvent(createKeyPressedEvent('S'))
+                @OptIn(InternalComposeUiApi::class)
+                val keyEvent = KeyEvent(Key.S, KeyEventType.KeyDown)
                 viewModel.onKeyboardEvent(keyEvent)
                 while (results.size < 3) delay(5.milliseconds) // This is to prevent test from failing on CI
                 assertThat(results).containsExactly(false, true, false)
             }
+
 
         @Test
         fun `When screenshot input is disabled and pressing screenshot shortcut, isScreenshotInputActive should stay false`() =
@@ -123,7 +128,8 @@ abstract class ScreenshotInputTest {
                 val viewModel = constructMainViewModel(dispatcher)
                 val results = mutableListOf<Boolean>()
                 backgroundScope.launch(dispatcher) { viewModel.isScreenshotInputActive.toList(results) }
-                val keyEvent = androidx.compose.ui.input.key.KeyEvent(createKeyPressedEvent('S'))
+                @OptIn(InternalComposeUiApi::class)
+                val keyEvent = KeyEvent(Key.S, KeyEventType.KeyDown)
                 viewModel.onKeyboardEvent(keyEvent)
                 advanceUntilIdle()
                 assertThat(results).containsExactly(false)

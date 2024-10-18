@@ -1,8 +1,8 @@
 [versions]
 gradle = "8.10"
 jvm = "21"
-kotlin = "1.9.22"
-compose-multiplatform = "1.6.0"
+kotlin = "2.0.20"
+compose-multiplatform = "1.7.0"
 proguard = "7.5.0"
 buildConfig = "5.4.0"
 buildDownload = "5.6.0"
@@ -47,5 +47,6 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
