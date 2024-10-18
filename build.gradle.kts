@@ -6,6 +6,7 @@ import kotlin.io.path.div
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
     // Alternative: https://github.com/yshrsmz/BuildKonfig
     alias(libs.plugins.buildConfig)

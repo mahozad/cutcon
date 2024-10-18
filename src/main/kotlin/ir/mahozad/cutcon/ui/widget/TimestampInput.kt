@@ -1,7 +1,6 @@
 package ir.mahozad.cutcon.ui.widget
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
@@ -98,7 +97,6 @@ private fun CustomTimestampTextField(
     onValueChange: (String, TextRange) -> Unit
 ) {
     var textFieldValue by remember(value) { mutableStateOf(value) }
-    val colors = TextFieldDefaults.textFieldColors()
     val interactionSource = remember(::MutableInteractionSource)
     val isFocused by interactionSource.collectIsFocusedAsState()
     LaunchedEffect(isFocused) {
@@ -135,7 +133,6 @@ private fun CustomTimestampTextField(
                     bottomEnd = endRoundness
                 )
             )
-            .background(colors.backgroundColor(true).value)
             .onKeyEvent { event ->
                 handleKeyEvent(event, textFieldValue)
                     ?.let { textFieldValue = it }

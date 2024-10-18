@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -12,7 +13,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.draganddrop.DragAndDropEvent
+import androidx.compose.ui.draganddrop.DragAndDropTarget
+import androidx.compose.ui.draganddrop.DragData.FilesList
+import androidx.compose.ui.draganddrop.dragData
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.Dp
@@ -40,6 +46,29 @@ fun MainPanel(viewModel: MainViewModel) {
     val isFullscreen by viewModel.isFullscreen.collectAsState()
     val isMiniScreen by viewModel.isMiniScreen.collectAsState()
     var isDragging by remember { mutableStateOf(false) }
+    val dragAndDropTarget = remember {
+        object : DragAndDropTarget {
+            override fun onEntered(event: DragAndDropEvent) {
+                isDragging = true
+            }
+
+            override fun onExited(event: DragAndDropEvent) {
+                isDragging = false
+            }
+
+            override fun onDrop(event: DragAndDropEvent): Boolean {
+                isDragging = false
+                (event.dragData() as? FilesList)
+                    ?.readFiles()
+                    ?.first()
+                    ?.let(::URI)
+                    ?.let(URI::toPath)
+                    ?.let(viewModel::setSourceToLocal)
+                    ?: return false
+                return true
+            }
+        }
+    }
     Column(
         horizontalAlignment = Alignment.Start,
         modifier = if (isFullscreen) {
@@ -72,21 +101,9 @@ fun MainPanel(viewModel: MainViewModel) {
                 aspectRatio = aspectRatio,
                 modifier = Modifier
                     .fillMaxSize()
-                    .onExternalDrag(
-                        onDragStart = { isDragging = true },
-                        onDragExit = { isDragging = false },
-                        onDrop = { state ->
-                            isDragging = false
-                            val dragData = state.dragData
-                            if (dragData is DragData.FilesList) {
-                                dragData
-                                    .readFiles()
-                                    .first()
-                                    .let(::URI)
-                                    .let(URI::toPath)
-                                    .let(viewModel::setSourceToLocal)
-                            }
-                        }
+                    .dragAndDropTarget(
+                        shouldStartDragAndDrop = { true },
+                        target = dragAndDropTarget
                     )
             )
             if (isFullscreen) {

@@ -55,6 +55,7 @@ fun MainWindow(viewModel: MainViewModel, onExitRequest: () -> Unit) {
     val isAlwaysOnTop by viewModel.isAlwaysOnTop.collectAsState()
     val isFullscreen by viewModel.isFullscreen.collectAsState()
     val windowWidth by viewModel.windowWidth.collectAsState()
+    // FIXME: The animation smoothness broke after CMP 1.6.2
     // FIXME: When the app theme is dark and toggling side panel,
     //  there is a bit of white flicker on the right side of panel
     val animatedWindowWidth by animateIntAsState(

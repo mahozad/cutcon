@@ -1,11 +1,9 @@
 package ir.mahozad.cutcon.ui.panel
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement.spacedBy
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -119,14 +117,20 @@ private fun DeveloperEntry() {
         Spacer(Modifier.width(4.dp))
         val developerString = buildAnnotatedString {
             append("${language.messages.txtLblAboutDeveloper} (")
-            pushStringAnnotation(tag = LINK_TAG, annotation = "https://mahozad.ir")
-            withStyle(style = SpanStyle(color = MaterialTheme.colors.primary)) {
+            withLink(
+                LinkAnnotation.Url(
+                    url = "https://mahozad.ir",
+                    styles = TextLinkStyles(SpanStyle(color = MaterialTheme.colors.primary))
+                )
+            ) {
                 append("https://mahozad.ir")
             }
-            pop()
             append(")")
         }
-        TextWithLink(annotatedString = developerString)
+        Text(
+            text = developerString,
+            fontSize = entryFontSize
+        )
     }
 }
 
@@ -208,7 +212,6 @@ private fun PoweredByEntries() {
     )
 }
 
-@OptIn(ExperimentalTextApi::class)
 @Composable
 private fun AboutEntry(
     icon: String,
@@ -229,42 +232,20 @@ private fun AboutEntry(
         val primaryColor = MaterialTheme.colors.primary
         val annotatedString = buildAnnotatedString {
             if (link != null) {
-                withAnnotation(tag = LINK_TAG, annotation = link) {
-                    withStyle(style = SpanStyle(color = primaryColor)) {
-                        append(linkText)
-                    }
+                withLink(
+                    LinkAnnotation.Url(
+                        url = link,
+                        styles = TextLinkStyles(SpanStyle(color = primaryColor))
+                    )
+                ) {
+                    append(linkText)
                 }
             }
             append(normalText)
         }
-        TextWithLink(annotatedString = annotatedString)
+        Text(
+            text = annotatedString,
+            fontSize = entryFontSize
+        )
     }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun TextWithLink(annotatedString: AnnotatedString) {
-    val urlHandler = LocalUriHandler.current
-    var mousePinterIcon by remember { mutableStateOf(PointerIcon.Default) }
-    ClickableText(
-        text = annotatedString,
-        // FIXME: The text seems a little bit more bold than other regular texts in the app
-        style = LocalTextStyle.current.copy(fontSize = entryFontSize, color = LocalContentColor.current),
-        modifier = Modifier.pointerHoverIcon(icon = mousePinterIcon),
-        onHover = { offset ->
-            annotatedString
-                .takeIf { offset != null }
-                ?.getStringAnnotations(tag = LINK_TAG, start = offset!!, end = offset)
-                ?.firstOrNull()
-                ?.let { mousePinterIcon = PointerIcon.Hand }
-                ?: run { mousePinterIcon = PointerIcon.Default }
-        },
-        onClick = { offset ->
-            annotatedString
-                .getStringAnnotations(tag = LINK_TAG, start = offset, end = offset)
-                .firstOrNull()
-                ?.item
-                ?.let(urlHandler::openUri)
-        }
-    )
 }

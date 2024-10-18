@@ -1,6 +1,7 @@
 package ir.mahozad.cutcon.ui.widget
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,9 +13,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.foundation.draganddrop.dragAndDropTarget
+import androidx.compose.ui.draganddrop.DragAndDropEvent
+import androidx.compose.ui.draganddrop.DragAndDropTarget
+import androidx.compose.ui.draganddrop.DragData.FilesList
+import androidx.compose.ui.draganddrop.dragData
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
@@ -66,7 +71,7 @@ private val height = 92.dp
 /**
  * Input for video watermark or audio album art.
  */
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FrameWindowScope.CoverInput(
     isEnabled: Boolean,
@@ -106,6 +111,27 @@ fun FrameWindowScope.CoverInput(
         var isDragging by remember { mutableStateOf(false) }
         val primaryColor = MaterialTheme.colors.primary
         val primaryVariantColor = MaterialTheme.colors.primaryVariant
+        val dragAndDropTarget = remember {
+            object : DragAndDropTarget {
+                override fun onEntered(event: DragAndDropEvent) {
+                    isDragging = true
+                }
+
+                override fun onExited(event: DragAndDropEvent) {
+                    isDragging = false
+                }
+
+                override fun onDrop(event: DragAndDropEvent): Boolean {
+                    isDragging = false
+                    if (isEnabled) {
+                        onFileDrop(event, onFileChange)
+                        return true
+                    } else {
+                        return false
+                    }
+                }
+            }
+        }
         Box(modifier = modifier
             // Uses drawBehind because of the need for dashed stroke
             .drawBehind {
@@ -114,13 +140,9 @@ fun FrameWindowScope.CoverInput(
                 }
             }
             .clip(RoundedCornerShape(4.dp))
-            .onExternalDrag(
-                onDragStart = { isDragging = true },
-                onDragExit = { isDragging = false },
-                onDrop = { dragState ->
-                    isDragging = false
-                    if (isEnabled) onFileDrop(dragState, onFileChange)
-                }
+            .dragAndDropTarget(
+                shouldStartDragAndDrop = { true },
+                target = dragAndDropTarget
             )
         ) {
             if (preview == null) {
@@ -174,10 +196,10 @@ private fun DrawScope.drawBorder(
 
 @OptIn(ExperimentalComposeUiApi::class)
 private fun onFileDrop(
-    state: ExternalDragValue,
+    event: DragAndDropEvent,
     onFileSelected: (Path?) -> Unit
 ) {
-    (state.dragData as? DragData.FilesList)
+    (event.dragData() as? FilesList)
         ?.readFiles()
         ?.first()
         ?.let(::URI)
@@ -512,7 +534,7 @@ private fun WatermarkPlacementOption(
                 onClick = onClick,
                 enabled = isEnabled,
                 interactionSource = remember(::MutableInteractionSource),
-                indication = rememberRipple(bounded = false, radius = 8.dp)
+                indication = ripple(bounded = false, radius = 8.dp)
             )
     ) {
         drawCircle(color = colorPrimary, radius = size.minDimension / 2, style = Stroke(2.dp.toPx()))
@@ -527,7 +549,6 @@ private fun WatermarkPlacementOption(
 @Composable
 private fun CustomTextField(isEnabled: Boolean, value: Int, max: Int, onValueChange: (Int) -> Unit) {
     val language = LocalLanguage.current
-    val colors = TextFieldDefaults.textFieldColors()
     var input by remember { mutableStateOf(value.toString()) }
     val interactionSource = remember(::MutableInteractionSource)
     BasicTextField(
@@ -553,7 +574,6 @@ private fun CustomTextField(isEnabled: Boolean, value: Int, max: Int, onValueCha
             .width(44.dp)
             .height(24.dp)
             .clip(RoundedCornerShape(percent = 50))
-            .background(colors.backgroundColor(true).value)
             // Should consume (true) (except for TAB) to prevent bugs with app custom shortcuts
             // See https://github.com/JetBrains/compose-multiplatform/issues/1925
             .onKeyEvent { it.key != Key.Tab }

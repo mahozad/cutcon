@@ -1,6 +1,5 @@
 package ir.mahozad.cutcon
 
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toAwtImage
 import io.mockk.spyk
@@ -17,7 +16,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestDispatcher
 import org.bytedeco.ffmpeg.ffmpeg
 import org.bytedeco.javacpp.Loader
-import java.awt.event.KeyEvent
 import java.io.File
 import java.net.URL
 import java.nio.file.Path
@@ -129,13 +127,3 @@ fun extractFrame(from: Path, time: String, into: Path) {
         ?.reader()
         ?.forEachLine { println("Test output: $it") }
 }
-
-fun createKeyPressedEvent(key: Char) = KeyEvent(
-    /* source =      */ ComposeWindow(),
-    /* id =          */ KeyEvent.KEY_PRESSED,
-    /* when =        */ 0,
-    /* modifiers =   */ 0,
-    /* keyCode =     */ key.code,
-    /* keyChar =     */ key,
-    /* keyLocation = */ KeyEvent.KEY_LOCATION_STANDARD
-)
