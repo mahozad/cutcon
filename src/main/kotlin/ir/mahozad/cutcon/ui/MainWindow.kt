@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLocalization
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.Window
@@ -34,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.Font
 import java.awt.Taskbar
 import javax.sound.sampled.AudioSystem
 import kotlin.io.path.div
@@ -98,7 +100,7 @@ fun MainWindow(viewModel: MainViewModel, onExitRequest: () -> Unit) {
             CompositionLocalProvider(
                 LocalLanguage provides language,
                 LocalCalendar provides calendar,
-                LocalTextStyle provides LocalTextStyle.current.copy(fontFamily = language.fontFamily),
+                LocalTextStyle provides LocalTextStyle.current.copy(fontFamily = FontFamily(Font(language.fontResource))),
                 LocalLocalization provides language.contextMenuLocalization,
                 LocalLayoutDirection provides LayoutDirection.Ltr
             ) {

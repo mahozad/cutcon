@@ -1,8 +1,8 @@
 package ir.mahozad.cutcon.localization
 
 import androidx.compose.ui.platform.PlatformLocalization
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.LayoutDirection
+import org.jetbrains.compose.resources.FontResource
 import java.time.DayOfWeek
 import java.util.*
 
@@ -15,7 +15,7 @@ interface Language {
     val tag: String
     val locale: Locale
     val messages: Messages
-    val fontFamily: FontFamily
+    val fontResource: FontResource
     // See https://m2.material.io/design/usability/bidirectionality.html
     val layoutDirection: LayoutDirection
     val contextMenuLocalization: PlatformLocalization

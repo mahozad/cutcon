@@ -8,8 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.TextUnit
 import ir.mahozad.cutcon.LocalLanguage
+import org.jetbrains.compose.resources.Font
+
 
 private val LightColors = lightColors(
     primary = Color(0xff208bb2),
@@ -35,12 +38,12 @@ fun AppTheme(
         colors = if (isDark) DarkColors else LightColors,
         typography = MaterialTheme.typography.copy(
             // For buttons because they have hard-coded text style
-            button = MaterialTheme.typography.button.copy(fontFamily = language.fontFamily),
+            button = MaterialTheme.typography.button.copy(fontFamily = FontFamily(Font(language.fontResource))),
             // For dropdown items because they have hard-coded text style
-            subtitle1 = MaterialTheme.typography.subtitle1.copy(fontFamily = language.fontFamily),
+            subtitle1 = MaterialTheme.typography.subtitle1.copy(fontFamily = FontFamily(Font(language.fontResource))),
             // Most of the app text
             body1 = MaterialTheme.typography.body1.copy(
-                fontFamily = language.fontFamily, // For error dialog etc.
+                fontFamily = FontFamily(Font(language.fontResource)), // For error dialog etc.
                 lineHeight = TextUnit.Unspecified // Because of an apparent change in text between CMP 1.5.10 and 1.6.0
             )
         )
