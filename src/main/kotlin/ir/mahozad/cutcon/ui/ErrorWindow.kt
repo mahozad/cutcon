@@ -11,8 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalLocalization
-import androidx.compose.ui.res.loadSvgPainter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -20,23 +18,31 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.singleWindowApplication
 import ir.mahozad.cutcon.defaultFontSize
+import ir.mahozad.cutcon.generated.resources.Res
 import ir.mahozad.cutcon.localization.Language
 import ir.mahozad.cutcon.model.Theme
 import ir.mahozad.cutcon.openAppLogFolder
 import ir.mahozad.cutcon.ui.theme.AppTheme
 import ir.mahozad.cutcon.ui.widget.StackTrace
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.decodeToSvgPainter
+import java.net.URI
 import kotlin.system.exitProcess
 
 fun showErrorWindow(error: Throwable?, theme: Theme, language: Language) {
-    val icon = object {}
-        .javaClass
-        .getResourceAsStream("/logo-red.svg")
-        ?.let { loadSvgPainter(it, Density(1f)) }
+    // Could also use the asynchronous Res.readBytes("drawable/logo-red.svg")
+    @OptIn(ExperimentalResourceApi::class)
+    val appErrorIcon = Res
+        .getUri("drawable/logo-red.svg")
+        .let(::URI)
+        .toURL()
+        .readBytes()
+        .decodeToSvgPainter(Density(1f))
     singleWindowApplication(
         alwaysOnTop = true,
         undecorated = true,
         resizable = false,
-        icon = icon,
+        icon = appErrorIcon, // Used for app icon in taskbar
         title = language.messages.appName,
         state = WindowState(
             width = 464.dp,
@@ -47,7 +53,7 @@ fun showErrorWindow(error: Throwable?, theme: Theme, language: Language) {
         AppTheme(isDark = theme == Theme.DARK) {
             WindowDecoration(
                 isDecorationVisible = true,
-                icon = painterResource("logo-red.svg"),
+                icon = appErrorIcon,
                 title = { Title(language, it) },
                 isMinimizable = false,
                 onCloseRequest = { exitProcess(status = 1) }

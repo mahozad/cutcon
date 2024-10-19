@@ -90,6 +90,7 @@ tasks.wrapper {
 
 dependencies {
     implementation(compose.desktop.currentOs)
+    implementation(compose.components.resources)
     // Alternative icon packs:
     // https://github.com/DevSrSouza/compose-icons: FontAwesome and so on
     // https://github.com/microsoft/fluentui-system-icons: Has Android drawable files

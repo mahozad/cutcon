@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ir.mahozad.cutcon.*
@@ -21,6 +22,7 @@ import ir.mahozad.cutcon.model.Labeled
 import ir.mahozad.cutcon.model.Toggle
 import ir.mahozad.cutcon.ui.icon.*
 import ir.mahozad.cutcon.ui.widget.RadioGroup
+import org.jetbrains.compose.resources.Font
 
 private enum class LanguageEnum : Labeled {
     PERSIAN {
@@ -49,7 +51,7 @@ fun SettingsPanel(viewModel: MainViewModel) {
         // Overrides the font for when the language is not Persian (to show the Persian words with this font)
         Spacer(Modifier.height(8.dp))
         CompositionLocalProvider(
-            LocalTextStyle provides LocalTextStyle.current.copy(fontFamily = LanguageFa.fontFamily)
+            LocalTextStyle provides LocalTextStyle.current.copy(fontFamily = FontFamily(Font(LanguageFa.fontResource)))
         ) {
             Settings(
                 value = if (language is LanguageFa) {

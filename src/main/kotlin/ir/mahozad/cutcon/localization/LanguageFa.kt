@@ -1,8 +1,8 @@
 package ir.mahozad.cutcon.localization
 
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.unit.LayoutDirection
+import ir.mahozad.cutcon.generated.resources.Res
+import ir.mahozad.cutcon.generated.resources.vazirmatn_ui_v33_003
 import java.text.DecimalFormat
 import java.util.*
 
@@ -10,7 +10,7 @@ object LanguageFa : Language {
     override val tag = "Fa"
     override val locale = Locale.forLanguageTag(tag)!!
     override val messages = MessagesFa
-    override val fontFamily = FontFamily(Font("font/vazirmatn-ui-v33.003.ttf"))
+    override val fontResource = Res.font.vazirmatn_ui_v33_003
     override val layoutDirection = LayoutDirection.Rtl
 
     private val decimalFormat = DecimalFormat.getInstance(locale).apply {
