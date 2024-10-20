@@ -2,7 +2,6 @@ package ir.mahozad.cutcon.component
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
-import androidx.compose.ui.res.loadImageBitmap
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import ir.mahozad.cutcon.BuildConfig
 import ir.mahozad.cutcon.assetsPath
@@ -17,6 +16,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import org.jaudiotagger.audio.AudioFileIO
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ColorType
@@ -241,6 +242,7 @@ class DefaultMediaPlayer : MediaPlayer {
             ?: MediaPlayer.Output.SourceHasNoImage
     }
 
+    @OptIn(ExperimentalResourceApi::class)
     private fun generateOutputForAudio(path: Path): MediaPlayer.Output {
         return path
             .toFile()
@@ -249,8 +251,7 @@ class DefaultMediaPlayer : MediaPlayer {
             ?.tag
             ?.firstArtwork
             ?.binaryData
-            ?.inputStream()
-            ?.use(::loadImageBitmap)
+            ?.decodeToImageBitmap()
             ?.let(MediaPlayer.Output::Image)
             ?: MediaPlayer.Output.SourceHasNoImage
     }

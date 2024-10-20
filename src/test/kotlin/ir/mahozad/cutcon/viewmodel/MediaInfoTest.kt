@@ -1,14 +1,12 @@
 package ir.mahozad.cutcon.viewmodel
 
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkAll
-import io.mockk.verify
 import ir.mahozad.cutcon.component.MediaPlayer
 import ir.mahozad.cutcon.*
 import ir.mahozad.cutcon.component.*
@@ -23,10 +21,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.jaudiotagger.audio.AudioFileIO
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -415,6 +414,7 @@ abstract class MediaInfoTest {
             val fakeMediaPlayerOutput = MutableStateFlow<MediaPlayer.Output>(MediaPlayer.Output.SourceNotStarted)
             val localFile = getResourceAsPath("test.mp3")
             // FIXME: Duplicate of code in MediaPlayer
+            @OptIn(ExperimentalResourceApi::class)
             val localFileAlbumArt = localFile
                 .toFile()
                 .runCatching(AudioFileIO::read)
@@ -422,8 +422,7 @@ abstract class MediaInfoTest {
                 ?.tag
                 ?.firstArtwork
                 ?.binaryData
-                ?.inputStream()
-                ?.use(::loadImageBitmap)!!
+                ?.decodeToImageBitmap()!!
             every { mockMediaPlayer.output } returns fakeMediaPlayerOutput
             every { mockMediaPlayer.play(any()) } coAnswers  {
                 fakeMediaPlayerOutput.value = MediaPlayer.Output.SourceNotStarted
@@ -460,6 +459,7 @@ abstract class MediaInfoTest {
             val mockMediaPlayer = spyk<MediaPlayer>()
             val fakeMediaPlayerOutput = MutableStateFlow<MediaPlayer.Output>(MediaPlayer.Output.SourceNotStarted)
             val localFile = getResourceAsPath("test.mp3")
+            @OptIn(ExperimentalResourceApi::class)
             val localFileAlbumArt = localFile
                 .toFile()
                 .runCatching(AudioFileIO::read)
@@ -467,8 +467,7 @@ abstract class MediaInfoTest {
                 ?.tag
                 ?.firstArtwork
                 ?.binaryData
-                ?.inputStream()
-                ?.use(::loadImageBitmap)!!
+                ?.decodeToImageBitmap()!!
             every { mockMediaPlayer.output } returns fakeMediaPlayerOutput
             every { mockMediaPlayer.play(any()) } coAnswers  {
                 fakeMediaPlayerOutput.value = MediaPlayer.Output.SourceNotStarted
@@ -506,6 +505,7 @@ abstract class MediaInfoTest {
             val fakeMediaPlayerOutput = MutableStateFlow<MediaPlayer.Output>(MediaPlayer.Output.SourceNotStarted)
             val fakeMediaImage = decodeImage(getResourceAsPath("test.png"))
             val localFile = getResourceAsPath("test.mp3")
+            @OptIn(ExperimentalResourceApi::class)
             val localFileAlbumArt = localFile
                 .toFile()
                 .runCatching(AudioFileIO::read)
@@ -513,8 +513,7 @@ abstract class MediaInfoTest {
                 ?.tag
                 ?.firstArtwork
                 ?.binaryData
-                ?.inputStream()
-                ?.use(::loadImageBitmap)!!
+                ?.decodeToImageBitmap()!!
             every { mockMediaPlayer.output } returns fakeMediaPlayerOutput
             every { mockMediaPlayer.play(any()) } coAnswers  {
                 fakeMediaPlayerOutput.value = MediaPlayer.Output.SourceNotStarted

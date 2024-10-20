@@ -1,10 +1,10 @@
 package ir.mahozad.cutcon.model
 
-import androidx.compose.ui.res.loadImageBitmap
+import org.jetbrains.compose.resources.decodeToImageBitmap
 import ir.mahozad.cutcon.localization.Language
 
 /**
- * These are the intersection of the formats supported by both FFmpeg and Skia [loadImageBitmap]
+ * These are the intersection of the formats supported by both FFmpeg and Skia [decodeToImageBitmap]
  * (except the SVG format which we support with a workaround because FFmpeg does not support it universally).
  */
 enum class SupportedImageFormat(vararg val extensions: String) {

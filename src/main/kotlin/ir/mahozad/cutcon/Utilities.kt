@@ -2,12 +2,13 @@ package ir.mahozad.cutcon
 
 import androidx.compose.material.Colors
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toAwtImage
-import androidx.compose.ui.res.loadImageBitmap
-import androidx.compose.ui.res.loadSvgPainter
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Density
@@ -22,8 +23,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.transformLatest
 import org.apache.tika.Tika
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.decodeToImageBitmap
+import org.jetbrains.compose.resources.decodeToSvgPainter
 import java.awt.Desktop
-import java.awt.image.BufferedImage
 import java.io.InputStream
 import java.nio.file.Path
 import java.time.LocalDate
@@ -103,9 +106,9 @@ fun parseMarkdownAsChangelog(
 
 fun convertSvgToPng(path: Path, size: Float? = null): Path? = runCatching {
     val imageData = decodeImage(path, size)?.toAwtImage()
-    val imagePath = createTempFile(suffix = ".png")
-    imagePath.outputStream().use { ImageIO.write(imageData, "PNG", it) }
-    imagePath
+    val imageFile = createTempFile(suffix = ".png")
+    imageFile.outputStream().use { ImageIO.write(imageData, "PNG", it) }
+    imageFile
 }
     .onSuccess { logger.info { "Converted $path to PNG in $it" } }
     .onFailure { logger.warn(it) { "Could not convert $path to PNG" } }
@@ -121,15 +124,16 @@ fun convertSvgToPng(path: Path, size: Float? = null): Path? = runCatching {
  * unlike what is said in https://stackoverflow.com/q/9501237, it may not be a bad idea because,
  * at the end, we want a decoded image and a decoded image has all its bytes in memory.
  */
+@OptIn(ExperimentalResourceApi::class)
 fun decodeImage(
     path: Path,
     sizeOverrideIfVector: Float? = null
 ): ImageBitmap? {
     val mimeType = path.detectMimeType()
     return if (mimeType == "image/svg+xml") {
-        runCatching { path.inputStream().use { loadSvgAsBitmap(it, sizeOverrideIfVector) } }.getOrNull()
+        runCatching { path.readBytes().decodeSvgToImageBitmap(sizeOverrideIfVector) }.getOrNull()
     } else {
-        runCatching { path.inputStream().use(::loadImageBitmap) }.getOrNull()
+        runCatching { path.readBytes().decodeToImageBitmap() }.getOrNull()
     }.also {
         logger.info { "Decoded image $path as $it" }
     }
@@ -141,28 +145,39 @@ fun decodeImage(
  * See https://stackoverflow.com/q/13605248
  * and https://stackoverflow.com/q/4251383
  */
-private fun loadSvgAsBitmap(
-    inputStream: InputStream,
+@OptIn(ExperimentalResourceApi::class)
+private fun ByteArray.decodeSvgToImageBitmap(
     desiredSize: Float? = null
 ): ImageBitmap {
+    // FIXME: use the real screen density (for example, by passing LocalDensity.current)
+    //  Otherwise, the image will not be crisp on displays with scaling other than 100%
     val density = Density(1f)
-    val image = loadSvgPainter(inputStream, density).run {
-        val aspectRatio = intrinsicSize.width / intrinsicSize.height
-        val size = desiredSize?.let { Size(it, it / aspectRatio) } ?: intrinsicSize
-        toAwtImage(density, LayoutDirection.Ltr, size)
+    val painter = decodeToSvgPainter(density)
+    val aspectRatio = painter.intrinsicSize.width / painter.intrinsicSize.height
+    val renderedSize = desiredSize?.let { Size(it, it / aspectRatio) } ?: painter.intrinsicSize
+    return painter.toImageBitmap(renderedSize, density, LayoutDirection.Ltr)
+}
+
+/**
+ * Adopted from [androidx.compose.ui.graphics.PainterImage.asBitmap](https://github.com/JetBrains/compose-multiplatform-core/blob/v1.7.0/compose/ui/ui-graphics/src/desktopMain/kotlin/androidx/compose/ui/graphics/DesktopImageConverters.desktop.kt)
+ *
+ * Could also have used the below code which is much (an order of magnitude) slower:
+ * painter
+ *     .toAwtImage(density, LayoutDirection.Ltr, size)
+ *     .toBufferedImage() // See https://stackoverflow.com/a/47511279
+ *     .toComposeImageBitmap()
+ */
+private fun Painter.toImageBitmap(
+    size: Size,
+    density: Density,
+    layoutDirection: LayoutDirection,
+): ImageBitmap {
+    val bitmap = ImageBitmap(size.width.toInt(), size.height.toInt())
+    val canvas = Canvas(bitmap)
+    CanvasDrawScope().draw(density, layoutDirection, canvas, size) {
+        draw(size)
     }
-    val bufferedImage = BufferedImage(
-        image.getWidth(null),
-        image.getHeight(null),
-        BufferedImage.TYPE_INT_ARGB
-    )
-    bufferedImage.createGraphics().apply {
-        drawImage(image, 0, 0, null)
-        dispose()
-    }
-    val file = createTempFile("temp.png")
-    ImageIO.write(bufferedImage, "PNG", file.toFile())
-    return file.inputStream().use(::loadImageBitmap)
+    return bitmap
 }
 
 /**
