@@ -64,6 +64,8 @@ abstract class VlcSetupTask : DefaultTask() {
                     // When almost all other DLLs were available (not deleted), I deleted this file and
                     // the player still worked but the video flickered (when pausing and sometimes during playback)
                     "plugins/codec/libavcodec_plugin.dll",
+                    // For Opus audio format (for example, in 4K MKV videos downloaded from YouTube)
+                    "plugins/codec/libopus_plugin.dll",
                     "plugins/demux/libts_plugin.dll",
                     "plugins/packetizer/libpacketizer_mpeg4audio_plugin.dll",
                     "plugins/packetizer/libpacketizer_mpeg4video_plugin.dll",
