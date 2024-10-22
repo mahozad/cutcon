@@ -1,6 +1,6 @@
+import ir.mahozad.cutcon.toBooleanOrNull
 import org.gradle.api.tasks.wrapper.Wrapper.DistributionType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat.*
-import org.jetbrains.kotlin.cli.common.toBooleanLenient
 import java.time.LocalDate
 import kotlin.io.path.div
 
@@ -25,8 +25,8 @@ version = "3"
 vlcSetup {
     vlcVersion = libs.versions.vlc.get()
     windowsCopyPath = (appResourcesPath / "windows" / vlcDirectoryName).toFile()
-    shouldCompressPlugins = System.getenv("vlcCompression").toBooleanLenient() ?: true
-    shouldIncludeAllPlugins = System.getenv("vlcAllPlugins").toBooleanLenient() ?: false
+    shouldCompressPlugins = System.getenv("vlcCompression").toBooleanOrNull() ?: true
+    shouldIncludeAllPlugins = System.getenv("vlcAllPlugins").toBooleanOrNull() ?: false
 }
 
 /**

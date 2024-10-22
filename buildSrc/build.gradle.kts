@@ -7,3 +7,12 @@ repositories {
     mavenCentral()
     gradlePluginPortal()
 }
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+dependencies {
+    testImplementation(libs.junit5)
+    testImplementation(libs.assertj)
+}
