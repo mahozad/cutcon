@@ -13,7 +13,7 @@
   <variable name="APP_NAME" value="cutcon"/>
 
   <!-- My custom color highlighter -->
-  <conversionRule conversionWord="CustomHighlight" converterClass="ir.mahozad.cutcon.logging.CustomLevelHighlighter" />
+  <conversionRule conversionWord="CustomHighlight" class="ir.mahozad.cutcon.logging.CustomLevelHighlighter" />
 
   <appender name="STDOUT" class="ConsoleAppender">
     <encoder>

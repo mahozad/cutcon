@@ -1,5 +1,6 @@
 package ir.mahozad.cutcon.ui.widget
 
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Arrangement
@@ -85,6 +86,10 @@ fun MediaPlayerProgress(
             incremental = true,
             waveLength = 20.dp,
             waveHeight = if (isWavy) 8.dp else 0.dp,
+            animationSpecs = SliderDefaults.WaveAnimationSpecs.copy(
+                waveHeightAnimationSpec = spring(dampingRatio = 1f),
+                waveAppearanceAnimationSpec = snap()
+            ),
             onValueChange = {
                 isSeeking = true
                 seek = it
@@ -94,9 +99,6 @@ fun MediaPlayerProgress(
                 isSeeking = false
                 onSeek(seek)
             },
-            animationSpecs = SliderDefaults.WaveAnimationSpecs.copy(
-                waveHeightAnimationSpec = spring(dampingRatio = 1f)
-            ),
             // See https://stackoverflow.com/q/69688427
             modifier = Modifier
                 // The amount of seeking using keyboard arrow keys when the slider has focus is different from
