@@ -26,6 +26,7 @@ enum class LocalSourceSupportedFileType(vararg val extensions: String) {
     MP4("mp4", "mov", "m4a"),
     MKV("mkv"),
     MP3("mp3"),
+    FLAC("flac"),
     TS("ts"),
     PNG("png"),
     JPG("jpg", "jpeg", "jiff"),

@@ -55,6 +55,8 @@ abstract class VlcSetupTask : DefaultTask() {
                     "plugins/audio_filter/libnormvol_plugin.dll",
                     // Needed for MP3 (or audio) files with single (mono) channel
                     "plugins/audio_filter/libtrivial_channel_mixer_plugin.dll",
+                    // Needed for FLAC audio files
+                    "plugins/audio_filter/libaudio_format_plugin.dll",
                     "plugins/audio_filter/libscaletempo_pitch_plugin.dll",
                     "plugins/audio_filter/libscaletempo_plugin.dll",
                     "plugins/audio_output/libdirectsound_plugin.dll",
