@@ -47,6 +47,8 @@ abstract class VlcSetupTask : DefaultTask() {
                 copy.include("*.dll")
                 copy.include("plugins/**/*.dll")
             } else {
+                // For testing the effect of including/excluding plugins, use vlc option "--no-plugins-cache"
+                // to avoid vlc plugin caches. For example, as an argument to vlcj MediaPlayerFactory.
                 copy.include(
                     "libvlc.dll",
                     "libvlccore.dll",
