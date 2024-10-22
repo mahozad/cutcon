@@ -1,6 +1,7 @@
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 
 // See https://stackoverflow.com/questions/62282412/how-can-i-run-my-custom-gradle-task-in-the-unit-test
 class UnitTest {
@@ -8,7 +9,9 @@ class UnitTest {
     @Test
     fun `When user project has no task named clean, applying the plugin should not throw error`() {
         val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("vlc-setup")
+        assertDoesNotThrow {
+            project.pluginManager.apply("vlc-setup")
+        }
     }
 
     @Test
@@ -41,8 +44,10 @@ class UnitTest {
     @Test
     fun `When user project applies the compose multiplatform plugin after the vlcSetup plugin, should not throw error`() {
         val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("org.jetbrains.kotlin.jvm")
-        project.pluginManager.apply("vlc-setup")
-        project.pluginManager.apply("org.jetbrains.compose")
+        assertDoesNotThrow {
+            project.pluginManager.apply("org.jetbrains.kotlin.jvm")
+            project.pluginManager.apply("vlc-setup")
+            project.pluginManager.apply("org.jetbrains.compose")
+        }
     }
 }

@@ -151,11 +151,11 @@ private fun ByteArray.decodeSvgToImageBitmap(
 ): ImageBitmap {
     // FIXME: use the real screen density (for example, by passing LocalDensity.current)
     //  Otherwise, the image will not be crisp on displays with scaling other than 100%
-    val density = Density(1f)
+    val density = Density(1f, 1f)
     val painter = decodeToSvgPainter(density)
     val aspectRatio = painter.intrinsicSize.width / painter.intrinsicSize.height
-    val renderedSize = desiredSize?.let { Size(it, it / aspectRatio) } ?: painter.intrinsicSize
-    return painter.toImageBitmap(renderedSize, density, LayoutDirection.Ltr)
+    val renderSize = desiredSize?.let { Size(it, it / aspectRatio) } ?: painter.intrinsicSize
+    return painter.toImageBitmap(renderSize, density, LayoutDirection.Ltr)
 }
 
 /**
@@ -170,11 +170,11 @@ private fun ByteArray.decodeSvgToImageBitmap(
 private fun Painter.toImageBitmap(
     size: Size,
     density: Density,
-    layoutDirection: LayoutDirection,
+    direction: LayoutDirection,
 ): ImageBitmap {
     val bitmap = ImageBitmap(size.width.toInt(), size.height.toInt())
     val canvas = Canvas(bitmap)
-    CanvasDrawScope().draw(density, layoutDirection, canvas, size) {
+    CanvasDrawScope().draw(density, direction, canvas, size) {
         draw(size)
     }
     return bitmap

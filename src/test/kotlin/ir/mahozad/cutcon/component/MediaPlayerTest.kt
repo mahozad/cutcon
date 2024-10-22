@@ -99,11 +99,11 @@ class MediaPlayerTest {
         assertThat((results.last() as MediaPlayer.Output.Video).video.take(3).toList()).hasSize(3)
     }
 
-    @Disabled
+    @Disabled("TODO: Implement this test")
     @Test
     fun `Test for actual video frames`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        // create video from still images: ffmpeg.exe -r 1 -i ./%d.png  -vf "fps=2,format=yuv420p" out.mp4
+        // Can create video from still images: ffmpeg.exe -r 1 -i ./%d.png  -vf "fps=2,format=yuv420p" out.mp4
         val source = getResourceAsPath("test.mp4")
         val results = mutableListOf<MediaPlayer.Output>()
         backgroundScope.launch(dispatcher) { mediaPlayer.output.toList(results) }
@@ -122,9 +122,9 @@ class MediaPlayerTest {
         val referenceFrame2 = getResourceAsPath("reference/15.png").readBytes()
 
         val actualPath1 = Path("screenshot1.png")
-        actualPath1.writeBytes(referenceFrame1)
+        actualPath1.writeBytes(actualFrames.first())
         val actualPath2 = Path("screenshot2.png")
-        actualPath2.writeBytes(referenceFrame2)
+        actualPath2.writeBytes(actualFrames.last())
 
         assertThat(actualFrames).contains(referenceFrame1, referenceFrame2)
     }

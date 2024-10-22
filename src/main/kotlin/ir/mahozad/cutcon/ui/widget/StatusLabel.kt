@@ -97,7 +97,6 @@ fun StatusLabel(status: Status) {
                 SourceText(status.source)
             }
         } else {
-            @Suppress("KotlinConstantConditions")
             Text(
                 text = when (status) {
                     is Ready -> language.messages.txtLblReady
