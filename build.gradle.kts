@@ -184,7 +184,7 @@ compose.desktop {
             appResourcesRootDir = appResourcesPath.toFile()
             buildTypes.release.proguard {
                 version = libs.versions.proguard.get()
-                configurationFiles.from("rules.pro")
+                configurationFiles.from("src/proguard-rules.pro")
             }
         }
     }
