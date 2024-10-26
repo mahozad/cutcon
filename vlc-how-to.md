@@ -1,8 +1,10 @@
-Links for downloading all versions of VLC (source code or packaged):
+TODO: Merge content of this file into the README.md of the vlcSetup Gradle plugin (currently residing in Clipper project)
+
+Links for downloading VLC releases (source code or packaged):
   - https://get.videolan.org/vlc/
   - https://download.videolan.org/pub/vlc/
   - http://ftp.videolan.org/pub/videolan/vlc
-Very useful code/issues of a multiplatform app implementing a video player:
+Very useful code/issues of a multiplatform app embedding vlc for windows/linux/mac:
   - https://github.com/JetBrains/compose-multiplatform/issues/1089
   - https://github.com/simplex-chat/simplex-chat/pull/3052
   - https://github.com/simplex-chat/simplex-chat/pull/3120
@@ -11,24 +13,31 @@ Very useful code/issues of a multiplatform app implementing a video player:
   - https://github.com/simplex-chat/simplex-chat/scripts/desktop/prepare-vlc-linux.sh
 How to build VLC from source:
   - https://wiki.videolan.org/Category:Building/
-How to build/embed for Linux:
+How to build VLC for Linux:
   - https://wiki.videolan.org/UnixCompile/
-How to build/embed for Android:
+How to build VLC for Android (could also be helpful because Android is Linux; see how VLC builds itself for Android):
   - https://wiki.videolan.org/AndroidCompile/
+  - https://code.videolan.org/videolan/vlc-android/
+  - https://mvnrepository.com/artifact/org.videolan.android/libvlc-all
   - https://github.com/masterwok/simple-vlc-player
   - https://github.com/mrmaffen/vlc-android-sdk
   - https://stackoverflow.com/questions/39311753/embed-libvlc-into-my-android-app-is-not-playing-video-only-audio-is-being-playe
+
 Hardware video acceleration (see https://wiki.archlinux.org/index.php/Hardware_video_acceleration):
   - NVIDIA "vdpau" (mesa-vdpau-drivers;libvdpau)
   - intel "vaapi"(libva )
   - AMD "vaapi" and "vdpau"
 
-
----
-
+---------------------------------------------------------------------------------------------------
 
 ## Setup VLC for Linux
-VLC provides installers for Windows and macOS but provides just the source code for Linux (and some installers; read below).
+In each of VLC releases, it provides installers for Windows and macOS but provides just the source code (a tar file) for Linux.
+There are various ways to build VLC for Linux:
+  - Download the VLC release source code tar (from the links above) and build the vlc dynamically (use the distro libraries) (see building for linux above)
+  - Download the VLC release source code tar (from the links above) and build the vlc statically (provide all needed libraries) (see building for linux above)
+  - Download and use official/unofficial VLC universal self-contained packages/installers (Snap/AppImage/Flatpak)
+  - Checkout the release version tag on VLC GitHub/Gitlab repository and build the VLC Snap package ourselves
+
 See:
   - List of VLC libraries/plugins: https://wiki.videolan.org/Contrib_Status/
   - https://unix.stackexchange.com/questions/227910/will-my-linux-binary-work-on-all-distros
@@ -37,30 +46,33 @@ See:
   - https://www.tecmint.com/understanding-shared-libraries-in-linux/
   - https://github.com/conan-io/conan/issues/11465#Sharing-binaries-across-different-linux-distros
 
-
-### Build VLC from source code
-(See how the VLC for Android builds itself probably for a better solution: https://code.videolan.org/videolan/vlc-android/)
-  - Download the VLC release archive (see the links above)
-  - extract it: `tar xJf vlc-3.0.20.tar.xz`
-  - `cd vlc-3.0.20`
+### Build VLC from source code (dynamically or statically)
+See building for Linux above for more detail.
+  - Download the VLC release source code archive (see the links above)
+  - extract it: `tar xJf vlc-3.0.21.tar.xz`
+  - `cd vlc-3.0.21`
   - `sudo apt install g++ make libtool automake autopoint pkg-config flex bison lua5.2`
-  - Enable sources with either of these ways:
+  - (Probably not needed) Enable sources with either of these ways:
     + Open *Software & Updates* app and enable the *Sources* checkbox and click close and click reload
     + In `/etc/apt/sources.list` uncomment lines that start with `deb-src` and then `sudo apt update`
   - `./bootstrap`
   - Link against libraries:
-    + To link against dynamic libraries (meaning libraries installed or available on the OS):
+    + To link against dynamic libraries (meaning libraries installed or available on the OS):  
+      I tried this on Ubuntu 18.04 and the result vlc program created and launched successfully.  
       `sudo apt build-dep vlc`
-    + To link statically (that is, provide the libraries along with the vlc):
+    + To link statically (that is, provide the libraries along with the vlc):  
+      I tried this on Ubuntu 18.04 but after a lot of time and downloading many libraries, the make command failed at the end
+      Also, even if this method works, what should be done next? How and what files should we grab for our plugin?  
       `sudo apt install subversion yasm cvs cmake ragel`  
       `cd contrib`  
       `mkdir native`  
       `cd native`  
       `../bootstrap`  
       `make`  
-  - `./configure` (make sure it executes and ends with no error)
+  - `./configure` (make sure it executes and ends with no error)  
+     To disable one or more capabilities, pass --disable-<NAME> arguments to the command. For example, --disable-libass --disable-lua --disable-swscale
+     See https://stackoverflow.com/a/57985984
   - `./compile`
-
 
 ### Use VLC packages/installers
 Different Linux distributions have different package management systems.
@@ -70,36 +82,40 @@ use a packaging format called **.deb**. The tool to deal with this format is cal
 
 RedHat (RHEL) and distributions derived from it (like CentOS, Fedora, openSUSE, etc.) use a packaging format called **.rpm**.
 
-Arch linux and manjaro use **pacman** for package management.
+Arch linux and Manjaro use **pacman** for package management.
 
 The deb and rpm formats typically do not include all the required dependencies of a program.
 Instead, they just include the main program files and the instructions to download/install/use
 required libraries for the program.
 
-Now, new formats have been introduced to make it possible to publish a single self-contained installer (ready-to-use package)
+Now, new formats have been introduced to make it possible to publish a single self-contained installer/package
 (like that of Windows .msi or .exe installers) that can be installed or used in most Linux distributions without additional requirements.
 These include Flatpak, AppImage, and Snap formats.
 
-Fortunately, VLC is available in Snap format.
-So, we are able to use this self-contained package of VLC (that includes all its libraries) down below.
-Also see https://github.com/cmatomic/VLCplayer-AppImage and https://github.com/flathub/org.videolan.VLC
-
+Fortunately, VLC publishes an official Snap package: https://snapcraft.io/vlc
 Note that apps can publish different variants (called channels) on the Snap repository.
 For example, a stable channel, a beta channel, an old channel etc.
 Unfortunately, each channel only has the latest version of an app, so there seems
-to be no way to download, for example, a previous stable version of VLC.
+to be no way to download, for example, a previous stable Snap version of VLC (meaning, our builds could not be reliably reproduced).
+So, we can probably upload each vlc snap files to maven repository as a library or keep a backup of them if/when VLC snap gets updated.
+So, we are able to use this self-contained package of VLC (that includes all its libraries) down below.
 
-We also can probably build the snap package ourselves like how VLC itself builds it:  
-https://github.com/videolan/vlc/blob/master/extras/package/snap/snapcraft.yaml
-
-Another option would be to upload vlc snap files to maven repository as a library or keep a backup of them if/when VLC snap gets updated.
+See https://github.com/cmatomic/VLCplayer-AppImage
+and https://github.com/flathub/org.videolan.VLC
+and https://github.com/ivan-hc/VLC-appimage/releases
+and https://stackoverflow.com/q/51355937
+and https://forum.videolan.org/viewtopic.php?f=13&p=539607
+and https://code.google.com/archive/p/olpc-video-streaming/wikis/BuildingStaticVlc.wiki
+and https://askubuntu.com/questions/865858/how-to-compile-the-current-vlc-version-2-2-4-on-ubuntu-12-04
+and https://code.videolan.org/videolan/vlc/-/issues/28356
+and https://code.videolan.org/videolan/vlc/-/issues/27174
 
 Make sure to remove the option "--quiet" and pass the options "--verbose", "2" to vlc (through vlcj MediaPlayerFactory)
 to see all errors and warnings from VLC when running the app.
 
-Here are the steps to embed VLC in the app for Linux:
+Here are the steps for extracting the vlc snap package (tried on Ubuntu 18.04):
 
-1. Remove the default installed VLC (if any) on Ubuntu:  
+1. Remove the default installed VLC (if any) on Ubuntu (to make sure our app does not accidentally use it):  
    https://askubuntu.com/questions/572865/how-to-fully-remove-vlc-player
    - sudo apt autoremove
    - sudo apt remove vlc-nox
@@ -113,8 +129,9 @@ Here are the steps to embed VLC in the app for Linux:
    https://askubuntu.com/questions/1268615/snap-install-specific-old-version
    - snap info vlc
 
-4. Download the snap package of VLC (instead of directly installing it)
-   it will be downloaded in the current working directory
+4. Download the snap package of VLC (instead of directly installing it)  
+   it will be downloaded in the current working directory  
+   Another way to get a direct download link (and other information) of the vlc snap: https://search.apps.ubuntu.com/api/v1/package/vlc
    - sudo snap download vlc --channel=latest/stable
    (can also install vlc with sudo snap install vlc --channel=latest/stable)
 
@@ -123,7 +140,7 @@ Here are the steps to embed VLC in the app for Linux:
    - mkdir <mount-folder-name>
    - sudo mount -t squashfs -o ro /path/to/my.snap /path/to/<mount-folder-name>
 
-6. Extract the directory to another folder (also, because it is read-only):
+6. Extract the directory to another folder (also needed because it is read-only):
    sudo cp -r vlc-mount/ vlc-mount-copy/
 
 7. Unmount and remove the original mounted folder:
@@ -152,6 +169,22 @@ Here are the steps to embed VLC in the app for Linux:
     rm -r <project-path>/asset/linux/vlc/debug/
     rm -r <project-path>/asset/linux/vlc/x86_64-linux-gnu/
 
+### Build VLC package/installer ourselves
+We may be able to build the Snap package ourselves like how VLC itself builds its Snap package:  
+  - https://github.com/videolan/vlc/blob/master/extras/package/snap/snapcraft.yaml
+  - https://code.videolan.org/videolan/vlc/-/blob/master/extras/ci/gitlab-ci.yml
+  - https://search.apps.ubuntu.com/api/v1/package/vlc (download link of vlc snap)
+It cannot be done in a VirtualBox Linux because snapcraft does not work for some reason.
+
+I tried this method in Ubuntu 18.04 both in the release source code of vlc (see download links above)
+(which did not contain the snap file and I manually copied the snap files from vlc git repository to the vlc/extras/package/snap/)
+and then tried to build the snap using the`snapcraft` command
+with the working directory in vlc/extras/package/ or .../package/snap (no additional argument needed)
+and after a lot of time passed and they downloaded many things, they both failed with an error like
+*could not clone into ../../../ something... git exit code 128*
+
+I did not try to make the snap like how the vlc makes it in its extras/ci/gitlab-ci.yml.
+Try the way it does as well and see if it works.
 
 #### What is rpath (DT_RPATH) and runpath (DT_RUNPATH)?
 See this good explanation:
@@ -181,6 +214,17 @@ https://stackoverflow.com/questions/29422614/how-to-set-the-path-that-a-so-libra
 
 ldd vs readelf
 https://stackoverflow.com/questions/6242761/determine-direct-shared-object-dependencies-of-a-linux-binary
+
+
+
+
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+
+
+
 
 
 #### List of files after deleting some of them so that VLC still worked in the app
