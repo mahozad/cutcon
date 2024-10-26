@@ -135,25 +135,25 @@ Here are the steps for extracting the vlc snap package (tried on Ubuntu 18.04):
    - sudo snap download vlc --channel=latest/stable
    (can also install vlc with sudo snap install vlc --channel=latest/stable)
 
-5. Mount the downloaded vlc snap file  
+5. Extract the Snap file using either of the following ways:  
    https://askubuntu.com/questions/1162798/how-do-i-view-the-contents-of-a-snap-file
-   - mkdir <mount-folder-name>
-   - sudo mount -t squashfs -o ro /path/to/my.snap /path/to/<mount-folder-name>
-
-6. Extract the directory to another folder (also needed because it is read-only):
-   sudo cp -r vlc-mount/ vlc-mount-copy/
-
-7. Unmount and remove the original mounted folder:
-   sudo umount vlc-mount/ && rm -r vlc-mount/
-
-8. Install chrpath tool:
+   - unsquashfs -d "vlc/" vlc.snap
+   - file-roller --force --extract-to="vlc/" vlc.snap
+   - Mount the downloaded vlc snap file   
+     mkdir <mount-folder-name>  
+     sudo mount -t squashfs -o ro /path/to/my.snap /path/to/<mount-folder-name>  
+     Extract the directory to another folder (also needed because it is read-only):  
+     sudo cp -r vlc-mount/ vlc-mount-copy/  
+     Unmount and remove the original mounted folder:  
+     sudo umount vlc-mount/ && rm -r vlc-mount/
+6. Install chrpath tool:
    sudo apt update
    sudo apt install chrpath
 
-9. (Optional) View all .so files that have rpath= or runpath= in them
+7. (Optional) View all .so files that have rpath= or runpath= in them
     find . -name "*.so*" | xargs -n1 chrpath | grep "="
 
-10. Do these in order:
+8. Do these in order:
     cd vlc-mount-copy/usr/lib/
     sudo chrpath -r '$ORIGIN' libvlc.so
     cd vlc/

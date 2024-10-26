@@ -11,19 +11,16 @@ abstract class VlcSetupPlugin : Plugin<Project> {
         // )
         val vlcInstallTools = project.tasks.register("vlcInstallTools", VlcInstallToolsLinuxTask::class.java)
         val vlcDownload = project.tasks.register("vlcDownloadLinux", VlcDownloadLinuxTask::class.java) {
-            // it.vlcVersion.set(vlcSetupExtension.vlcVersion)
             it.dependsOn(vlcInstallTools)
-            it.vlcVersion.set("3.0.21")
         }
-        val vlcUntar = project.tasks.register("vlcUntarLinux", VlcUntarLinuxTask::class.java) {
+        val vlcExtract = project.tasks.register("vlcExtractLinuxTask", VlcExtractLinuxTask::class.java) {
             it.dependsOn(vlcDownload)
-            // it.mustRunAfter(upxDownload)
-            it.tarFile.set(vlcDownload.get().vlcTarFile)
-            it.untarDirectory.set(vlcDownload.get().tempDownloadDirectory.map { it.resolve("vlc") })
+            it.snapFile.set(vlcDownload.get().vlcSnapFile)
+            it.extractDirectory.set(vlcDownload.get().vlcSnapFile.map { it.resolveSibling("vlc") })
         }
         val prepareLibraries = project.tasks.register("vlcPrepareLibraries", VlcPrepareLibrariesLinuxTask::class.java) {
-            it.dependsOn(vlcUntar)
-            it.vlcDirectory.set(vlcUntar.get().untarDirectory)
+            it.dependsOn(vlcExtract)
+            it.vlcDirectory.set(vlcExtract.get().snapFile.map { it.parentFile })
         }
 
         /**
