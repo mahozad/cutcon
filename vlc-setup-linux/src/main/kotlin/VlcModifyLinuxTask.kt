@@ -30,29 +30,16 @@ abstract class VlcModifyLinuxTask : DefaultTask() {
             copy.exclude(
                 "usr/lib/ssl/**",
                 "usr/lib/jvm/**",
-                "usr/lib/debug/**",
-                "usr/lib/x86_64-linux-gnu/**"
+                "usr/lib/debug/**"
             )
             copy.from(sourceDirectory)
             copy.into(targetDirectory)
         }
-        println("*******************************************")
-        // sourceDirectory.get().copyRecursively(
-        //     target = targetDirectory.get(),
-        //     overwrite = true,
-        //     onError = { file, exception ->
-        //         if ("usr/bin/X11" in file.absolutePath) {
-        //             OnErrorAction.SKIP
-        //         } else {
-        //             throw exception
-        //         }
-        //     }
-        // )
-        // project.exec {
-        //     it
-        //         .commandLine("sh", "$script")
-        //         .setStandardInput(System.`in`)
-        //         .workingDir(targetDirectory)
-        // }
+        project.exec {
+            it
+                .commandLine("sh", "$script")
+                .setStandardInput(System.`in`)
+                .workingDir(targetDirectory)
+        }
     }
 }
