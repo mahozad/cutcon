@@ -28,7 +28,8 @@ abstract class VlcModifyLinuxTask : DefaultTask() {
         project.copy { copy ->
             copy.include(
 
-                "usr/lib/libvlc**",
+                "usr/lib/libvlc.so",
+                "usr/lib/libvlccore.so.9",
 
                 "usr/lib/vlc/plugins/plugins.dat",
                 "usr/lib/vlc/plugins/access/libfilesystem_plugin.so",
