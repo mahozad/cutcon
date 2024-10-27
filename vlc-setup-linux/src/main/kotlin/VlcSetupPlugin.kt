@@ -35,7 +35,7 @@ abstract class VlcSetupPlugin : Plugin<Project> {
         project
             .tasks
             // .withType(Sync::class.java)
-            .matching { it.name == "assemble" }
+            .matching { it.name == "run" }
             .all { it.dependsOn(prepareLibraries) }
     }
 }
