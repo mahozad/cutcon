@@ -18,9 +18,14 @@ abstract class VlcSetupPlugin : Plugin<Project> {
             it.snapFile.set(vlcDownload.get().vlcSnapFile)
             it.extractDirectory.set(vlcDownload.get().vlcSnapFile.map { it.resolveSibling("vlc") })
         }
-        val prepareLibraries = project.tasks.register("vlcPrepareLibraries", VlcPrepareLibrariesLinuxTask::class.java) {
+        val vlcModify = project.tasks.register("vlcModifyLinuxTask", VlcModifyLinuxTask::class.java) {
             it.dependsOn(vlcExtract)
-            it.vlcDirectory.set(vlcExtract.get().snapFile.map { it.parentFile })
+            it.sourceDirectory.set(vlcExtract.get().extractDirectory)
+            it.targetDirectory.set(vlcExtract.get().extractDirectory.map { it.resolveSibling("vlc-modified") })
+        }
+        val prepareLibraries = project.tasks.register("vlcPrepareLibraries", VlcPrepareLibrariesLinuxTask::class.java) {
+            it.dependsOn(vlcModify)
+            it.vlcDirectory.set(vlcModify.get().targetDirectory.map { it.parentFile })
         }
 
         /**

@@ -1,14 +1,11 @@
-#sudo -S apt build-dep vlc
-#sudo -S apt remove meson
-#sudo -S apt install python3-pip
-#sudo -S pip3 install meson
-# https://github.com/xiph/rav1e/issues/2289
-# https://www.ubuntuupdates.org/package/xbmc/bionic/main/base/nasm
-#sudo -S add-apt-repository ppa:team-xbmc/ppa
-#sudo -S apt-get update
-#sudo -S apt remove nasm
-#sudo -S apt install nasm=2.14.02-1ubuntu1
+cd ./usr/lib/ # == <ROOT_DIR>/usr/lib/
+sudo chrpath -r '$ORIGIN' libvlc.so
+cd ./vlc/ # == <ROOT_DIR>/usr/lib/vlc/
+sudo chrpath -r '$ORIGIN/..' libvlc_pulse.so.0.0.0
+sudo chrpath -r '$ORIGIN/..' libvlc_xcb_events.so.0.0.0
+cd ./plugins/ # == <ROOT_DIR>/usr/lib/vlc/plugins/
+find . -name "*.so*" | sudo xargs -n1 chrpath -r '$ORIGIN/../../..'
+cd ../../ # == <ROOT_DIR>/usr/lib/
 
-sudo -S apt build-dep vlc
-./configure
-./compile
+# cp -r ./* <PROJECT_DIR>/ # from <ROOT_DIR>/usr/lib/ to <PROJECT_DIR>/
+# cp -r <PROJECT_DIR>/x86_64-linux-gnu/* <PROJECT_DIR>/

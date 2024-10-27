@@ -137,8 +137,8 @@ Here are the steps for extracting the vlc snap package (tried on Ubuntu 18.04):
 
 5. Extract the Snap file using either of the following ways:  
    https://askubuntu.com/questions/1162798/how-do-i-view-the-contents-of-a-snap-file
-   - unsquashfs -d "vlc/" vlc.snap
    - file-roller --force --extract-to="vlc/" vlc.snap
+   - unsquashfs -d "vlc/" vlc.snap
    - Mount the downloaded vlc snap file   
      mkdir <mount-folder-name>  
      sudo mount -t squashfs -o ro /path/to/my.snap /path/to/<mount-folder-name>  
@@ -146,8 +146,9 @@ Here are the steps for extracting the vlc snap package (tried on Ubuntu 18.04):
      sudo cp -r vlc-mount/ vlc-mount-copy/  
      Unmount and remove the original mounted folder:  
      sudo umount vlc-mount/ && rm -r vlc-mount/
-6. Install chrpath tool:
-   sudo apt update
+
+6. Install chrpath tool (could also use patchelf program):  
+   sudo apt update  
    sudo apt install chrpath
 
 7. (Optional) View all .so files that have rpath= or runpath= in them
