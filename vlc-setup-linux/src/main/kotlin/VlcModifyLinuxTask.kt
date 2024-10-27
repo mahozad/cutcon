@@ -28,8 +28,10 @@ abstract class VlcModifyLinuxTask : DefaultTask() {
         project.copy { copy ->
             copy.include("usr/lib/**")
             copy.exclude(
-                "usr/lib/ssl/**",
+                "usr/lib/dri/**",
                 "usr/lib/jvm/**",
+                "usr/lib/ssl/**",
+                "usr/lib/locale/**",
                 "usr/lib/debug/**"
             )
             copy.from(sourceDirectory)
