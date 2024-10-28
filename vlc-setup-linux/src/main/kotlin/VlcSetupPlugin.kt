@@ -9,23 +9,25 @@ abstract class VlcSetupPlugin : Plugin<Project> {
         //     VlcSetupExtension.PLUGIN_NAME,
         //     VlcSetupExtension::class.java
         // )
-        val vlcInstallTools = project.tasks.register("vlcInstallTools", VlcInstallToolsLinuxTask::class.java)
-        val vlcDownload = project.tasks.register("vlcDownloadLinux", VlcDownloadLinuxTask::class.java) {
-            it.dependsOn(vlcInstallTools)
+        val vlcDownload = project.tasks.register("vlcDownloadLinux", VlcDownloadLinuxTask::class.java)
+        val upxPrepare = project.tasks.register("upxPrepareLinuxTask", UpxDownloadLinuxTask::class.java) {
+            it.upxVersion.set("4.2.4")
         }
         val vlcExtract = project.tasks.register("vlcExtractLinuxTask", VlcExtractLinuxTask::class.java) {
             it.dependsOn(vlcDownload)
+            it.dependsOn(upxPrepare.get())
             it.snapFile.set(vlcDownload.get().vlcSnapFile)
             it.extractDirectory.set(vlcDownload.get().vlcSnapFile.map { it.resolveSibling("vlc") })
         }
-        val vlcModify = project.tasks.register("vlcModifyLinuxTask", VlcModifyLinuxTask::class.java) {
+        val vlcPreparePlugins = project.tasks.register("vlcPreparePluginsLinuxTask", VlcPreparePluginsLinuxTask::class.java) {
             it.dependsOn(vlcExtract)
             it.sourceDirectory.set(vlcExtract.get().extractDirectory)
             it.targetDirectory.set(vlcExtract.get().extractDirectory.map { it.resolveSibling("vlc-modified") })
         }
-        val prepareLibraries = project.tasks.register("vlcPrepareLibraries", VlcPrepareLibrariesLinuxTask::class.java) {
-            it.dependsOn(vlcModify)
-            it.vlcDirectory.set(vlcModify.get().targetDirectory.map { it.parentFile })
+        val vlcCompressPlugins = project.tasks.register("vlcCompressPlugins", VlcCompressPluginsLinuxTask::class.java) {
+            it.dependsOn(vlcPreparePlugins)
+            it.vlcDirectory.set(vlcPreparePlugins.get().targetDirectory)
+            it.upxDirectory.set(upxPrepare.get().upxDirectory)
         }
 
         /**
@@ -36,6 +38,6 @@ abstract class VlcSetupPlugin : Plugin<Project> {
             .tasks
             // .withType(Sync::class.java)
             .matching { it.name == "run" }
-            .all { it.dependsOn(prepareLibraries) }
+            .all { it.dependsOn(vlcCompressPlugins) }
     }
 }

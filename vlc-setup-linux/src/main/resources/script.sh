@@ -1,6 +1,10 @@
 # Good explanation of rpath/runpath and $ORIGIN:
 # https://unix.stackexchange.com/a/22999
 
+# To install libraries/programs using apt or apt-get, we need to use sudo
+# and, it in turn, needs the user password which is configured to be read
+# from standard input using the -S option and .setStandardInput(System.in)
+# See https://stackoverflow.com/q/21659637
 sudo -S apt install chrpath
 
 chrpath -r '$ORIGIN' ./usr/lib/libvlc.so
@@ -10,5 +14,4 @@ chrpath -r '$ORIGIN' ./usr/lib/libvlc.so
 # rpath of the files in plugins/ will be an absolute non-existent path)
 find ./usr/lib/vlc/plugins/ -type f -name "*.so*" | xargs -n1 chrpath -r '$ORIGIN/../../..'
 
-# Exclude libvlc and libvlccore because compressing them seems to break something
 #find ./usr/lib/vlc/plugins/ -name "*.so*" | xargs -n1 ../upx

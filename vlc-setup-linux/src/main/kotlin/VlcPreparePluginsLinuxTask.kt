@@ -5,7 +5,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
-abstract class VlcModifyLinuxTask : DefaultTask() {
+abstract class VlcPreparePluginsLinuxTask : DefaultTask() {
 
     private val script: File by lazy {
         val destination = temporaryDir.resolve("script.sh")
