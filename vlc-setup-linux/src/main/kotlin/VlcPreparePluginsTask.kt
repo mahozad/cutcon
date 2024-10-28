@@ -31,7 +31,6 @@ abstract class VlcPreparePluginsTask : DefaultTask() {
                 "usr/lib/libvlc.so",
                 "usr/lib/libvlccore.so.9",
 
-                "usr/lib/vlc/plugins/plugins.dat",
                 "usr/lib/vlc/plugins/access/libfilesystem_plugin.so",
                 "usr/lib/vlc/plugins/audio_filter/libaudio_format_plugin.so",
                 "usr/lib/vlc/plugins/audio_filter/libscaletempo_pitch_plugin.so",

@@ -14,12 +14,12 @@ abstract class VlcCompressPluginsTask : DefaultTask() {
 
     @TaskAction
     fun execute() {
-        // Exclude libvlc and libvlccore because compressing them seems to break something
         val upxPath = upxDirectory.get().resolve("upx").absolutePath
         vlcDirectory
             .get()
-            .resolve("usr/lib/vlc/")
             .walk()
+            // Exclude libvlc and libvlccore because compressing them seems to break app
+            .filter { "libvlc" !in it.name }
             .filter { "so" in it.extension }
             .forEach { file ->
                 project.exec {

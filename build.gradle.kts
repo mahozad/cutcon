@@ -22,7 +22,7 @@ group = "ir.mahozad"
 version = "1"
 
 vlcSetup {
-    vlcVersion = libs.versions.vlc.get()
+    vlcVersion = libs.versions.vlc.get() // FIXME: This is not used by the actual download url; see the vlc download task
     linuxCopyPath = (appResourcesPath / "linux" / vlcDirectoryName).toFile()
     shouldCompressPlugins = System.getenv("vlcCompression")?.toBooleanStrictOrNull() ?: true
     shouldIncludeAllPlugins = System.getenv("vlcAllPlugins")?.toBooleanStrictOrNull() ?: false

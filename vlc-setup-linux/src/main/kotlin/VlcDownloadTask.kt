@@ -1,10 +1,16 @@
 import de.undercouch.gradle.tasks.download.Download
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import java.io.File
 
 abstract class VlcDownloadTask : Download() {
+
+    // FIXME: This is not used by the actual download url below
+    @get:Input
+    abstract val vlcVersion: Property<String>
 
     // Could also have used task-specific `temporaryDir` property (project/build/temp)
     @get:OutputDirectory
@@ -12,14 +18,13 @@ abstract class VlcDownloadTask : Download() {
         project
             .gradle
             .gradleUserHomeDir
-            // .resolve(VlcSetupExtension.PLUGIN_NAME)
-            .resolve("vlc-setup-linux")
+            .resolve(VlcSetupExtension.PLUGIN_NAME)
             .also(File::mkdirs)
     )
 
     @get:OutputFile
-    val vlcSnapFile = tempDownloadDirectory.map {
-        it.resolve("vlc.snap")
+    val vlcSnapFile = tempDownloadDirectory.zip(vlcVersion) { directory, version ->
+        directory.resolve("vlc-$version.snap")
     }
 
     init {

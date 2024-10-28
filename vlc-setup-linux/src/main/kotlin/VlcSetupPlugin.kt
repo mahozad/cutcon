@@ -10,7 +10,7 @@ abstract class VlcSetupPlugin : Plugin<Project> {
             VlcSetupExtension::class.java
         )
         val vlcDownload = project.tasks.register("vlcDownload", VlcDownloadTask::class.java) {
-            // it.vlcVersion.set(vlcSetupExtension.vlcVersion) TODO <<<<<<<< TODO
+            it.vlcVersion.set(vlcSetupExtension.vlcVersion)
         }
         val upxPrepare = project.tasks.register("upxPrepare", UpxPrepareTask::class.java) {
             it.upxVersion.set(vlcSetupExtension.upxVersion)
