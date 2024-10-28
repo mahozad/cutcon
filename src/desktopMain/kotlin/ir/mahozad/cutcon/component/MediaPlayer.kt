@@ -63,7 +63,7 @@ interface MediaPlayer {
 class DefaultMediaPlayer : MediaPlayer {
 
     private val logger = logger(MediaPlayer::class.simpleName ?: "")
-    private val vlcPath = "/home/mahdi/.gradle/vlc-setup-linux/vlc-modified/usr/lib/"
+    private val vlcPath = "/home/mahdi/.gradle/vlc-setup-linux/vlc-modified/"
     private val vlcOptions = listOf(
         // Does not have any effect; just in case
         "--video-title=${BuildConfig.APP_NAME} video output",

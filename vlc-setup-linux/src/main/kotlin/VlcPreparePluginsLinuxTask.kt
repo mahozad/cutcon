@@ -1,4 +1,5 @@
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.RelativePath
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
@@ -27,7 +28,6 @@ abstract class VlcPreparePluginsLinuxTask : DefaultTask() {
         targetDirectory.get().deleteRecursively()
         project.copy { copy ->
             copy.include(
-
                 "usr/lib/libvlc.so",
                 "usr/lib/libvlccore.so.9",
 
@@ -56,6 +56,12 @@ abstract class VlcPreparePluginsLinuxTask : DefaultTask() {
             )
             copy.from(sourceDirectory)
             copy.into(targetDirectory)
+            copy.includeEmptyDirs = false
+            copy.eachFile {
+                // All the below is to strip usr/lib/ from the target copy directory
+                // See https://docs.gradle.org/current/userguide/working_with_files.html#sec:unpacking_archives_example
+                it.relativePath = RelativePath(true, *it.relativePath.segments.drop(2).toTypedArray())
+            }
         }
         project.exec {
             it
