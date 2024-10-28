@@ -1,5 +1,5 @@
 [versions]
-gradle = "8.6"
+gradle = "8.10.2"
 jvm = "21"
 kotlin = "1.9.22"
 proguard = "7.4.2"

@@ -6,7 +6,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
-abstract class UpxDownloadLinuxTask : DefaultTask() {
+abstract class UpxPrepareTask : DefaultTask() {
 
     @get:Input
     abstract val upxVersion: Property<String>

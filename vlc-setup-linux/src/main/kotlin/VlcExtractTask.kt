@@ -5,7 +5,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
-abstract class VlcExtractLinuxTask : DefaultTask() {
+abstract class VlcExtractTask : DefaultTask() {
 
     @get:InputFile
     abstract val snapFile: Property<File>

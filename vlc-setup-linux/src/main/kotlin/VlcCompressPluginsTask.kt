@@ -4,7 +4,7 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
-abstract class VlcCompressPluginsLinuxTask : DefaultTask() {
+abstract class VlcCompressPluginsTask : DefaultTask() {
 
     @get:InputDirectory
     abstract val vlcDirectory: Property<File>

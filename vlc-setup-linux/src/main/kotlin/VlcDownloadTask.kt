@@ -4,7 +4,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import java.io.File
 
-abstract class VlcDownloadLinuxTask : Download() {
+abstract class VlcDownloadTask : Download() {
 
     // Could also have used task-specific `temporaryDir` property (project/build/temp)
     @get:OutputDirectory
