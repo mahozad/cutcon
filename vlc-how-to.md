@@ -28,6 +28,13 @@ Hardware video acceleration (see https://wiki.archlinux.org/index.php/Hardware_v
   - intel "vaapi"(libva )
   - AMD "vaapi" and "vdpau"
 
+To inspect which libraries are used by a process or by a .so library file,
+see https://stackoverflow.com/questions/50159/how-to-show-all-shared-libraries-used-by-executables-in-linux
+Note that, if the so files have been optimized/shrinked with upx, then probably cannot see the needed library names.
+  - readelf -d file.so | grep 'NEEDED'
+  - use chrpath file.so or readelf -d file.so to see the current rpath/runpath of the file
+  - very important: use single quote ' and NOT double quote " in '$ORIGIN' to prevent it being evaluated as a bash variable
+
 ---------------------------------------------------------------------------------------------------
 
 ## Setup VLC for Linux
@@ -154,7 +161,7 @@ Here are the steps for extracting the vlc snap package (tried on Ubuntu 18.04):
 7. (Optional) View all .so files that have rpath= or runpath= in them
     find . -name "*.so*" | xargs -n1 chrpath | grep "="
 
-8. Do these in order:
+8. Do these in order (very important: use single quote ' and NOT double quote " in '$ORIGIN' to prevent it being evaluated as a bash variable):
     cd vlc-mount-copy/usr/lib/
     sudo chrpath -r '$ORIGIN' libvlc.so
     cd vlc/
