@@ -70,13 +70,16 @@ abstract class VlcPreparePluginsTask : DefaultTask() {
         }
 
         /*
-        Could also have instead used the below method by installing the chrpath on system and loading the script like how the chrpath is loaded.
-        project.exec {
-            it
-                .commandLine("sh", "$script")
-                .setStandardInput(System.`in`)
-                .workingDir(targetDirectory)
-        }
+        Could also have instead used the below method by installing the chrpath on system
+        and loading the script.sh like how the chrpath is loaded above.
+        But, installing chrpath using apt requires sudo and it in turn
+        requires user password to be entered on the console/terminal.
+            project.exec {
+                it
+                    .commandLine("sh", "$script")
+                    .setStandardInput(System.`in`)
+                    .workingDir(targetDirectory)
+            }
         script.sh content:
             # Good explanation of rpath/runpath and $ORIGIN:
             # https://unix.stackexchange.com/a/22999
