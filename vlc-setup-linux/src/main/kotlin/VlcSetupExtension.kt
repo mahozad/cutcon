@@ -5,7 +5,7 @@ import javax.inject.Inject
 abstract class VlcSetupExtension @Inject constructor(project: Project) {
     companion object {
         const val PLUGIN_NAME = "vlcSetup"
-        const val DEFAULT_VLC_VERSION = "3.0.20-1" // FIXME: This is not used by the actual download url; see the vlc download task
+        const val DEFAULT_VLC_VERSION = "3.0.21" // FIXME: This is not used by the actual download url; see the vlc download task
         const val DEFAULT_UPX_VERSION = "4.2.4"
     }
 

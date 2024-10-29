@@ -18,9 +18,9 @@ abstract class VlcCompressPluginsTask : DefaultTask() {
         vlcDirectory
             .get()
             .walk()
-            // Exclude libvlc and libvlccore because compressing them seems to break app
+            // Excludes libvlc and libvlccore because compressing them seems to break app
             .filter { "libvlc" !in it.name }
-            .filter { "so" in it.extension }
+            .filter { ".so" in it.name }
             .forEach { file ->
                 project.exec {
                     // For when upx throws NotCompressibleException

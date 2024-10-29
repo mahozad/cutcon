@@ -35,12 +35,22 @@ abstract class UpxPrepareTask : DefaultTask() {
         val saveFileName = "upx-$version.tar.xz"
         project.exec {
             it
-                .commandLine("wget", "-N", "-O", saveFileName, downloadUrl)
+                .commandLine(
+                    "wget",
+                    "-N", // Prevents re-download if the file on server has not changed
+                    "-O", saveFileName,
+                    downloadUrl
+                )
                 .workingDir(tempDownloadDirectory)
         }
         project.exec {
             it
-                .commandLine("tar", "xf", saveFileName, "--directory", extractDirectory, "--strip-components=1")
+                .commandLine(
+                    "tar",
+                    "xf", saveFileName,
+                    "--directory", extractDirectory,
+                    "--strip-components=1" // Removes the parent directory from the extraction path
+                )
                 .workingDir(tempDownloadDirectory)
         }
     }
