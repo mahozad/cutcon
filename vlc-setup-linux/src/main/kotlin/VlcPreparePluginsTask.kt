@@ -8,12 +8,16 @@ import java.io.File
 
 abstract class VlcPreparePluginsTask : DefaultTask() {
 
-    private val script: File by lazy {
-        val destination = temporaryDir.resolve("script.sh")
-        javaClass.getResourceAsStream("/script.sh")?.use { input ->
+    /**
+     * Acquired the chrpath file by installing it with `sudo apt install chrpath`
+     * then finding where its binary is with `whereis chrpath` and copying the file.
+     */
+    private val chrpath: File by lazy {
+        val destination = temporaryDir.resolve("chrpath")
+        javaClass.getResourceAsStream("/chrpath-0.16")?.use { input ->
             destination.outputStream().use(input::copyTo)
         }
-        destination
+        destination.apply { setExecutable(true) } // See https://stackoverflow.com/a/32331442
     }
 
     @get:InputDirectory
@@ -64,11 +68,50 @@ abstract class VlcPreparePluginsTask : DefaultTask() {
                 it.relativePath = RelativePath(true, *it.relativePath.segments.drop(2).toTypedArray())
             }
         }
+
+        /*
+        Could also have instead used the below method by installing the chrpath on system and loading the script like how the chrpath is loaded.
         project.exec {
             it
                 .commandLine("sh", "$script")
                 .setStandardInput(System.`in`)
                 .workingDir(targetDirectory)
         }
+        script.sh content:
+            # Good explanation of rpath/runpath and $ORIGIN:
+            # https://unix.stackexchange.com/a/22999
+
+            # To install libraries/programs using apt or apt-get, we need to use sudo
+            # and, it in turn, needs the user password which is configured to be read
+            # from standard input using the -S option and .setStandardInput(System.in)
+            # See https://stackoverflow.com/q/21659637
+            sudo -S apt install chrpath
+
+            chrpath -r '$ORIGIN' ./libvlc.so
+
+            # Optional step
+            # (removing this step does not seem to affect anything but the
+            # rpath of the files in plugins/ will be an absolute non-existent path)
+            find ./vlc/plugins/ -type f -name "*.so*" | xargs -n1 chrpath -r '$ORIGIN/../../..'
+         */
+        targetDirectory
+            .get()
+            .walk()
+            .filter { ".so" in it.name }
+            .forEach { file ->
+                println(file.absolutePath)
+                project.exec {
+                    it.setIgnoreExitValue(true) // For files that did not contain rpath
+                    it.commandLine(
+                        chrpath.absolutePath, "-r",
+                        if (file.name == "libvlc.so") {
+                            "\$ORIGIN"
+                        } else {
+                            "\$ORIGIN/../../.."
+                        },
+                        file.absolutePath
+                    )
+                }
+            }
     }
 }
