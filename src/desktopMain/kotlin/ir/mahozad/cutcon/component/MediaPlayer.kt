@@ -252,7 +252,9 @@ class DefaultMediaPlayer : MediaPlayer {
             // and to prevent logging too many statements in the logger
             if (mediaLength > 1_000) {
                 logger.info { "Media finished; starting it over" }
-                vlcMediaPlayer.controls().play()
+                vlcMediaPlayer.submit {
+                    vlcMediaPlayer.controls().play()
+                }
             }
         }
 
