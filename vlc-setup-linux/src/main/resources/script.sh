@@ -13,5 +13,3 @@ chrpath -r '$ORIGIN' ./libvlc.so
 # (removing this step does not seem to affect anything but the
 # rpath of the files in plugins/ will be an absolute non-existent path)
 find ./vlc/plugins/ -type f -name "*.so*" | xargs -n1 chrpath -r '$ORIGIN/../../..'
-
-#find ./usr/lib/vlc/plugins/ -name "*.so*" | xargs -n1 ../upx
