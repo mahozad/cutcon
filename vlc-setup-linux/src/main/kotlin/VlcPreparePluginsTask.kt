@@ -20,6 +20,25 @@ abstract class VlcPreparePluginsTask : DefaultTask() {
         destination.apply { setExecutable(true) } // See https://stackoverflow.com/a/32331442
     }
 
+    /**
+     * TODO: Add docs like chrpath docs above
+     */
+    private val patchelf: File by lazy {
+        val destination = temporaryDir.resolve("patchelf")
+        javaClass.getResourceAsStream("/patchelf-0.18.0")?.use { input ->
+            destination.outputStream().use(input::copyTo)
+        }
+        destination.apply { setExecutable(true) } // See https://stackoverflow.com/a/32331442
+    }
+
+    private val libidn: File by lazy {
+        val destination = temporaryDir.resolve("libidn.so.11")
+        javaClass.getResourceAsStream("/libidn.so.11")?.use { input ->
+            destination.outputStream().use(input::copyTo)
+        }
+        destination
+    }
+
     @get:InputDirectory
     abstract val sourceDirectory: Property<File>
 
@@ -69,6 +88,11 @@ abstract class VlcPreparePluginsTask : DefaultTask() {
             }
         }
 
+        project.copy { copy ->
+            copy.from(libidn)
+            copy.into(targetDirectory)
+        }
+
         /*
         Could also have instead used the below method by installing the chrpath on system
         and loading the script.sh like how the chrpath is loaded above.
@@ -102,12 +126,12 @@ abstract class VlcPreparePluginsTask : DefaultTask() {
             .walk()
             .filter { ".so" in it.name }
             .forEach { file ->
-                println(file.absolutePath)
                 project.exec {
                     it.setIgnoreExitValue(true) // For files that did not contain rpath
                     it.commandLine(
-                        chrpath.absolutePath, "-r",
-                        if (file.name == "libvlc.so") {
+                        patchelf.absolutePath,
+                        "--set-rpath",
+                        if ("libvlc" in file.name) {
                             "\$ORIGIN"
                         } else {
                             "\$ORIGIN/../../.."
