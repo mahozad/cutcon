@@ -5,38 +5,51 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
+import java.nio.file.FileSystems
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.copyToRecursively
+import kotlin.io.path.toPath
 
 abstract class VlcPreparePluginsTask : DefaultTask() {
 
     /**
-     * Acquired the chrpath file by installing it with `sudo apt install chrpath`
-     * then finding where its binary is with `whereis chrpath` and copying the file.
-     */
-    private val chrpath: File by lazy {
-        val destination = temporaryDir.resolve("chrpath")
-        javaClass.getResourceAsStream("/chrpath-0.16")?.use { input ->
-            destination.outputStream().use(input::copyTo)
-        }
-        destination.apply { setExecutable(true) } // See https://stackoverflow.com/a/32331442
-    }
-
-    /**
-     * TODO: Add docs like chrpath docs above
+     * Acquired the patchelf file from https://github.com/NixOS/patchelf/releases
+     * Could instead have used the chrpath tool (can aquire it by `sudo apt install chrpath`
+     * and then finding where its binary is with `whereis chrpath` and copying the file) but chrpath
+     * does not work if the file does not already have rpath in it (like the libvlccore file).
      */
     private val patchelf: File by lazy {
         val destination = temporaryDir.resolve("patchelf")
-        javaClass.getResourceAsStream("/patchelf-0.18.0")?.use { input ->
-            destination.outputStream().use(input::copyTo)
-        }
-        destination.apply { setExecutable(true) } // See https://stackoverflow.com/a/32331442
+        javaClass
+            .getResourceAsStream("/patchelf-0.18.0")
+            ?.use { input -> destination.outputStream().use(input::copyTo) }
+        // See https://stackoverflow.com/a/32331442
+        return@lazy destination.apply { setExecutable(true) }
     }
 
-    private val libidn: File by lazy {
-        val destination = temporaryDir.resolve("libidn.so.11")
-        javaClass.getResourceAsStream("/libidn.so.11")?.use { input ->
-            destination.outputStream().use(input::copyTo)
+    /**
+     * List of libraries:
+     *   - libidn.so: needed in Fedora 41
+     */
+    private val extraLibraries by lazy {
+        // See https://stackoverflow.com/q/11012819
+        val uri = javaClass.classLoader.getResource("extra-libs")?.toURI()
+            ?: error("Could not initiate loading extra libraries")
+        val path = if (uri.scheme == "jar") {
+            FileSystems
+                .newFileSystem(uri, mapOf<String, String>())
+                .getPath("extra-libs")
+        } else {
+            uri.toPath()
         }
-        destination
+        val libsPath = temporaryDir.resolve("extra-libs").toPath()
+        @OptIn(ExperimentalPathApi::class)
+        path.copyToRecursively(
+            target = libsPath,
+            overwrite = true,
+            followLinks = false
+        )
+        return@lazy libsPath
     }
 
     @get:InputDirectory
@@ -89,7 +102,7 @@ abstract class VlcPreparePluginsTask : DefaultTask() {
         }
 
         project.copy { copy ->
-            copy.from(libidn)
+            copy.from(extraLibraries)
             copy.into(targetDirectory)
         }
 
