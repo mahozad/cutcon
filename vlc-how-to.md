@@ -32,8 +32,14 @@ To inspect which libraries are used by a process or by a .so library file,
 see https://stackoverflow.com/questions/50159/how-to-show-all-shared-libraries-used-by-executables-in-linux
 Note that, if the so files have been optimized/shrinked with upx, then probably cannot see the needed library names.
   - readelf -d file.so | grep 'NEEDED'
+  - ldd file.so
   - use chrpath file.so or readelf -d file.so to see the current rpath/runpath of the file
   - very important: use single quote ' and NOT double quote " in '$ORIGIN' to prevent it being evaluated as a bash variable
+
+chrpath has the downside that if the so file does not already have an rpath/runpath, setting rpath does not work. so we use patchelf.
+
+By default, the libvlccore.so has no rpath/runpath in it, so in a case like this, Linux looks for dynamic libraries in places like
+/lib/ /usr/lib/ /lib64/ etc. which are defined by the LD_LIBRARY_PATH environment variable. See https://unix.stackexchange.com/q/22926.
 
 ---------------------------------------------------------------------------------------------------
 
@@ -219,6 +225,9 @@ https://en.wikipedia.org/wiki/Ldd_(Unix)
 using ldd mylib.so file to inspect references
 it is a way to view what/which libraries are bound to your executable
 https://stackoverflow.com/questions/29422614/how-to-set-the-path-that-a-so-library-will-search-for-other-so-libraries
+
+Note that ldd seems to show the indirect library dependencies as well. For example, ldd libvlc.so
+shows libidn but that is because libvlc depends on libvlccore and libvlccore needs libidn.
 
 ldd vs readelf
 https://stackoverflow.com/questions/6242761/determine-direct-shared-object-dependencies-of-a-linux-binary

@@ -8,7 +8,6 @@ import java.io.File
 import java.nio.file.FileSystems
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.copyToRecursively
-import kotlin.io.path.toPath
 
 abstract class VlcPreparePluginsTask : DefaultTask() {
 
@@ -28,23 +27,22 @@ abstract class VlcPreparePluginsTask : DefaultTask() {
     }
 
     /**
+     * To extract an rpm file: rpm2cpio file.rpm | cpio -idmv
      * List of libraries:
      *   - libidn.so: needed in Fedora 41
+     *     downloaded from https://rpmfind.net/linux/rpm2html/search.php?query=libidn.so.11()(64bit)
+     *
      */
     private val extraLibraries by lazy {
         // See https://stackoverflow.com/q/11012819
         val uri = javaClass.classLoader.getResource("extra-libs")?.toURI()
             ?: error("Could not initiate loading extra libraries")
-        val path = if (uri.scheme == "jar") {
-            FileSystems
-                .newFileSystem(uri, mapOf<String, String>())
-                .getPath("extra-libs")
-        } else {
-            uri.toPath()
-        }
+        val jar = FileSystems
+            .newFileSystem(uri, mapOf<String, String>())
+            .getPath("extra-libs")
         val libsPath = temporaryDir.resolve("extra-libs").toPath()
         @OptIn(ExperimentalPathApi::class)
-        path.copyToRecursively(
+        jar.copyToRecursively(
             target = libsPath,
             overwrite = true,
             followLinks = false
