@@ -15,6 +15,7 @@ abstract class VlcExtractTask : DefaultTask() {
 
     /**
      * Needed at least on Debian 12.7 because it had not this tool pre-installed.
+     * Note that version 4.6.1 did not work on Debian 12.7 because it needed some new version of libraries on system.
      * Acquired the file from https://launchpad.net/ubuntu/+source/squashfs-tools
      * clicking on one of the builds, and downloading the amd64 deb file and then extracting
      * the deb file using dpkg-deb -xv file.deb extraction-dir and grabbed the unsquasfs file.
@@ -24,7 +25,7 @@ abstract class VlcExtractTask : DefaultTask() {
     private val unsquashfs: File by lazy {
         val destination = temporaryDir.resolve("unsquashfs")
         javaClass
-            .getResourceAsStream("/unsquashfs-4.6.1")
+            .getResourceAsStream("/unsquashfs-4.3-6")
             ?.use { input -> destination.outputStream().use(input::copyTo) }
         // See https://stackoverflow.com/a/32331442
         return@lazy destination.apply { setExecutable(true) }
