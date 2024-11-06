@@ -27,11 +27,14 @@ abstract class VlcPreparePluginsTask : DefaultTask() {
     }
 
     /**
-     * To extract an rpm file: rpm2cpio file.rpm | cpio -idmv
      * List of libraries:
      *   - libidn.so: needed in Fedora 41
-     *     downloaded from https://rpmfind.net/linux/rpm2html/search.php?query=libidn.so.11()(64bit)
+     *     Copy the file available in vlc snap itself (extract it and find it) to prevent compatibility errors
+     *     with other libraries (for example, downloading the file from
+     *     https://rpmfind.net/linux/rpm2html/search.php?query=libidn.so.11()(64bit)
+     *     worked on Fedora 41 but did not work on elementary OS 7.1 although it did not need this file)
      *
+     * NOTE: To extract an rpm file: rpm2cpio file.rpm | cpio -idmv
      */
     private val extraLibraries by lazy {
         // See https://stackoverflow.com/q/11012819
