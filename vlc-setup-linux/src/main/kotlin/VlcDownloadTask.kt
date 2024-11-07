@@ -34,5 +34,6 @@ abstract class VlcDownloadTask : Download() {
         src("$baseUrl/RT9mcUhVsRYrDLG8qnvGiy26NKvv6Qkd_3777.snap")
         dest(vlcSnapFile)
         overwrite(false) // Prevents re-download every time
+        readTimeout(60_000) // 1 minute
     }
 }

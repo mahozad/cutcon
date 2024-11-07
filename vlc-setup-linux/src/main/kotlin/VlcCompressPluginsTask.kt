@@ -25,7 +25,7 @@ abstract class VlcCompressPluginsTask : DefaultTask() {
                 project.exec {
                     // For when upx throws NotCompressibleException
                     // See https://stackoverflow.com/a/13278843
-                    it.setIgnoreExitValue(true)
+                    it.isIgnoreExitValue = true
                     it.commandLine(upxPath, "--best", file.absolutePath)
                 }
             }

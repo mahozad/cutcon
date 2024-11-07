@@ -41,6 +41,10 @@ chrpath has the downside that if the so file does not already have an rpath/runp
 By default, the libvlccore.so has no rpath/runpath in it, so in a case like this, Linux looks for dynamic libraries in places like
 /lib/ /usr/lib/ /lib64/ etc. which are defined by the LD_LIBRARY_PATH environment variable. See https://unix.stackexchange.com/q/22926.
 
+
+https://unix.stackexchange.com/questions/46478/join-the-executable-and-all-its-libraries
+
+
 ---------------------------------------------------------------------------------------------------
 
 ## Setup VLC for Linux

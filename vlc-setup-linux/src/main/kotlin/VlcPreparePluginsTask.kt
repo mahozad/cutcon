@@ -67,12 +67,14 @@ abstract class VlcPreparePluginsTask : DefaultTask() {
             copy.include(
                 "usr/lib/libvlc.so",
                 "usr/lib/libvlccore.so.9",
-
                 "usr/lib/vlc/plugins/access/libfilesystem_plugin.so",
+
                 // Required for audio mute and level to work correctly (at least in Ubuntu 18.04)
                 "usr/lib/vlc/plugins/audio_mixer/libfloat_mixer_plugin.so",
-                // Required on openSUSE Tumbleweed 2024-11 with Generic desktop (KDE desktop did not  need this)
+
+                // Required on openSUSE Tumbleweed 2024-11 with Generic desktop (KDE desktop did not need this)
                 "usr/lib/vlc/plugins/audio_filter/libsamplerate_plugin.so",
+
                 "usr/lib/vlc/plugins/audio_filter/libaudio_format_plugin.so",
                 "usr/lib/vlc/plugins/audio_filter/libscaletempo_pitch_plugin.so",
                 "usr/lib/vlc/plugins/audio_filter/libscaletempo_plugin.so",
