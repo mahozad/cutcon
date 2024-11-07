@@ -13,9 +13,9 @@ abstract class VlcPreparePluginsTask : DefaultTask() {
 
     /**
      * Acquired the patchelf file from https://github.com/NixOS/patchelf/releases
-     * Could instead have used the chrpath tool (can aquire it by `sudo apt install chrpath`
+     * Could instead have used the chrpath tool (can acquire it by `sudo apt install chrpath`
      * and then finding where its binary is with `whereis chrpath` and copying the file) but chrpath
-     * does not work if the file does not already have rpath in it (like the libvlccore file).
+     * does not work if the file does not already have rpath in it (as in libvlccore.so file).
      */
     private val patchelf: File by lazy {
         val destination = temporaryDir.resolve("patchelf")
@@ -29,10 +29,10 @@ abstract class VlcPreparePluginsTask : DefaultTask() {
     /**
      * List of libraries:
      *   - libidn.so: needed in Fedora 41
-     *     Copy the file available in vlc snap itself (extract it and find it) to prevent compatibility errors
-     *     with other libraries (for example, downloading the file from
+     *     Grab the file from vlc snap itself (extract it and find it) to prevent compatibility errors
+     *     with other libraries (for example, extracting the file from the rpm downloaded from
      *     https://rpmfind.net/linux/rpm2html/search.php?query=libidn.so.11()(64bit)
-     *     worked on Fedora 41 but did not work on elementary OS 7.1 although it did not need this file)
+     *     worked on Fedora 41 but did not work on elementary OS 7.1 although the OS worked without this file)
      *
      * NOTE: To extract an rpm file: rpm2cpio file.rpm | cpio -idmv
      */
