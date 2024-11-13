@@ -69,7 +69,7 @@ See building for Linux above for more detail.
   - extract it: `tar xJf vlc-3.0.21.tar.xz`
   - `cd vlc-3.0.21`
   - `sudo apt install g++ make libtool automake autopoint pkg-config flex bison lua5.2`
-  - (Probably not needed) Enable sources with either of these ways:
+  - Enable sources with either of these ways (instructions for Ubuntu):
     + Open *Software & Updates* app and enable the *Sources* checkbox and click close and click reload
     + In `/etc/apt/sources.list` uncomment lines that start with `deb-src` and then `sudo apt update`
   - `./bootstrap`
