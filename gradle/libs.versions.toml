@@ -2,7 +2,7 @@
 gradle = "8.11"
 jvm = "21"
 kotlin = "2.0.20"
-compose-multiplatform = "1.7.0"
+compose-multiplatform = "1.7.1"
 proguard = "7.6.0"
 buildConfig = "5.5.0"
 kotlin-coroutines = "1.9.0"
