@@ -82,7 +82,7 @@ abstract class AppExitTest {
                 onClipEndSecondChanged("8", TextRange.Zero)
                 setSaveFile(saveFile)
             }
-            launch(Dispatchers.Default) { viewModel.startProcess() }
+            launch(Dispatchers.Default) { viewModel.startOperation() }
             launch(Dispatchers.Default) { while (!progressed) delay(50.milliseconds) }.join()
             backgroundScope.launch(dispatcher) { viewModel.isAppExitConfirmDialogDisplayed.toList(results) }
             viewModel.onAppExitRequest(forceExit = false, exit = {})
@@ -139,7 +139,7 @@ abstract class AppExitTest {
                 setSaveFile(saveFile)
             }
             backgroundScope.launch(dispatcher) { viewModel.isAppExitConfirmDialogDisplayed.toList(results) }
-            launch(Dispatchers.Default) { viewModel.startProcess() }
+            launch(Dispatchers.Default) { viewModel.startOperation() }
             launch(Dispatchers.Default) { while (!progressed) delay(50.milliseconds) }.join()
             viewModel.onAppExitRequest(forceExit = false, exit = exit)
             verify { exit wasNot called }
@@ -182,7 +182,7 @@ abstract class AppExitTest {
                 setSaveFile(saveFile)
             }
             backgroundScope.launch(dispatcher) { viewModel.isAppExitConfirmDialogDisplayed.toList(results) }
-            launch(Dispatchers.Default) { viewModel.startProcess() }
+            launch(Dispatchers.Default) { viewModel.startOperation() }
             launch(Dispatchers.Default) { while (!progressed) delay(50.milliseconds) }.join()
             viewModel.onAppExitRequest(forceExit = true, exit = exit)
             verify(exactly = 1) { exit() }

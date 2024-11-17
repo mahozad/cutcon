@@ -165,7 +165,7 @@ fun FrameWindowScope.ConfigPanel(viewModel: MainViewModel) {
         )
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = if (status is Ready) viewModel::startProcess else viewModel::cancelProcess,
+            onClick = if (status is Ready) viewModel::startOperation else viewModel::cancelOperation,
             enabled = status is Ready || status is InProgress
         ) {
             Text(

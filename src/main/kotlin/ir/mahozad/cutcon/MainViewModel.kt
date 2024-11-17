@@ -51,19 +51,19 @@ class MainViewModel(
     private val settings: Preferences
 ) {
 
-    private sealed interface ConversionStatus {
-        data object None : ConversionStatus
-        data object Initializing : ConversionStatus
-        data class InProgress(val progress: Float) : ConversionStatus
-        data class Success(val totalTime: Duration) : ConversionStatus
-        data class Failure(val throwable: Throwable) : ConversionStatus
+    private sealed interface OperationStatus {
+        data object None : OperationStatus
+        data object Initializing : OperationStatus
+        data class InProgress(val progress: Float) : OperationStatus
+        data class Success(val totalTime: Duration) : OperationStatus
+        data class Failure(val throwable: Throwable) : OperationStatus
     }
 
     data class WindowWidth(val value: Int, val isAnimated: Boolean)
 
     private val logger = logger(name = MainViewModel::class.simpleName ?: "")
     private val coroutineScope = CoroutineScope(dispatcher)
-    private var conversionJob: Job? = null
+    private var operationJob: Job? = null
     private val _isAppExitConfirmDialogDisplayed = MutableStateFlow(false)
     private val _isChangelogDialogDisplayed = MutableStateFlow(
         // settings[PREF_LAST_SHOWN_CHANGELOG_VERSION, null].let {
@@ -171,7 +171,7 @@ class MainViewModel(
             y = ((screenSize.height - WINDOW_HEIGHT_REGULAR) / 2).dp
         )
     )
-    private val _conversion = MutableStateFlow<ConversionStatus>(ConversionStatus.None)
+    private val _operationStatus = MutableStateFlow<OperationStatus>(OperationStatus.None)
     private val _clipStartMinuteInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
     private val _clipStartSecondInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
     private val _clipEndMinuteInput = MutableStateFlow(TextFieldValue(text = defaultTimeStampString))
@@ -307,16 +307,16 @@ class MainViewModel(
         _mediaInfo,
         _clip,
         _saveFile,
-        _conversion
-    ) { source, mediaInfo, clip, saveFile, conversion ->
-        if (conversion is ConversionStatus.Initializing) {
+        _operationStatus
+    ) { source, mediaInfo, clip, saveFile, operationStatus ->
+        if (operationStatus is OperationStatus.Initializing) {
             Status.Initializing
-        } else if (conversion is ConversionStatus.InProgress) {
-            Status.InProgress(clipSource.value, conversion.progress)
-        } else if (conversion is ConversionStatus.Failure) {
-            Status.Finished.Failure(conversion.throwable)
-        } else if (conversion is ConversionStatus.Success) {
-            Status.Finished.Success(conversion.totalTime)
+        } else if (operationStatus is OperationStatus.InProgress) {
+            Status.InProgress(clipSource.value, operationStatus.progress)
+        } else if (operationStatus is OperationStatus.Failure) {
+            Status.Finished.Failure(operationStatus.throwable)
+        } else if (operationStatus is OperationStatus.Success) {
+            Status.Finished.Success(operationStatus.totalTime)
         } else if (source.mediaType == Source.MediaType.IMAGE) {
             Status.Error.ClipFromImageNotSupported
         } else if (source.mediaType !in setOf(Source.MediaType.VIDEO, Source.MediaType.AUDIO)) {
@@ -592,14 +592,14 @@ class MainViewModel(
         logger.info { "Clip end was set to ${_clip.value.end}" }
     }
 
-    fun startProcess() {
-        conversionJob = coroutineScope.launch {
-            val conversionStartTime = SystemDateTime.nowMillis()
+    fun startOperation() {
+        operationJob = coroutineScope.launch {
+            val operationStartTime = SystemDateTime.nowMillis()
             clipSource.value = _source.value
             logger.info { "Started creating ${clip.value} from ${_source.value}..." }
-            _conversion.value = ConversionStatus.Initializing
+            _operationStatus.value = OperationStatus.Initializing
             val converter = converterFactory.createFor(_format.value)
-            _conversion.value = ConversionStatus.InProgress(progress = 0f)
+            _operationStatus.value = OperationStatus.InProgress(progress = 0f)
             converter.runCatching {
                 convert(
                     input = urlMaker.makeUrl(_source.value),
@@ -609,38 +609,38 @@ class MainViewModel(
                     quality = _quality.value,
                     fixInterlaced = _isInterlacedFixEnabled.value,
                     output = _saveFile.value!!,
-                    listener = { _conversion.value = ConversionStatus.InProgress(progress = it) }
+                    listener = { _operationStatus.value = OperationStatus.InProgress(progress = it) }
                 )
-                (SystemDateTime.nowMillis() - conversionStartTime).milliseconds
+                (SystemDateTime.nowMillis() - operationStartTime).milliseconds
             }
-                .onSuccess(::onConversionSuccess)
-                .onFailure(::onConversionException)
+                .onSuccess(::onOperationSuccess)
+                .onFailure(::onOperationException)
         }
     }
 
-    private fun onConversionSuccess(conversionDuration: Duration) {
-        logger.info { "Conversion finished successfully in $conversionDuration" }
-        _conversion.value = ConversionStatus.Success(totalTime = conversionDuration)
+    private fun onOperationSuccess(operationDuration: Duration) {
+        logger.info { "Operation finished successfully in $operationDuration" }
+        _operationStatus.value = OperationStatus.Success(totalTime = operationDuration)
         resetState()
     }
 
     /**
-     * Including CancellationException (conversion job cancel)
+     * Including CancellationException (operation job cancelling)
      */
-    private fun onConversionException(throwable: Throwable) {
+    private fun onOperationException(throwable: Throwable) {
         if (throwable is CancellationException) {
-            logger.info { "Conversion canceled successfully" }
-            _conversion.value = ConversionStatus.None
+            logger.info { "Operation canceled successfully" }
+            _operationStatus.value = OperationStatus.None
         } else {
-            logger.error(throwable) { "Conversion failed" }
-            _conversion.value = ConversionStatus.Failure(throwable = throwable)
+            logger.error(throwable) { "Operation failed" }
+            _operationStatus.value = OperationStatus.Failure(throwable)
         }
         resetState()
     }
 
-    fun cancelProcess() {
-        logger.info { "Cancelling the conversion..." }
-        conversionJob?.cancel()
+    fun cancelOperation() {
+        logger.info { "Cancelling the operation..." }
+        operationJob?.cancel()
     }
 
     private fun resetState() {
@@ -649,7 +649,7 @@ class MainViewModel(
 
     fun cancelEverything() {
         // Cancels everything launched in this scope
-        // (including the conversion job)
+        // (including the operation job)
         coroutineScope.cancel()
         mediaPlayer.terminate()
     }
@@ -779,7 +779,7 @@ class MainViewModel(
     }
 
     fun onFinishDialogDismissRequest() {
-        _conversion.value = ConversionStatus.None
+        _operationStatus.value = OperationStatus.None
     }
 
     fun onChangelogDialogDismissRequest() {
@@ -854,8 +854,8 @@ class MainViewModel(
 
     fun onAppExitRequest(forceExit: Boolean, exit: () -> Unit) {
         val isIdle =
-            _conversion.value !is ConversionStatus.Initializing &&
-            _conversion.value !is ConversionStatus.InProgress
+            _operationStatus.value !is OperationStatus.Initializing &&
+            _operationStatus.value !is OperationStatus.InProgress
         if (isIdle || forceExit) {
             exit()
         } else {

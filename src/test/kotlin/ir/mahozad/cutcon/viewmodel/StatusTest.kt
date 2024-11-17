@@ -247,7 +247,7 @@ abstract class StatusTest {
             backgroundScope.launch(dispatcher) { viewModel.status.toList(results) }
             viewModel.onClipEndSecondChanged("1", TextRange.Zero)
             viewModel.setSaveFile(saveFile)
-            viewModel.startProcess()
+            viewModel.startOperation()
             delay(50.milliseconds)
             assertThat(results).containsExactly(
                 Status.Error.ClipNotSet,
@@ -293,7 +293,7 @@ abstract class StatusTest {
             setSourceToLocal(sourcePath)
         }
         backgroundScope.launch(dispatcher) { viewModel.status.toList(results) }
-        viewModel.startProcess()
+        viewModel.startOperation()
         delay(5.seconds)
         assertThat(results).containsExactly(
             Status.Ready,
@@ -334,7 +334,7 @@ abstract class StatusTest {
             setSourceToLocal(getResourceAsPath("test.ts"))
         }
         backgroundScope.launch(dispatcher) { viewModel.status.toList(results) }
-        viewModel.startProcess()
+        viewModel.startOperation()
         assertThat(results.map { it::class }).containsExactly(
             Status.Ready::class,
             Status.Finished.Success::class
@@ -377,7 +377,7 @@ abstract class StatusTest {
             backgroundScope.launch(dispatcher) { viewModel.status.toList(results) }
             repeat(5) {
                 viewModel.setSaveFile(saveFile)
-                viewModel.startProcess()
+                viewModel.startOperation()
             }
             assertThat((results.reversed()[1] as Status.Finished.Success).totalTime)
                 .isBetween(10.milliseconds, 50.milliseconds)
@@ -412,7 +412,7 @@ abstract class StatusTest {
             setSourceToLocal(getResourceAsPath("test.ts"))
         }
         backgroundScope.launch(dispatcher) { viewModel.status.toList(results) }
-        viewModel.startProcess()
+        viewModel.startOperation()
         assertThat(results.map { it::class }).containsExactly(
             Status.Ready::class,
             Status.Finished.Failure::class
@@ -448,7 +448,7 @@ abstract class StatusTest {
             setSourceToLocal(getResourceAsPath("test.ts"))
             setFormat(Format.MP4)
             setSaveFile(saveFile)
-            startProcess()
+            startOperation()
         }
         backgroundScope.launch(dispatcher) { viewModel.status.toList(results) }
         viewModel.onFinishDialogDismissRequest()

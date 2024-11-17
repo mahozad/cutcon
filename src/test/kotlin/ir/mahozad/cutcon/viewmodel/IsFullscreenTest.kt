@@ -128,7 +128,7 @@ abstract class IsFullscreenTest {
             val results = mutableListOf<Boolean>()
             backgroundScope.launch(dispatcher) { viewModel.isFullscreen.toList(results) }
             viewModel.enterFullscreen()
-            viewModel.startProcess()
+            viewModel.startOperation()
             assertThat(results).containsExactly(false, true, false)
         }
 
@@ -163,7 +163,7 @@ abstract class IsFullscreenTest {
             viewModel.enterFullscreen()
             viewModel.exitFullscreen()
             viewModel.toggleSidePanel()
-            viewModel.startProcess()
+            viewModel.startOperation()
             assertThat(results).containsExactly(true, false, true)
         }
 
@@ -226,7 +226,7 @@ abstract class IsFullscreenTest {
             val results = mutableListOf<Boolean>()
             backgroundScope.launch(dispatcher) { viewModel.isSidePanelDisplayed.toList(results) }
             viewModel.enterFullscreen()
-            viewModel.startProcess()
+            viewModel.startOperation()
             assertThat(results).containsExactly(true, false, true)
         }
 }

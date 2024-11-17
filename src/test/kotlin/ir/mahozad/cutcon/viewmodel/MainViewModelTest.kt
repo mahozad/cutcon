@@ -134,7 +134,7 @@ class MainViewModelTest {
             onClipEndSecondChanged("1", TextRange.Zero)
             setCoverFile(cover)
         }
-        viewModel.startProcess()
+        viewModel.startOperation()
         assertThat((tempOutputDirectory / "1.mp3").fileSize()).isGreaterThan(15_000)
     }
 
@@ -160,7 +160,7 @@ class MainViewModelTest {
             onClipStartSecondChanged("0", TextRange.Zero)
             onClipEndSecondChanged("1", TextRange.Zero)
         }
-        viewModel.startProcess()
+        viewModel.startOperation()
         assertThat((tempOutputDirectory / "1.mp4").fileSize()).isGreaterThan(10_000)
     }
 
@@ -202,9 +202,9 @@ class MainViewModelTest {
             backgroundScope.launch(dispatcher) { viewModel.saveFile.toList(saveFileValues) }
             backgroundScope.launch(dispatcher) { viewModel.status.toList(statusValues) }
 
-            viewModel.startProcess()
+            viewModel.startOperation()
             delay(50.milliseconds)
-            viewModel.cancelProcess()
+            viewModel.cancelOperation()
 
             assertThat(statusValues).contains(
                 Status.Ready,
@@ -255,11 +255,11 @@ class MainViewModelTest {
             backgroundScope.launch(dispatcher) { viewModel.status.toList(statusValues) }
 
             viewModel.setSourceToLocal(Path("x/y/z.mp4"))
-            viewModel.startProcess()
+            viewModel.startOperation()
             delay(50.milliseconds)
             viewModel.setSourceToLocal(Path("abc.mp4"))
             delay(50.milliseconds)
-            viewModel.cancelProcess()
+            viewModel.cancelOperation()
 
             assertThat(
                 statusValues
@@ -308,11 +308,11 @@ class MainViewModelTest {
             }
             backgroundScope.launch(dispatcher) { viewModel.status.toList(statusValues) }
 
-            viewModel.startProcess()
+            viewModel.startOperation()
             delay(50.milliseconds)
             viewModel.setSourceToLocal(Path("abc.mp4"))
             delay(50.milliseconds)
-            viewModel.cancelProcess()
+            viewModel.cancelOperation()
 
             assertThat(
                 statusValues

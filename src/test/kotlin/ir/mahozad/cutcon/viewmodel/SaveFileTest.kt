@@ -69,7 +69,7 @@ abstract class SaveFileTest {
             }
             val results = mutableListOf<Path?>()
             backgroundScope.launch(dispatcher) { viewModel.saveFile.toList(results) }
-            viewModel.startProcess()
+            viewModel.startOperation()
             assertThat(results).containsExactly(saveFile, null)
         }
 
