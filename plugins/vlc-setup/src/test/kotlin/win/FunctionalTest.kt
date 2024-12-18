@@ -1,3 +1,5 @@
+package win
+
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -6,15 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.CleanupMode
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
-import kotlin.io.path.Path
-import kotlin.io.path.absolute
-import kotlin.io.path.createDirectories
-import kotlin.io.path.div
-import kotlin.io.path.invariantSeparatorsPathString
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.name
-import kotlin.io.path.toPath
-import kotlin.io.path.writeText
+import kotlin.io.path.*
 
 // Note that if running the tests for the first time, it may take a very long time to execute because
 // it has to download the Gradle, plugins, and dependencies to the testkit dir (by default, build/tmp/)
@@ -85,7 +79,7 @@ class FunctionalTest {
     }
 
     @Test
-    fun `The plugins should be copied to the specified windowsCopyPath directory`() {
+    fun `The plugins should be copied to the specified pathToCopyVlcWindowsFilesTo directory`() {
         println("testUserProjectDirectory = $testUserProjectDirectory")
         (testUserProjectDirectory / "settings.gradle.kts").writeText(settingsContent)
         (testUserProjectDirectory / "gradle.properties").writeText(propertiesContent)
@@ -93,7 +87,7 @@ class FunctionalTest {
             /*language=kotlin*/
             """
                 vlcSetup {
-                    windowsCopyPath = file("temp/") // Relative to testUserProjectDirectory
+                    pathToCopyVlcWindowsFilesTo = file("temp/") // Relative to testUserProjectDirectory
                 }
             """
         })
@@ -107,61 +101,61 @@ class FunctionalTest {
     }
 
     @Test
-    fun `When the shouldCompressPlugins is set to true, should compress the plugins`() {
+    fun `When the shouldCompressVlcFiles is set to true, should compress the plugins`() {
         println("testUserProjectDirectory = $testUserProjectDirectory")
-        val windowsCopyPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
+        val windowsPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
         (testUserProjectDirectory / "settings.gradle.kts").writeText(settingsContent)
         (testUserProjectDirectory / "gradle.properties").writeText(propertiesContent)
         (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
             /*language=kotlin*/
             """
                 vlcSetup {
-                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
-                    shouldCompressPlugins = true
+                    shouldCompressVlcFiles = true
+                    pathToCopyVlcWindowsFilesTo = File("${windowsPath.absoluteFile.invariantSeparatorsPath}")
                 }
             """
         })
 
         val gradleExecutionResult = runGradle("vlcSetup", "--stacktrace")
 
-        assertThat(windowsCopyPath.resolve("libvlccore.dll").length()).isBetween(1_300_000, 1_600_000)
+        assertThat(windowsPath.resolve("libvlccore.dll").length()).isBetween(1_300_000, 1_600_000)
         assertThat(gradleExecutionResult.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
     }
 
     @Test
-    fun `When the shouldCompressPlugins is set to false, should not compress the plugins`() {
+    fun `When the shouldCompressVlcFiles is set to false, should not compress the plugins`() {
         println("testUserProjectDirectory = $testUserProjectDirectory")
-        val windowsCopyPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
+        val windowsPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
         (testUserProjectDirectory / "settings.gradle.kts").writeText(settingsContent)
         (testUserProjectDirectory / "gradle.properties").writeText(propertiesContent)
         (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
             /*language=kotlin*/
             """
                 vlcSetup {
-                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
-                    shouldCompressPlugins = false
+                    shouldCompressVlcFiles = false
+                    pathToCopyVlcWindowsFilesTo = File("${windowsPath.absoluteFile.invariantSeparatorsPath}")
                 }
             """
         })
 
         val gradleExecutionResult = runGradle("vlcSetup", "--stacktrace")
 
-        assertThat(windowsCopyPath.resolve("libvlccore.dll").length()).isBetween(2_700_000, 3_000_000)
+        assertThat(windowsPath.resolve("libvlccore.dll").length()).isBetween(2_700_000, 3_000_000)
         assertThat(gradleExecutionResult.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
     }
 
     @Test
-    fun `When the shouldCompressPlugins was true and is set to false and then running the task again, plugins in windowsCopyPath should update`() {
+    fun `When the shouldCompressVlcFiles was true and is set to false and then running the task again, plugins in pathToCopyVlcWindowsFilesTo should update`() {
         println("testUserProjectDirectory = $testUserProjectDirectory")
-        val windowsCopyPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
+        val windowsPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
         (testUserProjectDirectory / "settings.gradle.kts").writeText(settingsContent)
         (testUserProjectDirectory / "gradle.properties").writeText(propertiesContent)
         (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
             /*language=kotlin*/
             """
                 vlcSetup {
-                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
-                    shouldCompressPlugins = true
+                    shouldCompressVlcFiles = true
+                    pathToCopyVlcWindowsFilesTo = File("${windowsPath.absoluteFile.invariantSeparatorsPath}")
                 }
             """
         })
@@ -171,30 +165,30 @@ class FunctionalTest {
             /*language=kotlin*/
             """
                 vlcSetup {
-                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
-                    shouldCompressPlugins = false
+                    shouldCompressVlcFiles = false
+                    pathToCopyVlcWindowsFilesTo = File("${windowsPath.absoluteFile.invariantSeparatorsPath}")
                 }
             """
         })
         val gradleExecutionResult2 = runGradle("vlcSetup", "--stacktrace")
 
-        assertThat(windowsCopyPath.resolve("libvlccore.dll").length()).isBetween(2_700_000, 3_000_000)
+        assertThat(windowsPath.resolve("libvlccore.dll").length()).isBetween(2_700_000, 3_000_000)
         assertThat(gradleExecutionResult1.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
         assertThat(gradleExecutionResult2.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
     }
 
     @Test
-    fun `When the shouldCompressPlugins was false and is set to true and then running the task again, plugins in windowsCopyPath should update`() {
+    fun `When the shouldCompressVlcFiles was false and is set to true and then running the task again, plugins in pathToCopyVlcWindowsFilesTo should update`() {
         println("testUserProjectDirectory = $testUserProjectDirectory")
-        val windowsCopyPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
+        val windowsPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
         (testUserProjectDirectory / "settings.gradle.kts").writeText(settingsContent)
         (testUserProjectDirectory / "gradle.properties").writeText(propertiesContent)
         (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
             /*language=kotlin*/
             """
                 vlcSetup {
-                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
-                    shouldCompressPlugins = false
+                    shouldCompressVlcFiles = false
+                    pathToCopyVlcWindowsFilesTo = File("${windowsPath.absoluteFile.invariantSeparatorsPath}")
                 }
             """
         })
@@ -204,70 +198,70 @@ class FunctionalTest {
             /*language=kotlin*/
             """
                 vlcSetup {
-                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
-                    shouldCompressPlugins = true
+                    shouldCompressVlcFiles = true
+                    pathToCopyVlcWindowsFilesTo = File("${windowsPath.absoluteFile.invariantSeparatorsPath}")
                 }
             """
         })
         val gradleExecutionResult2 = runGradle("vlcSetup", "--stacktrace")
 
-        assertThat(windowsCopyPath.resolve("libvlccore.dll").length()).isBetween(1_300_000, 1_600_000)
+        assertThat(windowsPath.resolve("libvlccore.dll").length()).isBetween(1_300_000, 1_600_000)
         assertThat(gradleExecutionResult1.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
         assertThat(gradleExecutionResult2.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
     }
 
     @Test
-    fun `When a plugin is deleted manually from the windowsCopyPath and then running the task again, should copy the missing file to windowsCopyPath`() {
+    fun `When a plugin is deleted manually from the pathToCopyVlcWindowsFilesTo and then running the task again, should copy the missing file to pathToCopyVlcWindowsFilesTo`() {
         println("testUserProjectDirectory = $testUserProjectDirectory")
-        val windowsCopyPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
+        val windowsPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
         (testUserProjectDirectory / "settings.gradle.kts").writeText(settingsContent)
         (testUserProjectDirectory / "gradle.properties").writeText(propertiesContent)
         (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
             /*language=kotlin*/
             """
                 vlcSetup {
-                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
-                    shouldCompressPlugins = false
+                    shouldCompressVlcFiles = false
+                    pathToCopyVlcWindowsFilesTo = File("${windowsPath.absoluteFile.invariantSeparatorsPath}")
                 }
             """
         })
 
         val gradleExecutionResult1 = runGradle("vlcSetup", "--stacktrace")
-        windowsCopyPath.resolve("libvlccore.dll").delete()
+        windowsPath.resolve("libvlccore.dll").delete()
         val gradleExecutionResult2 = runGradle("vlcSetup", "--stacktrace")
 
-        assertThat(windowsCopyPath.resolve("libvlccore.dll")).exists()
+        assertThat(windowsPath.resolve("libvlccore.dll")).exists()
         assertThat(gradleExecutionResult1.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
         assertThat(gradleExecutionResult2.task(":vlcSetup")?.outcome).isEqualTo(TaskOutcome.SUCCESS)
     }
 
     @Test
-    fun `When setting shouldIncludeAllPlugins from true to false (less plugins being included) and then running the task again, should remove the additional plugins in windowsCopyPath`() {
+    fun `When setting shouldIncludeAllVlcFiles from true to false (less plugins being included) and then running the task again, should remove the additional plugins in pathToCopyVlcWindowsFilesTo`() {
         println("testUserProjectDirectory = $testUserProjectDirectory")
-        val windowsCopyPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
+        val windowsPath = testUserProjectDirectory.resolve("windows-plugins").toFile()
         (testUserProjectDirectory / "settings.gradle.kts").writeText(settingsContent)
         (testUserProjectDirectory / "gradle.properties").writeText(propertiesContent)
         (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
             /*language=kotlin*/
             """
                 vlcSetup {
-                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
-                    shouldCompressPlugins = false
-                    shouldIncludeAllPlugins = true
+                    shouldCompressVlcFiles = false
+                    shouldIncludeAllVlcFiles = true
+                    pathToCopyVlcWindowsFilesTo = File("${windowsPath.absoluteFile.invariantSeparatorsPath}")
                 }
             """
         })
 
         val gradleExecutionResult1 = runGradle("vlcSetup", "--stacktrace")
-        val samplePlugin = windowsCopyPath.resolve("plugins/gui/libqt_plugin.dll")
+        val samplePlugin = windowsPath.resolve("plugins/gui/libqt_plugin.dll")
         assertThat(samplePlugin).exists()
         (testUserProjectDirectory / "build.gradle.kts").writeText(createBuildContent {
             /*language=kotlin*/
             """
                 vlcSetup {
-                    windowsCopyPath = File("${windowsCopyPath.absoluteFile.invariantSeparatorsPath}")
-                    shouldCompressPlugins = false
-                    shouldIncludeAllPlugins = false
+                    shouldCompressVlcFiles = false
+                    shouldIncludeAllVlcFiles = false
+                    pathToCopyVlcWindowsFilesTo = File("${windowsPath.absoluteFile.invariantSeparatorsPath}")
                 }
             """
         })

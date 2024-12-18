@@ -105,14 +105,10 @@ abstract class Converter(private val dispatcher: CoroutineDispatcher) {
     }
 
     private fun URL.toNormalizedPathString(): String {
-        val string = toString()
+        return this
+            .toString()
             .replaceFirst("file://localhost/", "")
             .replaceFirst("file://127.0.0.1/", "")
-        return if (host.isEmpty() || host in setOf("localhost", "127.0.0.1")) {
-            string.replaceFirst("file:/", "")
-        } else {
-            string
-        }
     }
 
     /**

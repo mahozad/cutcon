@@ -15,6 +15,6 @@ tasks.withType<Test> {
 dependencies {
     testImplementation(libs.junit5)
     testImplementation(libs.assertj)
-    testImplementation("uk.org.webcompere:system-stubs-core:2.1.7")
-    testImplementation("uk.org.webcompere:system-stubs-jupiter:2.1.7")
+    testImplementation(libs.systemStubs.core)
+    testImplementation(libs.systemStubs.jupiter)
 }

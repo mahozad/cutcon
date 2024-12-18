@@ -267,6 +267,20 @@ fun <T> Flow<T>.emitLatestEvery(
     }
 }
 
+// TODO: This function has been duplicated three times in the project
+fun getCurrentOs(): OS {
+    val name = System
+        .getProperty("os.name")
+        .lowercase()
+        .trim()
+    return when {
+        name.startsWith("win") -> OS.WINDOWS
+        name.startsWith("mac") -> OS.MAC
+        name == "linux" -> OS.LINUX
+        else -> OS.OTHER
+    }
+}
+
 /**
  * Note that Apache tika returns `application/octet-stream`
  * if it does not know what the type of file is.

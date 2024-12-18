@@ -1,3 +1,5 @@
+package lin
+
 import org.gradle.api.file.RelativePath
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Copy
@@ -5,18 +7,17 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
 import java.io.File
 
-abstract class UpxUnzipTask : Copy() {
+abstract class VlcExtractTask : Copy() {
 
     @get:InputFile
-    abstract val zipFile: Property<File>
+    abstract val vlcArchiveFile: Property<File>
 
     @get:OutputDirectory
-    abstract val unzipDirectory: Property<File>
+    val extractDirectory = vlcArchiveFile.map { it.resolveSibling("vlc") }
 
     init {
-        from(project.zipTree(zipFile))
-        into(unzipDirectory)
-        include("**/upx.exe")
+        from(project.zipTree(vlcArchiveFile))
+        into(extractDirectory)
         includeEmptyDirs = false // Deletes empty remainder directories
         // All the below is to strip the parent directory from the target copy directory
         // (i.e. only copy the content of the directory and not the directory itself)

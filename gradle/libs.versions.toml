@@ -21,6 +21,7 @@ tika = "3.0.0"
 jna = "5.15.0"
 jaudioTagger = "3.0.1"
 image-comparison = "4.4.0"
+system-stubs = "2.1.7"
 
 [libraries]
 kotlin-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
@@ -43,6 +44,8 @@ junit5-vintageEngine = { group = "org.junit.vintage", name = "junit-vintage-engi
 imageComparison = { group = "com.github.romankh3", name = "image-comparison", version.ref = "image-comparison" }
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+systemStubs-core = { group = "uk.org.webcompere", name = "system-stubs-core", version.ref = "system-stubs" }
+systemStubs-jupiter = { group = "uk.org.webcompere", name = "system-stubs-jupiter", version.ref = "system-stubs" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

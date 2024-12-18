@@ -92,7 +92,7 @@ class DefaultMediaPlayer : MediaPlayer {
         // Format of screenshot {png, jpg, tiff}
         "--snapshot-format=png",
         // Makes the process priority high
-        "--high-priority",
+        // "--high-priority", // TODO: Uncomment; does NOT work in Linux; is this option needed at all?
         // Disables collection of statistics
         "--no-stats",
         // Shows verbose output {0 error and info, 1 warning, 2 debug}

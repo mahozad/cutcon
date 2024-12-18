@@ -44,7 +44,7 @@ import kotlin.math.roundToInt
 private val logger = logger(name = "MainWindow")
 private val taskbar by lazy {
     runCatching(Taskbar::getTaskbar)
-        .onFailure { logger.warn(it) { "Getting OS taskbar failed" } }
+        .onFailure { logger.debug(it) { "Getting OS taskbar failed" } }
         .onSuccess { logger.debug { "Got the OS taskbar instance" } }
         .getOrNull()
 }

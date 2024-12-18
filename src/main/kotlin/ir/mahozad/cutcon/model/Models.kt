@@ -189,3 +189,10 @@ enum class Toggle(override val label: (Language) -> String) : Labeled {
     ENABLED({ it.messages.txtLblEnabled }),
     DISABLED({ it.messages.txtLblDisabled })
 }
+
+enum class OS {
+    WINDOWS,
+    LINUX,
+    MAC,
+    OTHER
+}

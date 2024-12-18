@@ -12,6 +12,8 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.26.3")
     testImplementation("org.jetbrains.compose:compose-gradle-plugin:1.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+    testImplementation("uk.org.webcompere:system-stubs-core:2.1.7")
+    testImplementation("uk.org.webcompere:system-stubs-jupiter:2.1.7")
 }
 
 tasks.withType<Test> {

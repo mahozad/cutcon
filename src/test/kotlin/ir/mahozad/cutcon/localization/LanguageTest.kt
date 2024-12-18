@@ -3,13 +3,14 @@ package ir.mahozad.cutcon.localization
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
 @Nested
 class LocalizeDigitsTest {
     @Nested
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @TestInstance(Lifecycle.PER_CLASS)
     inner class FaLocaleTest {
         @ParameterizedTest
         @MethodSource("generateStringsAndExpectedResults")
@@ -31,7 +32,7 @@ class LocalizeDigitsTest {
     }
 
     @Nested
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @TestInstance(Lifecycle.PER_CLASS)
     inner class EnLocaleTest {
         @ParameterizedTest
         @MethodSource("generateStringsAndExpectedResults")

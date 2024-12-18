@@ -1,3 +1,5 @@
+package win
+
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -5,44 +7,24 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
-import kotlin.sequences.forEach
 
-// See <PROJECT_ROOT>/README.md for more info.
-abstract class VlcSetupTask : DefaultTask() {
-
-    init {
-        group = "compose desktop"
-    }
-
-    @get:InputDirectory
-    abstract val vlcDirectory: Property<File>
-
-    @get:InputDirectory
-    abstract val upxDirectory: Property<File>
-
-    @get:Input
-    abstract val shouldCompressPlugins: Property<Boolean>
+abstract class VlcFilterPluginsTask : DefaultTask() {
 
     @get:Input
     abstract val shouldIncludeAllPlugins: Property<Boolean>
 
+    @get:InputDirectory
+    abstract val sourceDirectory: Property<File>
+
     @get:OutputDirectory
-    abstract val windowsCopyPath: Property<File>
+    val targetDirectory = sourceDirectory.map { it.resolveSibling("vlc-filtered") }
 
     @TaskAction
     fun execute() {
-        check(windowsCopyPath.isPresent) {
-            "${::windowsCopyPath.name} is not specified. Set it in ${VlcSetupExtension.PLUGIN_NAME}{} block."
-        }
-        // Do NOT use vlcSetup.windowsTargetPath.get().deleteRecursively() as it is so dangerous
-        windowsCopyPath
-            .get()
-            .walk()
-            .filter { it.extension == "dll" }
-            .forEach { it.delete() }
+        targetDirectory.get().deleteRecursively() // For when shouldIncludeAllPlugins changes from true to false
         project.copy { copy ->
-            copy.from(vlcDirectory)
-            copy.into(windowsCopyPath)
+            copy.from(sourceDirectory)
+            copy.into(targetDirectory)
             if (shouldIncludeAllPlugins.get()) {
                 copy.include("*.dll")
                 copy.include("plugins/**/*.dll")
@@ -90,23 +72,6 @@ abstract class VlcSetupTask : DefaultTask() {
                     // This is needed when drawing to a skia bitmap surface in the app code
                     "plugins/video_output/libvmem_plugin.dll"
                 )
-            }
-            if (shouldCompressPlugins.get()) {
-                val upxFile = upxDirectory.get().resolve("upx.exe")
-                copy.eachFile { dllFile ->
-                    // TODO: Save the compressed files in a separate directory so that the original files are not modified
-                    //  and the vlcUnzip task is not executed every time because its output has been modifier/changed
-                    ProcessBuilder()
-                        .command(
-                            upxFile.path,
-                            "--best", // Compression
-                            dllFile.path
-                        )
-                        .directory(vlcDirectory.get())
-                        .start()
-                        .inputReader()
-                        .forEachLine(logger::info)
-                }
             }
         }
     }

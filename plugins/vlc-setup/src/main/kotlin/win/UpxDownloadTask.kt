@@ -1,3 +1,5 @@
+package win
+
 import de.undercouch.gradle.tasks.download.Download
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -13,23 +15,24 @@ abstract class UpxDownloadTask : Download() {
 
     // Could also have used task-specific `temporaryDir` property (project/build/temp)
     @get:OutputDirectory
-    val tempDownloadDirectory: Provider<File> = project.objects.property(File::class.java).value(
-        project
-            .gradle
-            .gradleUserHomeDir
-            .resolve(VlcSetupExtension.PLUGIN_NAME)
-            .also(File::mkdirs)
-    )
+    private val downloadDirectory: Provider<File> =
+        project.objects.property(File::class.java).value(
+            project
+                .gradle
+                .gradleUserHomeDir
+                .resolve(VlcSetupExtension.PLUGIN_NAME)
+                .also(File::mkdirs)
+        )
 
     @get:OutputFile
-    val upxZipFile = tempDownloadDirectory.zip(upxVersion) { directory, version ->
+    val upxArchiveFile = downloadDirectory.zip(upxVersion) { directory, version ->
         directory.resolve("upx-$version.zip")
     }
 
     init {
         val baseUrl = "https://github.com/upx/upx/releases/download"
         src(upxVersion.map { "$baseUrl/v$it/upx-$it-win64.zip" })
-        dest(upxZipFile)
+        dest(upxArchiveFile)
         overwrite(false) // Prevents re-download every time
     }
 }

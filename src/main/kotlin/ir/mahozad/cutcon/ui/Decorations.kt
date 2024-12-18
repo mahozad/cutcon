@@ -37,7 +37,9 @@ import com.sun.jna.platform.win32.WinUser.*
 import com.sun.jna.win32.W32APIOptions
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import ir.mahozad.cutcon.defaultFontSize
+import ir.mahozad.cutcon.getCurrentOs
 import ir.mahozad.cutcon.localization.Messages
+import ir.mahozad.cutcon.model.OS
 import ir.mahozad.cutcon.ui.icon.Close
 import ir.mahozad.cutcon.ui.icon.Icons
 import ir.mahozad.cutcon.ui.icon.Minimize
@@ -56,15 +58,9 @@ fun WindowScope.WindowDecoration(
     onCloseRequest: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    val windowHandle = remember(window) {
-        val windowPointer = (window as? ComposeWindow)
-            ?.windowHandle
-            ?.let(::Pointer)
-            ?: Native.getWindowPointer(window)
-        HWND(windowPointer)
-    }
+    val windowHandle = rememberWindowHandle()
     remember(windowHandle) { CustomWindowProcedure(windowHandle) }
-    // For rounded corners, the window transparent should be set to true which requires
+    // For custom rounded corners to work, the window transparent should be set to true which requires
     // window undecorated to be set to true as well which causes the workaround for
     // window shadow and minimize/restore/close animations to not work anymore.
     Surface(modifier = Modifier.fillMaxHeight() /* Ensures the content fills the whole window height */) {
@@ -92,8 +88,12 @@ fun WindowScope.WindowDecoration(
                                         .width(48.dp)
                                         .fillMaxHeight()
                                         .clickable {
-                                            // See the code below for why
-                                            User32.INSTANCE.CloseWindow(windowHandle)
+                                            if (getCurrentOs() == OS.WINDOWS) {
+                                                // See the code below for why
+                                                User32.INSTANCE.CloseWindow(windowHandle)
+                                            } else {
+                                                (window as? ComposeWindow)?.isMinimized = true
+                                            }
                                         }
                                 ) {
                                     Icon(
@@ -128,6 +128,15 @@ fun WindowScope.WindowDecoration(
             content()
         }
     }
+}
+
+@Composable
+private fun WindowScope.rememberWindowHandle() = remember(window) {
+    val windowPointer = (window as? ComposeWindow)
+        ?.windowHandle
+        ?.let(::Pointer)
+        ?: Native.getWindowPointer(window)
+    HWND(windowPointer)
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -258,8 +267,9 @@ private class CustomWindowProcedure(private val windowHandle: HWND) : WindowProc
         rightBorderWidth = -1,
         bottomBorderHeight = -1
     )
-    private val USER32EX = runCatching { Native.load("user32", User32Ex::class.java, W32APIOptions.DEFAULT_OPTIONS) }
-        .onFailure { logger.warn(it) { "Could not load user32 library" } }
+    private val USER32EX =
+        runCatching { Native.load("user32", User32Ex::class.java, W32APIOptions.DEFAULT_OPTIONS) }
+        .onFailure { logger.debug(it) { "Could not load user32 library" } }
         .getOrNull()
     // The default window procedure to call its methods when the default method behaviour is desired/sufficient
     private val defaultWndProc = if (is64Bit()) {
@@ -303,7 +313,7 @@ private class CustomWindowProcedure(private val windowHandle: HWND) : WindowProc
     private fun enableBorderAndShadow() {
         val dwmApi = "dwmapi"
             .runCatching(NativeLibrary::getInstance)
-            .onFailure { logger.warn(it) { "Could not load dwmapi library" } }
+            .onFailure { logger.debug(it) { "Could not load dwmapi library" } }
             .getOrNull()
         // dwmApi
         //     ?.runCatching { getFunction("DwmSetWindowAttribute") }
@@ -311,7 +321,7 @@ private class CustomWindowProcedure(private val windowHandle: HWND) : WindowProc
         //     ?.invoke(arrayOf(windowHandle, 2, IntByReference(2), 4))
         dwmApi
             ?.runCatching { getFunction("DwmExtendFrameIntoClientArea") }
-            ?.onFailure { logger.warn(it) { "Could not enable window native decorations (border/shadow/rounded corners)" } }
+            ?.onFailure { logger.debug(it) { "Could not enable window native decorations (border/shadow/rounded corners)" } }
             ?.getOrNull()
             ?.invoke(arrayOf(windowHandle, margins))
     }

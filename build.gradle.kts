@@ -1,3 +1,5 @@
+import ir.mahozad.cutcon.OS
+import ir.mahozad.cutcon.getCurrentOs
 import ir.mahozad.cutcon.toBooleanOrNull
 import org.gradle.api.tasks.wrapper.Wrapper.DistributionType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat.*
@@ -23,9 +25,10 @@ version = "3"
 
 vlcSetup {
     vlcVersion = libs.versions.vlc.get()
-    windowsCopyPath = (appResourcesPath / "windows" / vlcDirectoryName).toFile()
-    shouldCompressPlugins = System.getenv("vlcCompression").toBooleanOrNull() ?: true
-    shouldIncludeAllPlugins = System.getenv("vlcAllPlugins").toBooleanOrNull() ?: false
+    shouldCompressVlcFiles = System.getenv("vlcCompression").toBooleanOrNull() ?: true
+    shouldIncludeAllVlcFiles = System.getenv("vlcAllPlugins").toBooleanOrNull() ?: false
+    pathToCopyVlcLinuxFilesTo = (appResourcesPath / "linux" / vlcDirectoryName).toFile()
+    pathToCopyVlcWindowsFilesTo = (appResourcesPath / "windows" / vlcDirectoryName).toFile()
 }
 
 /**
@@ -113,7 +116,13 @@ dependencies {
     // Cannot use version catalog containing artifact classifier
     // See https://github.com/gradle/gradle/issues/17169
     // and https://stackoverflow.com/q/71485996
-    implementation(variantOf(libs.ffmpeg) { classifier("windows-x86_64-gpl") })
+    implementation(variantOf(libs.ffmpeg) {
+        if (getCurrentOs() == OS.WINDOWS) {
+            classifier("windows-x86_64-gpl")
+        } else {
+            classifier("linux-x86_64-gpl")
+        }
+    })
     implementation(libs.vlcj)
     implementation(libs.apache.tika)
     // Alternative: implementation("com.mpatric:mp3agic:0.9.1") but it does not support extracting FLAC cover art etc.
@@ -129,6 +138,8 @@ dependencies {
     testImplementation(libs.assertj)
     testImplementation(libs.mockk)
     testImplementation(libs.imageComparison)
+    testImplementation(libs.systemStubs.core)
+    testImplementation(libs.systemStubs.jupiter)
 }
 
 compose.desktop {

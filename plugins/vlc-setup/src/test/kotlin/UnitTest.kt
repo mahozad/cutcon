@@ -2,6 +2,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.condition.EnabledOnOs
+import org.junit.jupiter.api.condition.OS
+import win.VlcSetupTask
 
 // See https://stackoverflow.com/questions/62282412/how-can-i-run-my-custom-gradle-task-in-the-unit-test
 class UnitTest {
@@ -15,10 +18,19 @@ class UnitTest {
     }
 
     @Test
-    fun `When user project applies the plugin, the vlcSetup task should be added to the project`() {
+    @EnabledOnOs(OS.WINDOWS)
+    fun `When user project applies the plugin in Windows, the vlcSetup task should be added to the project`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply("vlc-setup")
         assertThat(project.tasks.getByName("vlcSetup")).isInstanceOf(VlcSetupTask::class.java)
+    }
+
+    @Test
+    @EnabledOnOs(OS.LINUX)
+    fun `When user project applies the plugin in Linux, the vlcSetup task should be added to the project`() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply("vlc-setup")
+        assertThat(project.tasks.getByName("vlcSetup")).isInstanceOf(lin.VlcSetupTask::class.java)
     }
 
     @Test
