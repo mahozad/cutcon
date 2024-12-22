@@ -104,6 +104,7 @@ class DefaultMediaPlayer : MediaPlayer {
         // Allows hardware (GPU) decoding when available {any, d3d11va, dxva2, none}
         "--avcodec-hw=any",
         // Greatly improves the startup time of VLC
+        // To disable caching of plugins, comment/remove this and add "--no-plugins-cache" and "--reset-plugins-cache"
         "--plugins-cache",
         // Drops frames instead of showing visual (gray) artifacts
         "--no-avcodec-corrupted"

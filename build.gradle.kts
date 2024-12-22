@@ -8,7 +8,6 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
-    // Alternative: https://github.com/yshrsmz/BuildKonfig
     alias(libs.plugins.buildConfig)
     id("ui-test-setup")
     id("vlc-setup")
