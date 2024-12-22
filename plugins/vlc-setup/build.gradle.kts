@@ -8,8 +8,8 @@ plugins {
 dependencies {
     // Can find the id of a gradle plugin as described in https://stackoverflow.com/q/74221701
     implementation("de.undercouch.download:de.undercouch.download.gradle.plugin:5.6.0")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.1")
-    testImplementation("org.assertj:assertj-core:3.26.3")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testImplementation("org.assertj:assertj-core:3.27.0")
     testImplementation("org.jetbrains.compose:compose-gradle-plugin:1.6.0")
     testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
     testImplementation("uk.org.webcompere:system-stubs-core:2.1.7")
