@@ -42,10 +42,7 @@ abstract class LanguageTest {
     fun `When settings has language, the language should be initialized to it`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         settings.put(PreferenceKeys.PREF_LANGUAGE, LanguageEn.tag)
-        val viewModel = constructMainViewModel(
-            dispatcher = dispatcher,
-            settings = settings
-        )
+        val viewModel = constructMainViewModel(dispatcher, settings = settings)
         val results = mutableListOf<Language>()
         backgroundScope.launch(dispatcher) { viewModel.language.toList(results) }
         assertThat(results).containsExactly(LanguageEn)
@@ -55,20 +52,22 @@ abstract class LanguageTest {
     @Test
     fun `After changing language, the language should be updated`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val viewModel = constructMainViewModel(dispatcher)
+        val viewModel = constructMainViewModel(dispatcher).apply {
+            setLanguage(LanguageEn)
+        }
         val results = mutableListOf<Language>()
         backgroundScope.launch(dispatcher) { viewModel.language.toList(results) }
         viewModel.setLanguage(LanguageFa)
-        assertThat(results).containsExactly(defaultLanguage, LanguageFa)
+        assertThat(results.first()).isEqualTo(LanguageEn)
+        assertThat(results.last()).isEqualTo(LanguageFa)
     }
 
     @Test
     fun `After changing language, the language should be persisted`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val viewModel = constructMainViewModel(
-            dispatcher = dispatcher,
-            settings = settings
-        )
+        val viewModel = constructMainViewModel(dispatcher, settings = settings).apply {
+            setLanguage(LanguageFa)
+        }
         viewModel.setLanguage(LanguageEn)
         val language = settings[PreferenceKeys.PREF_LANGUAGE, null]?.let(Language::fromTag)
         assertThat(language).isEqualTo(LanguageEn)

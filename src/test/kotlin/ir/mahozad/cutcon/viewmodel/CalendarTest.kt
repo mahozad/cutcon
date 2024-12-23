@@ -40,10 +40,7 @@ abstract class CalendarTest {
     fun `When settings has calendar, the calendar should be initialized to it`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
         settings.put(PreferenceKeys.PREF_CALENDAR, Calendar.GREGORIAN.name)
-        val viewModel = constructMainViewModel(
-            dispatcher = dispatcher,
-            settings = settings
-        )
+        val viewModel = constructMainViewModel(dispatcher, settings = settings)
         val results = mutableListOf<Calendar>()
         backgroundScope.launch(dispatcher) { viewModel.calendar.toList(results) }
         assertThat(results).containsExactly(Calendar.GREGORIAN)
@@ -53,7 +50,9 @@ abstract class CalendarTest {
     @Test
     fun `After changing calendar, the calendar should be updated`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val viewModel = constructMainViewModel(dispatcher)
+        val viewModel = constructMainViewModel(dispatcher).apply {
+            setCalendar(Calendar.GREGORIAN)
+        }
         val results = mutableListOf<Calendar>()
         backgroundScope.launch(dispatcher) { viewModel.calendar.toList(results) }
         viewModel.setCalendar(Calendar.SOLAR_HIJRI)
@@ -63,10 +62,9 @@ abstract class CalendarTest {
     @Test
     fun `After changing calendar, the calendar should be persisted`() = runTest {
         val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        val viewModel = constructMainViewModel(
-            dispatcher = dispatcher,
-            settings = settings
-        )
+        val viewModel = constructMainViewModel(dispatcher, settings = settings).apply {
+            setCalendar(Calendar.SOLAR_HIJRI)
+        }
         viewModel.setCalendar(Calendar.GREGORIAN)
         val calendar = settings[PreferenceKeys.PREF_CALENDAR, null]?.let(Calendar::valueOf)
         assertThat(calendar).isEqualTo(Calendar.GREGORIAN)
