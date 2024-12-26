@@ -1,5 +1,6 @@
 src/asset/windows/vlc
 src/asset/linux/vlc
+src/asset/macos/vlc
 
 .gradle
 build/

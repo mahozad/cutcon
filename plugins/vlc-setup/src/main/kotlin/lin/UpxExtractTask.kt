@@ -26,7 +26,7 @@ abstract class UpxExtractTask @Inject constructor(
         execOperations.exec { exec ->
             exec
                 .commandLine(
-                    "tar",
+                    "tar", // TODO: Ensure tar exists on all/most macOS versions
                     "xf", upxArchiveFile.get(),
                     "--directory", extractDirectory.get(),
                     "--strip-components=1" // Removes the parent directory from the extraction path

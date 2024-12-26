@@ -28,6 +28,7 @@ vlcSetup {
     shouldCompressVlcFiles = System.getenv("vlcCompression").toBooleanOrNull() ?: true
     shouldIncludeAllVlcFiles = System.getenv("vlcAllPlugins").toBooleanOrNull() ?: false
     pathToCopyVlcLinuxFilesTo = (appResourcesPath / "linux" / vlcDirectoryName).toFile()
+    pathToCopyVlcMacosFilesTo = (appResourcesPath / "macos" / vlcDirectoryName).toFile()
     pathToCopyVlcWindowsFilesTo = (appResourcesPath / "windows" / vlcDirectoryName).toFile()
 }
 
@@ -119,7 +120,14 @@ dependencies {
     implementation(variantOf(libs.ffmpeg) {
         if (getCurrentOs() == OS.WINDOWS) {
             classifier("windows-x86_64-gpl")
-        } else {
+        } else if (getCurrentOs() == OS.MAC) {
+            // FIXME: FFmpeg 4.4-1.5.6 worked but FFmpeg 6.1.1-1.5.10 and 5.0-1.5.7 did not work
+            //  in macOS 10.13.6 (High Sierra) (which is no longer supported by Apple) (installed on VirtualBox)
+            //  and threw the same exception as in https://github.com/bytedeco/javacv/issues/2018
+            //  The probable solution is to install libxcb with `brew install libxcb`
+            //  see https://github.com/bytedeco/javacv/issues/1073
+            classifier("macosx-x86_64-gpl")
+        } else if (getCurrentOs() == OS.LINUX) {
             classifier("linux-x86_64-gpl")
         }
     })

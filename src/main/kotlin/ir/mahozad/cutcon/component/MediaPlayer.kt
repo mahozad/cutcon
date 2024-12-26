@@ -40,8 +40,6 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 import javax.swing.SwingUtilities
 import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.div
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.milliseconds
@@ -81,7 +79,6 @@ interface MediaPlayer {
 class DefaultMediaPlayer : MediaPlayer {
 
     private val logger = logger(MediaPlayer::class.simpleName ?: "")
-    private val vlcPath = (assetsPath / BuildConfig.VLC_DIRECTORY_NAME).absolutePathString()
     // Run vlc -H or vlc --help --advanced or add -H or --help and --advanced options
     // separately below to see all vlc configurations and capabilities in the standard output.
     private val vlcOptions = listOf(
@@ -153,13 +150,7 @@ class DefaultMediaPlayer : MediaPlayer {
     }
 
     private fun initializeVlcMediaPlayerFactory(): VlcMediaPlayerFactory {
-        // See main README -> Embedding VLC DLL files section for more information
-        val discovery = NativeDiscovery(object : NativeDiscoveryStrategy {
-            override fun discover() = vlcPath
-            override fun supported() = true
-            override fun onFound(path: String) = true
-            override fun onSetPluginPath(path: String) = true
-        })
+        val discovery = NativeDiscovery(MacOsVlcDiscoverer(), DefaultVlcDiscoverer())
         // The default args are MediaPlayerComponentDefaults.EMBEDDED_MEDIA_PLAYER_ARGS
         // To see how to get the list of all possible VLC options, see comments on [vlcOptions].
         return VlcMediaPlayerFactory(discovery, vlcOptions)

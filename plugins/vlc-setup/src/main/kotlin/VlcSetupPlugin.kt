@@ -1,4 +1,3 @@
-import lin.VlcSetupTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Delete
@@ -91,7 +90,7 @@ abstract class VlcSetupPlugin : Plugin<Project> {
                 it.upxDirectory.set(upxExtract.get().extractDirectory)
                 it.shouldCompressPlugins.set(vlcSetupExtension.shouldCompressVlcFiles)
             }
-            vlcSetupTask = project.tasks.register("vlcSetup", VlcSetupTask::class.java) {
+            vlcSetupTask = project.tasks.register("vlcSetup", lin.VlcSetupTask::class.java) {
                 it.dependsOn(vlcCompressPlugins)
                 it.sourceDirectory.set(vlcCompressPlugins.get().targetDirectory)
                 it.targetDirectory.set(vlcSetupExtension.pathToCopyVlcLinuxFilesTo)
@@ -107,8 +106,46 @@ abstract class VlcSetupPlugin : Plugin<Project> {
                         vlcSetupTask.get().targetDirectory // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
                     )
                 }
+        } else if (currentOs == OS.MAC) {
+            val vlcDownload = project.tasks.register("vlcDownload", mac.VlcDownloadTask::class.java) {
+                it.vlcVersion.set(vlcSetupExtension.vlcVersion)
+            }
+            val upxExtract = project.tasks.register("upxExtract", mac.UpxExtractTask::class.java)
+            val vlcExtract = project.tasks.register("vlcExtract", mac.VlcExtractTask::class.java) {
+                it.dependsOn(vlcDownload)
+                it.vlcArchiveFile.set(vlcDownload.get().vlcArchiveFile)
+            }
+            val vlcFilterPlugins = project.tasks.register("vlcFilterPlugins", mac.VlcFilterPluginsTask::class.java) {
+                it.dependsOn(vlcExtract)
+                it.sourceDirectory.set(vlcExtract.get().extractDirectory)
+                it.shouldIncludeAllPlugins.set(vlcSetupExtension.shouldIncludeAllVlcFiles)
+            }
+            val vlcCompressPlugins =
+                project.tasks.register("vlcCompressPlugins", mac.VlcCompressPluginsTask::class.java) {
+                    it.dependsOn(upxExtract)
+                    it.dependsOn(vlcFilterPlugins)
+                    it.vlcDirectory.set(vlcFilterPlugins.get().targetDirectory)
+                    it.upxDirectory.set(upxExtract.get().extractDirectory)
+                    it.shouldCompressPlugins.set(vlcSetupExtension.shouldCompressVlcFiles)
+                }
+            vlcSetupTask = project.tasks.register("vlcSetup", mac.VlcSetupTask::class.java) {
+                it.dependsOn(vlcCompressPlugins)
+                it.sourceDirectory.set(vlcCompressPlugins.get().targetDirectory)
+                it.targetDirectory.set(vlcSetupExtension.pathToCopyVlcMacosFilesTo)
+            }
+            project
+                .tasks
+                .withType(Delete::class.java)
+                .matching { it.name == "clean" }
+                .all {
+                    it.delete += setOf(
+                        upxExtract.get().extractDirectory,
+                        vlcExtract.get().extractDirectory,
+                        vlcSetupTask.get().targetDirectory // TODO: DANGEROUS!!! (if accidentally in code set to a directory with usable files)
+                    )
+                }
         } else {
-            TODO()
+            error("""The OS "$currentOs" is not supported""")
         }
 
         /**

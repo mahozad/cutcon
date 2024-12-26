@@ -129,8 +129,11 @@ private fun FrameWindowScope.Taskbar(status: Status) {
             else -> Taskbar.State.OFF
         }
         val value = (status as? Status.InProgress)?.progress ?: 0f
-        taskbar?.setWindowProgressValue(window, (value * 100).roundToInt())
-        taskbar?.setWindowProgressState(window, state)
+        // The check is required to prevent exception on some platforms (e.g. macOS 10.13)
+        if (taskbar?.isSupported(Taskbar.Feature.PROGRESS_VALUE_WINDOW) == true) {
+            taskbar?.setWindowProgressValue(window, (value * 100).roundToInt())
+            taskbar?.setWindowProgressState(window, state)
+        }
     }
 }
 
