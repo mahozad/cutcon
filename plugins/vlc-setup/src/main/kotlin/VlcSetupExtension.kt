@@ -20,7 +20,7 @@ abstract class VlcSetupExtension @Inject constructor(
         const val DEFAULT_UPX_VERSION = "4.2.4"
     }
 
-    // TODO: Make this enum, as our Linux variant does not support all VLC versions
+    // TODO: Make this an enum, as our Linux variant does not support all VLC versions
     /**
      * The version of VLC to download and use.
      */
@@ -34,7 +34,7 @@ abstract class VlcSetupExtension @Inject constructor(
     /**
      * Whether to compress VLC files to preserve space without any change in functionality.
      *
-     * Compression is not supported on macOS (aka it is no-op)
+     * Compression is not supported on macOS (it is no-op)
      * because the plugin uses UPX tool under the hood and UPX
      * does not support compressing macOS .dylib files.
      */
@@ -49,16 +49,25 @@ abstract class VlcSetupExtension @Inject constructor(
 
     /**
      * The directory to copy the VLC Linux files to.
+     *
+     * Note: Do NOT include other files in this directory
+     * as the plugin may delete all the files in it.
      */
     val pathToCopyVlcLinuxFilesTo = project.objects.property(File::class.java)
 
     /**
      * The directory to copy the VLC macOS files to.
+     *
+     * Note: Do NOT include other files in this directory
+     * as the plugin may delete all the files in it.
      */
     val pathToCopyVlcMacosFilesTo = project.objects.property(File::class.java)
 
     /**
      * The directory to copy the VLC Windows files to.
+     *
+     * Note: Do NOT include other files in this directory
+     * as the plugin may delete all the files in it.
      */
     val pathToCopyVlcWindowsFilesTo = project.objects.property(File::class.java)
 }

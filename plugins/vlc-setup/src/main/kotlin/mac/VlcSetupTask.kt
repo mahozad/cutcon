@@ -30,7 +30,7 @@ abstract class VlcSetupTask : DefaultTask() {
             """
         }
         // Do NOT use targetDirectory.get().deleteRecursively() as it is so dangerous
-        // and the user may have other files in this directory besides VLC
+        // because the user may have other files in this directory besides VLC.
         // This is still not the best way as user may have their custom .dylib files in this directory
         targetDirectory
             .get()
