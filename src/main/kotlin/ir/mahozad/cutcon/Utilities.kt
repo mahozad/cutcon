@@ -2,13 +2,9 @@ package ir.mahozad.cutcon
 
 import androidx.compose.material.Colors
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Density
@@ -238,8 +234,8 @@ fun calculateMaxSizeInFrame(
 
 fun CoroutineScope.openAppLogFolder() {
     launch(Dispatchers.IO) {
-        runCatching { System.getenv("AppData") }
-            .onFailure { logger.warn(it) { "Could not get system AppData path" } }
+        runCatching { System.getProperty("user.home") }
+            .onFailure { logger.warn(it) { "Could not get user.home path" } }
             .getOrNull()
             ?.let(::Path)
             ?.resolve(BuildConfig.APP_NAME)

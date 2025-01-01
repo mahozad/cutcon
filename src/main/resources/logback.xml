@@ -41,10 +41,10 @@
       running the app exe (after being installed) does not produce the log file unless executed as administrator.
       See https://superuser.com/q/1031275 and https://stackoverflow.com/q/946420
     -->
-    <file>${AppData}/${APP_NAME}/${LOG_FILE_NAME}.log</file>
+    <file>${user.home}/${APP_NAME}/${LOG_FILE_NAME}.log</file>
     <rollingPolicy class="TimeBasedRollingPolicy">
       <!-- Daily rollover (logs that have the same yyyy-MM-dd will go in the same file) -->
-      <fileNamePattern>${AppData}/${APP_NAME}/${LOG_FILE_NAME}-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+      <fileNamePattern>${user.home}/${APP_NAME}/${LOG_FILE_NAME}-%d{yyyy-MM-dd}.log.gz</fileNamePattern>
       <!-- Keep 10 days' worth of history capped at 100MB total size -->
       <maxHistory>10</maxHistory>
       <totalSizeCap>100MB</totalSizeCap>

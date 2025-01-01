@@ -33,10 +33,21 @@ import kotlin.io.path.createTempFile
 import kotlin.io.path.div
 import kotlin.io.path.inputStream
 import kotlin.io.path.readBytes
+import kotlin.io.path.readLines
 import kotlin.io.path.writeBytes
 import kotlin.time.Duration.Companion.seconds
 
 class UtilitiesTest {
+
+    @Test
+    fun `The logs directory should be a cross-platform directory`() {
+        val logbackConfigFile = getResourceAsPath("logback.xml")
+        val lines = logbackConfigFile.readLines()
+        val fileLine = lines.find { line -> line.matches(Regex("""\s*<file>.+""")) }
+        val archiveLine = lines.find { line -> line.matches(Regex("""\s*<fileNamePattern>.+""")) }
+        assertThat(fileLine).contains("<file>\${user.home}/\${APP_NAME}/")
+        assertThat(archiveLine).contains("<fileNamePattern>\${user.home}/\${APP_NAME}/")
+    }
 
     @Nested
     @TestInstance(Lifecycle.PER_CLASS)
