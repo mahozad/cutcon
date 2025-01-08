@@ -128,6 +128,13 @@ dependencies {
             //  see https://github.com/bytedeco/javacv/issues/1073
             classifier("macosx-x86_64-gpl")
         } else if (getCurrentOs() == OS.LINUX) {
+            // FIXME: FFmpeg 6.1.1-1.5.10 did not work in Kubuntu 18.04 (installed on VirtualBox)
+            //  and throws the following exception because the distro GLIBC version is 2.27 (can get using `ldd --version` command):
+            //  UnsatisfiedLinkError: no jniavutil in java.library.path
+            //  ... libc.so.6: version `GLIBC_2.28' not found required by .../libavutil.so.58
+            //  see https://github.com/bytedeco/javacpp-presets/issues/1379
+            //  and https://github.com/bytedeco/javacpp-presets/issues/22
+            //  and https://github.com/bytedeco/javacv/issues/2203#issuecomment-2456429199
             classifier("linux-x86_64-gpl")
         }
     })
