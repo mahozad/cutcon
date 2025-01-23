@@ -28,7 +28,6 @@ import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.base.State
 import uk.co.caprica.vlcj.player.embedded.videosurface.CallbackVideoSurface
 import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurface
-import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapters
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormat
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
@@ -76,6 +75,7 @@ interface MediaPlayer {
 
 // See https://github.com/JetBrains/compose-multiplatform/pull/3336
 // and https://github.com/caprica/vlcj/issues/1098
+// and https://github.com/caprica/vlcj/issues/1234
 class DefaultMediaPlayer : MediaPlayer {
 
     private val logger = logger(MediaPlayer::class.simpleName ?: "")
@@ -84,7 +84,7 @@ class DefaultMediaPlayer : MediaPlayer {
     private val vlcOptions = listOf(
         // Does not have any effect; just in case
         "--video-title=${BuildConfig.APP_NAME} video output",
-        // Name of screenshot files (plus date and time)
+        // Name of screenshot files (plus date and time suffix)
         "--snapshot-prefix=${BuildConfig.APP_NAME.lowercase()}-",
         // Format of screenshot {png, jpg, tiff}
         "--snapshot-format=png",
@@ -346,7 +346,7 @@ class DefaultMediaPlayer : MediaPlayer {
     }
 }
 
-private class SkiaBitmapVideoSurface : VideoSurface(VideoSurfaceAdapters.getVideoSurfaceAdapter()) {
+private class SkiaBitmapVideoSurface : VideoSurface(null) {
 
     private lateinit var imageInfo: ImageInfo
     private lateinit var frameBytes: ByteArray
@@ -374,8 +374,8 @@ private class SkiaBitmapVideoSurface : VideoSurface(VideoSurfaceAdapters.getVide
     }
 
     private inner class SkiaBitmapBufferFormatCallback : BufferFormatCallback {
-        private var sourceWidth: Int = 0
-        private var sourceHeight: Int = 0
+        private var sourceWidth = 0
+        private var sourceHeight = 0
 
         override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
             this.sourceWidth = sourceWidth
@@ -384,7 +384,7 @@ private class SkiaBitmapVideoSurface : VideoSurface(VideoSurfaceAdapters.getVide
         }
 
         override fun allocatedBuffers(buffers: Array<ByteBuffer>) {
-            frameBytes = buffers[0].run { ByteArray(remaining()).also(::get) }
+            frameBytes = ByteArray(buffers[0].remaining()).also(buffers[0]::get)
             imageInfo = ImageInfo(
                 sourceWidth,
                 sourceHeight,
