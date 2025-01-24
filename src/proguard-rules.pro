@@ -12,6 +12,8 @@
 
 # See https://github.com/bytedeco/javacv/wiki/Configuring-Proguard-for-JavaCV
 -dontwarn org.bytedeco.**
+# For the code dealing with VarHandle in media player
+-dontwarn java.lang.invoke.**
 -dontwarn org.apache.**
 -dontwarn ch.qos.logback.**
 -dontwarn kotlinx.datetime.**

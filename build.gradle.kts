@@ -82,6 +82,8 @@ tasks.withType<Test> {
             project.tasks.named("prepareAppResources", Sync::class.java).get().destinationDir
         )
     }
+    // See the jvmArgs in compose.desktop.application block below for why
+    jvmArgs("--add-opens=java.base/java.nio=ALL-UNNAMED")
 }
 
 tasks.wrapper {
@@ -185,6 +187,10 @@ compose.desktop {
          * plays the animation at a low frame rate. See https://stackoverflow.com/q/25382400
          */
         jvmArgs += "-splash:${'$'}APPDIR/resources/splash-screen.gif"
+        /**
+         * Needed in the media player to get a VarHandle of a private/package-private field.
+         */
+        jvmArgs += "--add-opens=java.base/java.nio=ALL-UNNAMED"
         nativeDistributions {
             modules(
                 // For preventing app crash when running the app exe

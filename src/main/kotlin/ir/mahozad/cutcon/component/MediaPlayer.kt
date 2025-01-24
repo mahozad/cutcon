@@ -22,7 +22,6 @@ import org.jetbrains.skia.ColorSpace
 import org.jetbrains.skia.Image
 import org.jetbrains.skia.ImageInfo
 import org.jetbrains.skia.Pixmap
-import sun.misc.Unsafe
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.factory.discovery.strategy.NativeDiscoveryStrategy
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
@@ -34,6 +33,7 @@ import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCall
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
 import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32BufferFormat
 import java.io.File
+import java.lang.invoke.MethodHandles
 import java.net.URI
 import java.net.URL
 import java.nio.Buffer
@@ -349,8 +349,13 @@ class DefaultMediaPlayer : MediaPlayer {
 
 /**
  * This new implementation is much more performant than the previous one
- * i.e. the app frame-rate is 59 fps vs 20 fps for a high-bit-rate 4K video,
- * but it consumes memory like crazy.
+ * i.e. the app frame-rate is 59 fps vs 20 fps for a high-bit-rate 4K video.
+ * See https://github.com/caprica/vlcj/issues/1234
+ *
+ * FIXME: However, this implementation allocates memory like crazy
+ *  probably because of calling [Image.toComposeImageBitmap] below.
+ *  To resolve this, can use the second code snippet in this comment:
+ *  https://github.com/caprica/vlcj/issues/1234#issuecomment-2143293403
  *
  * For the previous implementation, see the file Git history.
  */
@@ -393,6 +398,16 @@ private class SkiaImageVideoSurface : VideoSurface(null) {
             val imageInfo = ImageInfo.makeN32Premul(sourceWidth, sourceHeight, ColorSpace.sRGB)
             pixmap = Pixmap.make(imageInfo, pointer, sourceWidth * 4)
         }
+
+        /**
+         * Adapted from src/main/java/uk/co/caprica/vlcj/player/embedded/videosurface/ByteBufferFactory.java
+         * from the [vlcj](https://github.com/caprica/vlcj) project.
+         *
+         * Should run the app with `--add-opens=java.base/java.nio=ALL-UNNAMED` JVM option.
+         * See the `compose.desktop.application{}` block and also `tasks.test` block in the build script.
+         * See https://stackoverflow.com/q/79078444.
+         */
+        private fun getAddress(buffer: ByteBuffer) = addressHandle.get(buffer) as Long
     }
 
     private inner class SkiaImageRenderCallback : RenderCallback {
@@ -412,20 +427,23 @@ private class SkiaImageVideoSurface : VideoSurface(null) {
         videoSurfaceAdapter
     )
 
-    // Copied and adapted from src/main/java/uk/co/caprica/vlcj/player/embedded/videosurface/ByteBufferFactory.java
+    /**
+     * Copied from src/main/java/uk/co/caprica/vlcj/player/embedded/videosurface/ByteBufferFactory.java
+     * from the [vlcj](https://github.com/caprica/vlcj) project
+     * and then adapted and improved the code.
+     *
+     * Should run the app with `--add-opens=java.base/java.nio=ALL-UNNAMED` JVM option.
+     * See the `compose.desktop.application{}` block in the build script.
+     * See https://stackoverflow.com/q/79078444.
+     */
     private object ByteBufferFactory {
         @JvmStatic
-        private val UNSAFE = Unsafe::class.java
-            .getDeclaredField("theUnsafe")
-            .apply { setAccessible(true) }
-            .get(null) as Unsafe
+        private val lookup = MethodHandles.privateLookupIn(Buffer::class.java, MethodHandles.lookup())
 
         @JvmStatic
-        private val addressOffset: Long =
-            UNSAFE.objectFieldOffset(Buffer::class.java.getDeclaredField("address"))
+        private val addressHandle = lookup.findVarHandle(Buffer::class.java, "address", Long::class.java)
 
         @JvmStatic
-        fun getAddress(buffer: ByteBuffer): Long =
-            UNSAFE.getLong(buffer, addressOffset)
+        fun getAddress(buffer: ByteBuffer) = addressHandle.get(buffer) as Long
     }
 }
