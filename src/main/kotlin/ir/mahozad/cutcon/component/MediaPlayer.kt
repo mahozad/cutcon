@@ -1,7 +1,7 @@
 package ir.mahozad.cutcon.component
 
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asComposeImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import ir.mahozad.cutcon.BuildConfig
 import ir.mahozad.cutcon.assetsPath
@@ -18,10 +18,11 @@ import kotlinx.coroutines.flow.*
 import org.jaudiotagger.audio.AudioFileIO
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
-import org.jetbrains.skia.Bitmap
-import org.jetbrains.skia.ColorAlphaType
-import org.jetbrains.skia.ColorType
+import org.jetbrains.skia.ColorSpace
+import org.jetbrains.skia.Image
 import org.jetbrains.skia.ImageInfo
+import org.jetbrains.skia.Pixmap
+import sun.misc.Unsafe
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.factory.discovery.strategy.NativeDiscoveryStrategy
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
@@ -35,9 +36,9 @@ import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32Buffe
 import java.io.File
 import java.net.URI
 import java.net.URL
+import java.nio.Buffer
 import java.nio.ByteBuffer
 import java.nio.file.Path
-import javax.swing.SwingUtilities
 import kotlin.io.path.Path
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.ZERO
@@ -110,7 +111,7 @@ class DefaultMediaPlayer : MediaPlayer {
     private var clipToLoop: Clip? = null
     private var finishListener: ((MediaPlayer) -> Unit)? = null
     private val vlcMediaPlayerFactory = initializeVlcMediaPlayerFactory()
-    private val videoSurface = SkiaBitmapVideoSurface()
+    private val videoSurface = SkiaImageVideoSurface()
     private val eventListener = EventListener()
     private val vlcMediaPlayer = vlcMediaPlayerFactory
         .mediaPlayers()
@@ -346,34 +347,37 @@ class DefaultMediaPlayer : MediaPlayer {
     }
 }
 
-private class SkiaBitmapVideoSurface : VideoSurface(null) {
+/**
+ * This new implementation is much more performant than the previous one
+ * i.e. the app frame-rate is 59 fps vs 20 fps for a high-bit-rate 4K video,
+ * but it consumes memory like crazy.
+ *
+ * For the previous implementation, see the file Git history.
+ */
+private class SkiaImageVideoSurface : VideoSurface(null) {
 
-    private lateinit var imageInfo: ImageInfo
-    private lateinit var frameBytes: ByteArray
-    private val skiaBitmap = Bitmap()
-    private val videoSurface = SkiaBitmapVideoSurface()
-
+    private lateinit var pixmap: Pixmap
+    private val videoSurface = SkiaImageCallbackVideoSurface()
     /**
      * Instead of [StateFlow] or [SharedFlow], a [Channel] is used so that
      * the flow can be indicated finished (closed) for consumers of the flow.
      */
-    private var bitmap = Channel<ImageBitmap?>(capacity = Channel.CONFLATED)
-
+    private var imageChannel = Channel<ImageBitmap?>(capacity = Channel.CONFLATED)
     /**
      * Uses [receiveAsFlow] instead of [consumeAsFlow] to prevent rare exceptions.
      */
-    val imageFlow get() = bitmap.receiveAsFlow()
+    val imageFlow get() = imageChannel.receiveAsFlow()
 
     fun stopAndResetVideo() {
-        bitmap.close()
-        bitmap = Channel(capacity = Channel.CONFLATED)
+        imageChannel.close()
+        imageChannel = Channel(capacity = Channel.CONFLATED)
     }
 
     override fun attach(mediaPlayer: VlcMediaPlayer) {
         videoSurface.attach(mediaPlayer)
     }
 
-    private inner class SkiaBitmapBufferFormatCallback : BufferFormatCallback {
+    private inner class SkiaImageBufferFormatCallback : BufferFormatCallback {
         private var sourceWidth = 0
         private var sourceHeight = 0
 
@@ -384,36 +388,44 @@ private class SkiaBitmapVideoSurface : VideoSurface(null) {
         }
 
         override fun allocatedBuffers(buffers: Array<ByteBuffer>) {
-            frameBytes = ByteArray(buffers[0].remaining()).also(buffers[0]::get)
-            imageInfo = ImageInfo(
-                sourceWidth,
-                sourceHeight,
-                ColorType.BGRA_8888,
-                ColorAlphaType.PREMUL
-            )
+            val buffer = buffers[0]
+            val pointer = ByteBufferFactory.getAddress(buffer)
+            val imageInfo = ImageInfo.makeN32Premul(sourceWidth, sourceHeight, ColorSpace.sRGB)
+            pixmap = Pixmap.make(imageInfo, pointer, sourceWidth * 4)
         }
     }
 
-    private inner class SkiaBitmapRenderCallback : RenderCallback {
+    private inner class SkiaImageRenderCallback : RenderCallback {
         override fun display(
             mediaPlayer: VlcMediaPlayer,
             nativeBuffers: Array<ByteBuffer>,
             bufferFormat: BufferFormat,
         ) {
-            SwingUtilities.invokeLater {
-                nativeBuffers[0].rewind()
-                nativeBuffers[0].get(frameBytes)
-                skiaBitmap.installPixels(imageInfo, frameBytes, bufferFormat.width * 4)
-                // Takes less than 1 millisecond
-                bitmap.trySend(skiaBitmap.asComposeImageBitmap())
-            }
+            imageChannel.trySend(Image.makeFromPixmap(pixmap).toComposeImageBitmap())
         }
     }
 
-    private inner class SkiaBitmapVideoSurface : CallbackVideoSurface(
-        SkiaBitmapBufferFormatCallback(),
-        SkiaBitmapRenderCallback(),
+    private inner class SkiaImageCallbackVideoSurface : CallbackVideoSurface(
+        SkiaImageBufferFormatCallback(),
+        SkiaImageRenderCallback(),
         true,
         videoSurfaceAdapter
     )
+
+    // Copied and adapted from src/main/java/uk/co/caprica/vlcj/player/embedded/videosurface/ByteBufferFactory.java
+    private object ByteBufferFactory {
+        @JvmStatic
+        private val UNSAFE = Unsafe::class.java
+            .getDeclaredField("theUnsafe")
+            .apply { setAccessible(true) }
+            .get(null) as Unsafe
+
+        @JvmStatic
+        private val addressOffset: Long =
+            UNSAFE.objectFieldOffset(Buffer::class.java.getDeclaredField("address"))
+
+        @JvmStatic
+        fun getAddress(buffer: ByteBuffer): Long =
+            UNSAFE.getLong(buffer, addressOffset)
+    }
 }
