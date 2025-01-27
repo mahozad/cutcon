@@ -1,7 +1,7 @@
 package ir.mahozad.cutcon.component
 
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.graphics.asComposeImageBitmap
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import ir.mahozad.cutcon.BuildConfig
 import ir.mahozad.cutcon.assetsPath
@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.*
 import org.jaudiotagger.audio.AudioFileIO
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
+import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorSpace
-import org.jetbrains.skia.Image
 import org.jetbrains.skia.ImageInfo
 import org.jetbrains.skia.Pixmap
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
@@ -348,20 +348,16 @@ class DefaultMediaPlayer : MediaPlayer {
 }
 
 /**
- * This new implementation is much more performant than the previous one
- * i.e. the app frame-rate is 59 fps vs 20 fps for a high-bit-rate 4K video.
+ * This new implementation is more performant than the previous one i.e.
+ * the app frame-rate is about 45 fps vs 20 fps for a high-bit-rate 4K video on my system.
+ * See the below TODO to improve the performance even more.
  * See https://github.com/caprica/vlcj/issues/1234
- *
- * FIXME: However, this implementation allocates memory like crazy
- *  probably because of calling [Image.toComposeImageBitmap] below.
- *  To resolve this, can use the second code snippet in this comment:
- *  https://github.com/caprica/vlcj/issues/1234#issuecomment-2143293403
  *
  * For the previous implementation, see the file Git history.
  */
 private class SkiaImageVideoSurface : VideoSurface(null) {
 
-    private lateinit var pixmap: Pixmap
+    private lateinit var skiaPixmap: Pixmap
     private val videoSurface = SkiaImageCallbackVideoSurface()
     /**
      * Instead of [StateFlow] or [SharedFlow], a [Channel] is used so that
@@ -383,8 +379,11 @@ private class SkiaImageVideoSurface : VideoSurface(null) {
     }
 
     private inner class SkiaImageBufferFormatCallback : BufferFormatCallback {
+
         private var sourceWidth = 0
         private var sourceHeight = 0
+        private val lookup = MethodHandles.privateLookupIn(Buffer::class.java, MethodHandles.lookup())
+        private val addressHandle = lookup.findVarHandle(Buffer::class.java, "address", Long::class.java)
 
         override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
             this.sourceWidth = sourceWidth
@@ -394,9 +393,9 @@ private class SkiaImageVideoSurface : VideoSurface(null) {
 
         override fun allocatedBuffers(buffers: Array<ByteBuffer>) {
             val buffer = buffers[0]
-            val pointer = ByteBufferFactory.getAddress(buffer)
+            val pointer = getAddress(buffer)
             val imageInfo = ImageInfo.makeN32Premul(sourceWidth, sourceHeight, ColorSpace.sRGB)
-            pixmap = Pixmap.make(imageInfo, pointer, sourceWidth * 4)
+            skiaPixmap = Pixmap.make(imageInfo, pointer, sourceWidth * 4)
         }
 
         /**
@@ -416,7 +415,15 @@ private class SkiaImageVideoSurface : VideoSurface(null) {
             nativeBuffers: Array<ByteBuffer>,
             bufferFormat: BufferFormat,
         ) {
-            imageChannel.trySend(Image.makeFromPixmap(pixmap).toComposeImageBitmap())
+            // TODO: Use imageChannel.trySend(Image.makeFromPixmap(pixmap).toComposeImageBitmap())
+            //  because it seems to be more performant (app/video fps is higher) when the below issue is resolved:
+            //  https://youtrack.jetbrains.com/issue/SKIKO-997/Memory-issue-when-calling-Image.makeFromPixmappixmap.toComposeImageBitmap
+            //  Note that extracting the BitMap() as a variable made the app crash when changing the video
+            val skiaBitmap = Bitmap().apply {
+                allocPixels(skiaPixmap.info)
+                installPixels(skiaPixmap.buffer.bytes)
+            }
+            imageChannel.trySend(skiaBitmap.asComposeImageBitmap())
         }
     }
 
@@ -424,26 +431,6 @@ private class SkiaImageVideoSurface : VideoSurface(null) {
         SkiaImageBufferFormatCallback(),
         SkiaImageRenderCallback(),
         true,
-        videoSurfaceAdapter
+        null
     )
-
-    /**
-     * Copied from src/main/java/uk/co/caprica/vlcj/player/embedded/videosurface/ByteBufferFactory.java
-     * from the [vlcj](https://github.com/caprica/vlcj) project
-     * and then adapted and improved the code.
-     *
-     * Should run the app with `--add-opens=java.base/java.nio=ALL-UNNAMED` JVM option.
-     * See the `compose.desktop.application{}` block in the build script.
-     * See https://stackoverflow.com/q/79078444.
-     */
-    private object ByteBufferFactory {
-        @JvmStatic
-        private val lookup = MethodHandles.privateLookupIn(Buffer::class.java, MethodHandles.lookup())
-
-        @JvmStatic
-        private val addressHandle = lookup.findVarHandle(Buffer::class.java, "address", Long::class.java)
-
-        @JvmStatic
-        fun getAddress(buffer: ByteBuffer) = addressHandle.get(buffer) as Long
-    }
 }
