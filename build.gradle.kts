@@ -134,7 +134,8 @@ dependencies {
             //  and throws the following exception because the distro GLIBC version is 2.27 (can get using `ldd --version` command):
             //  UnsatisfiedLinkError: no jniavutil in java.library.path
             //  ... libc.so.6: version `GLIBC_2.28' not found required by .../libavutil.so.58
-            //  see https://github.com/bytedeco/javacpp-presets/issues/1379
+            //  See https://blog.jetbrains.com/idea/2025/01/updated-system-requirements-for-linux-gnu-c-library-glibc/
+            //  and https://github.com/bytedeco/javacpp-presets/issues/1379
             //  and https://github.com/bytedeco/javacpp-presets/issues/22
             //  and https://github.com/bytedeco/javacv/issues/2203#issuecomment-2456429199
             classifier("linux-x86_64-gpl")
