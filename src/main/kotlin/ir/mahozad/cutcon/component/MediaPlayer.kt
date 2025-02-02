@@ -413,12 +413,15 @@ private class SkiaImageVideoSurface : VideoSurface(null) {
         override fun display(
             mediaPlayer: VlcMediaPlayer,
             nativeBuffers: Array<ByteBuffer>,
-            bufferFormat: BufferFormat,
+            bufferFormat: BufferFormat
         ) {
             // TODO: Use imageChannel.trySend(Image.makeFromPixmap(pixmap).toComposeImageBitmap())
             //  because it seems to be more performant (app/video fps is higher) when the below issue is resolved:
             //  https://youtrack.jetbrains.com/issue/SKIKO-997/Memory-issue-when-calling-Image.makeFromPixmappixmap.toComposeImageBitmap
             //  Note that extracting the BitMap() as a variable made the app crash when changing the video
+            //  Could also extract the Bitmap() creation/allocation to allocatedBuffers method above
+            //  which makes the app crash after a few seconds so it probably needs locking the buffer:
+            //  https://github.com/caprica/vlcj/commit/b4326588bec54fa086b2ba68843630f5021ec096
             val skiaBitmap = Bitmap().apply {
                 allocPixels(skiaPixmap.info)
                 installPixels(skiaPixmap.buffer.bytes)
