@@ -313,6 +313,9 @@ class DefaultMediaPlayer : MediaPlayer {
     }
 
     private inner class EventListener : MediaPlayerEventAdapter() {
+        override fun error(mediaPlayer: VlcMediaPlayer) {
+            logger.warn { "An error occurred" }
+        }
 
         override fun stopped(vlcMediaPlayer: VlcMediaPlayer) {
             logger.info { "Media finished" }
