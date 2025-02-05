@@ -4,13 +4,14 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import ir.mahozad.cutcon.BuildConfig
-import ir.mahozad.cutcon.assetsPath
+import ir.mahozad.cutcon.component.MediaPlayer.Output.SourceNotStarted
 import ir.mahozad.cutcon.decodeImage
 import ir.mahozad.cutcon.defaultAudioVolume
 import ir.mahozad.cutcon.defaultIsAudioMuted
 import ir.mahozad.cutcon.detectMimeType
 import ir.mahozad.cutcon.model.Clip
 import ir.mahozad.cutcon.model.Progress
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -23,7 +24,6 @@ import org.jetbrains.skia.ColorSpace
 import org.jetbrains.skia.ImageInfo
 import org.jetbrains.skia.Pixmap
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
-import uk.co.caprica.vlcj.factory.discovery.strategy.NativeDiscoveryStrategy
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.base.State
 import uk.co.caprica.vlcj.player.embedded.videosurface.CallbackVideoSurface
@@ -205,8 +205,8 @@ class DefaultMediaPlayer : MediaPlayer {
 
     override fun play(url: URL) {
         vlcMediaPlayer.controls().stop()
-        videoSurface.stopAndResetVideo()
-        output.tryEmit(MediaPlayer.Output.SourceNotStarted)
+        videoSurface.stopVideo()
+        output.tryEmit(SourceNotStarted)
 
         val uri = URI("file", url.host, url.path, null)
         val path = Path(url.path.drop(1))
@@ -214,9 +214,9 @@ class DefaultMediaPlayer : MediaPlayer {
         val urlString = uri.toASCIIString() // Encodes the path if needed
 
         if (mimeType == "image/gif") {
-            output.tryEmit(MediaPlayer.Output.Video(videoSurface.imageFlow))
+            output.tryEmit(MediaPlayer.Output.Video(videoSurface.getImageFlow()))
         } else if (mimeType?.startsWith("video") == true) {
-            output.tryEmit(MediaPlayer.Output.Video(videoSurface.imageFlow))
+            output.tryEmit(MediaPlayer.Output.Video(videoSurface.getImageFlow()))
         } else if (mimeType?.startsWith("audio") == true) {
             output.tryEmit(generateOutputForAudio(path))
         } else if (mimeType?.startsWith("image") == true) {
@@ -367,17 +367,24 @@ private class SkiaImageVideoSurface : VideoSurface(null) {
      * the flow can be indicated finished (closed) for consumers of the flow.
      */
     private var imageChannel = Channel<ImageBitmap?>(capacity = Channel.CONFLATED)
+
     /**
      * Uses [receiveAsFlow] instead of [consumeAsFlow] to prevent rare exceptions.
      *
-     * It assumes the caller uses (gets) this before playing each new video so that
-     * the new instance of the channel (created in [stopAndResetVideo]) is used.
+     * The user of this class must call this method for each new video
+     * to get a flow from a new instance of [imageChannel] because
+     * a closed [Channel] from the previous video cannot be reused.
      */
-    val imageFlow get() = imageChannel.receiveAsFlow()
+    @OptIn(DelicateCoroutinesApi::class)
+    fun getImageFlow(): Flow<ImageBitmap?> {
+        if (imageChannel.isClosedForSend) {
+            imageChannel = Channel(capacity = Channel.CONFLATED)
+        }
+        return imageChannel.receiveAsFlow()
+    }
 
-    fun stopAndResetVideo() {
+    fun stopVideo() {
         imageChannel.close()
-        imageChannel = Channel(capacity = Channel.CONFLATED)
     }
 
     override fun attach(mediaPlayer: VlcMediaPlayer) {
