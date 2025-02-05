@@ -363,12 +363,15 @@ private class SkiaImageVideoSurface : VideoSurface(null) {
     private lateinit var skiaPixmap: Pixmap
     private val videoSurface = SkiaImageCallbackVideoSurface()
     /**
-     * Instead of [StateFlow] or [SharedFlow], a [Channel] is used so that
+     * Instead of [StateFlow] or [SharedFlow], an explicit [Channel] is used so that
      * the flow can be indicated finished (closed) for consumers of the flow.
      */
     private var imageChannel = Channel<ImageBitmap?>(capacity = Channel.CONFLATED)
     /**
      * Uses [receiveAsFlow] instead of [consumeAsFlow] to prevent rare exceptions.
+     *
+     * It assumes the caller uses (gets) this before playing each new video so that
+     * the new instance of the channel (created in [stopAndResetVideo]) is used.
      */
     val imageFlow get() = imageChannel.receiveAsFlow()
 
