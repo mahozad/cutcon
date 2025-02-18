@@ -341,6 +341,7 @@ abstract class StatusTest {
         )
     }
 
+    // See https://github.com/junit-team/junit5/issues/1558
     @Tag("Flaky")
     @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "Fails on CI; FIXME")
     @Test
