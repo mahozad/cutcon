@@ -355,6 +355,7 @@ class DefaultMediaPlayer : MediaPlayer {
  * the app frame-rate is about 45 fps vs 20 fps for a high-bit-rate 4K video on my system.
  * See the below TODO to improve the performance even more.
  * See https://github.com/caprica/vlcj/issues/1234
+ * See https://github.com/JetBrains/skiko/pull/1030#issue-2889140335
  *
  * For the previous implementation, see the file Git history.
  */
