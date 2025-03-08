@@ -11,6 +11,8 @@
 # <img src="raw/logo.svg" alt="Logo"> Cutcon
 Cut, convert, and view media files (video, audio, image). Free and open source.
 
+Derived from another private project called [Clipper](https://mahozad.ir/cutcon).
+
 With ability to generate lossless (raw) and lossy output.  
 Supports adding watermark (overlay) and start image (intro) to MP4 output and artwork (album art) to MP3 output.
 
