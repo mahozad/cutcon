@@ -44,7 +44,7 @@ buildConfig {
     buildConfigField(name = "VLC_DIRECTORY_NAME", value = vlcDirectoryName)
     buildConfigField(
         name = "APP_RELEASE_DATE",
-        type = "java.time.LocalDate",
+        type = LocalDate::class.qualifiedName!!,
         expression = """LocalDate.parse("$releaseDate")"""
     )
 }
