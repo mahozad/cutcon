@@ -403,6 +403,13 @@ private class SkiaImageVideoSurface : VideoSurface(null) {
             return RV32BufferFormat(sourceWidth, sourceHeight)
         }
 
+        override fun newFormatSize(
+            bufferWidth: Int,
+            bufferHeight: Int,
+            displayWidth: Int,
+            displayHeight: Int
+        ) = Unit
+
         override fun allocatedBuffers(buffers: Array<ByteBuffer>) {
             val buffer = buffers[0]
             val pointer = getAddress(buffer)
@@ -423,10 +430,16 @@ private class SkiaImageVideoSurface : VideoSurface(null) {
 
     private inner class SkiaImageRenderCallback : RenderCallback {
 
+        override fun lock(mediaPlayer: VlcMediaPlayer) = Unit
+
+        override fun unlock(mediaPlayer: VlcMediaPlayer) = Unit
+
         override fun display(
             mediaPlayer: VlcMediaPlayer,
-            nativeBuffers: Array<ByteBuffer>,
-            bufferFormat: BufferFormat
+            nativeBuffers: Array<out ByteBuffer?>?,
+            bufferFormat: BufferFormat?,
+            displayWidth: Int,
+            displayHeight: Int
         ) {
             // TODO: Use imageChannel.trySend(Image.makeFromPixmap(pixmap).toComposeImageBitmap())
             //  because it seems to be more performant (app/video fps is higher) when the below issue is resolved:
