@@ -17,7 +17,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import org.jaudiotagger.audio.AudioFileIO
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorSpace
@@ -235,7 +234,6 @@ class DefaultMediaPlayer : MediaPlayer {
             ?: MediaPlayer.Output.SourceHasNoImage
     }
 
-    @OptIn(ExperimentalResourceApi::class)
     private fun generateOutputForAudio(path: Path): MediaPlayer.Output {
         return path
             .toFile()
@@ -424,6 +422,7 @@ private class SkiaImageVideoSurface : VideoSurface(null) {
     }
 
     private inner class SkiaImageRenderCallback : RenderCallback {
+
         override fun display(
             mediaPlayer: VlcMediaPlayer,
             nativeBuffers: Array<ByteBuffer>,

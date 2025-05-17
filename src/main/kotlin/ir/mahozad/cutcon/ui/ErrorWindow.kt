@@ -24,7 +24,6 @@ import ir.mahozad.cutcon.model.Theme
 import ir.mahozad.cutcon.openAppLogFolder
 import ir.mahozad.cutcon.ui.theme.AppTheme
 import ir.mahozad.cutcon.ui.widget.StackTrace
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToSvgPainter
 import java.net.URI
 import kotlin.system.exitProcess
@@ -32,7 +31,6 @@ import kotlin.system.exitProcess
 fun showErrorWindow(error: Throwable?, theme: Theme, language: Language) {
     // Could also use the asynchronous Res.readBytes("drawable/logo-red.svg")
     // See https://github.com/JetBrains/compose-multiplatform/issues/2369
-    @OptIn(ExperimentalResourceApi::class)
     val appErrorIcon = Res
         .getUri("drawable/logo-red.svg")
         .let(::URI)

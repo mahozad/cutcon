@@ -2,12 +2,7 @@ package ir.mahozad.cutcon
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.window.ApplicationScope
-import androidx.compose.ui.window.LocalWindowExceptionHandlerFactory
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowExceptionHandler
-import androidx.compose.ui.window.WindowExceptionHandlerFactory
-import androidx.compose.ui.window.application
+import androidx.compose.ui.window.*
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import ir.mahozad.cutcon.component.*
 import ir.mahozad.cutcon.component.DefaultMediaPlayer

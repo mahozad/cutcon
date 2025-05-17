@@ -55,8 +55,9 @@ class FunctionalTest {
     fun createBuildContent(extraContent: () -> String) = """
         import org.jetbrains.compose.desktop.application.dsl.TargetFormat.*
         plugins {
-            id("org.jetbrains.kotlin.jvm") version "1.9.24"
-            id("org.jetbrains.compose") version "1.6.11"
+            id("org.jetbrains.kotlin.jvm") version "2.2.0-RC"
+            id("org.jetbrains.kotlin.plugin.compose") version "2.2.0-RC"
+            id("org.jetbrains.compose") version "1.8.0"
             id("vlc-setup")
         }
         compose.desktop {

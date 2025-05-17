@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.transformLatest
 import org.apache.tika.Tika
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.resources.decodeToSvgPainter
 import java.awt.Desktop
@@ -34,7 +33,6 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalStdlibApi::class)
 private val hexFormat = HexFormat {
     upperCase = false
     number.prefix = ""
@@ -120,7 +118,6 @@ fun convertSvgToPng(path: Path, size: Float? = null): Path? = runCatching {
  * unlike what is said in https://stackoverflow.com/q/9501237, it may not be a bad idea because,
  * at the end, we want a decoded image and a decoded image has all its bytes in memory.
  */
-@OptIn(ExperimentalResourceApi::class)
 fun decodeImage(
     path: Path,
     sizeOverrideIfVector: Float? = null
@@ -141,7 +138,6 @@ fun decodeImage(
  * See https://stackoverflow.com/q/13605248
  * and https://stackoverflow.com/q/4251383
  */
-@OptIn(ExperimentalResourceApi::class)
 private fun ByteArray.decodeSvgToImageBitmap(
     desiredSize: Float? = null
 ): ImageBitmap {
@@ -187,7 +183,6 @@ val TextRange.Companion.One get() = TextRange(1)
 val TextRange.Companion.Two get() = TextRange(2)
 val TextRange.Companion.Three get() = TextRange(3)
 
-@OptIn(ExperimentalStdlibApi::class)
 fun Color.toHex() = "#${toArgb().toHexString(hexFormat).takeLast(6)}"
 
 @Suppress("UnusedReceiverParameter")

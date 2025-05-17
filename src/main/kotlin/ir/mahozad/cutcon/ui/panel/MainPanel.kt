@@ -1,7 +1,6 @@
 package ir.mahozad.cutcon.ui.panel
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
@@ -44,10 +43,7 @@ import java.net.URI
 import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(
-    ExperimentalFoundationApi::class,
-    ExperimentalComposeUiApi::class,
-)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MainPanel(viewModel: MainViewModel) {
     val image by viewModel.displayImage.collectAsState(null)
@@ -151,7 +147,6 @@ private fun PlayMediaIndicator() {
 @OptIn(
     ExperimentalComposeUiApi::class,
     ExperimentalMaterialApi::class,
-    ExperimentalHazeMaterialsApi::class
 )
 @Composable
 private fun ExitFullScreenButton(hazeState: HazeState, onClick: () -> Unit) {

@@ -1,8 +1,8 @@
 [versions]
-kotlin-gradlePlugin = "2.1.0"
-compose-gradlePlugin = "1.7.3"
+kotlin-gradlePlugin = "2.2.0-RC"
+compose-gradlePlugin = "1.8.0"
 download-gradlePlugin = "5.6.0"
-kotlin = "2.1.0"
+kotlin = "2.2.0-RC"
 junit5 = "5.11.4"
 assertj = "3.27.0"
 system-stubs = "2.1.7"

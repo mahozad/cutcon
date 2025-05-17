@@ -71,7 +71,6 @@ private val height = 92.dp
 /**
  * Input for video watermark or audio album art.
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FrameWindowScope.CoverInput(
     isEnabled: Boolean,
@@ -500,7 +499,6 @@ private fun WatermarkConfig(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun WatermarkPlacement(
     isEnabled: Boolean,

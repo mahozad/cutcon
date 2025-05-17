@@ -490,7 +490,7 @@ class ConvertersTest {
     }
 
     /**
-     * Could also have used FFprobe to inspect the result (for example, its duraiton).
+     * Could also have used FFprobe to inspect the result (for example, its duration).
      * See https://superuser.com/a/945604
      */
     @Test

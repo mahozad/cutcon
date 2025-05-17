@@ -24,7 +24,6 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.jaudiotagger.audio.AudioFileIO
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -414,7 +413,6 @@ abstract class MediaInfoTest {
             val fakeMediaPlayerOutput = MutableStateFlow<MediaPlayer.Output>(MediaPlayer.Output.SourceNotStarted)
             val localFile = getResourceAsPath("test.mp3")
             // FIXME: Duplicate of code in MediaPlayer
-            @OptIn(ExperimentalResourceApi::class)
             val localFileAlbumArt = localFile
                 .toFile()
                 .runCatching(AudioFileIO::read)
@@ -459,7 +457,6 @@ abstract class MediaInfoTest {
             val mockMediaPlayer = spyk<MediaPlayer>()
             val fakeMediaPlayerOutput = MutableStateFlow<MediaPlayer.Output>(MediaPlayer.Output.SourceNotStarted)
             val localFile = getResourceAsPath("test.mp3")
-            @OptIn(ExperimentalResourceApi::class)
             val localFileAlbumArt = localFile
                 .toFile()
                 .runCatching(AudioFileIO::read)
@@ -505,7 +502,6 @@ abstract class MediaInfoTest {
             val fakeMediaPlayerOutput = MutableStateFlow<MediaPlayer.Output>(MediaPlayer.Output.SourceNotStarted)
             val fakeMediaImage = decodeImage(getResourceAsPath("test.png"))
             val localFile = getResourceAsPath("test.mp3")
-            @OptIn(ExperimentalResourceApi::class)
             val localFileAlbumArt = localFile
                 .toFile()
                 .runCatching(AudioFileIO::read)

@@ -499,7 +499,6 @@ class UtilitiesTest {
             assertThat(result).isEqualTo(expectedResult)
         }
 
-        @Suppress("SpellCheckingInspection")
         private fun generateWindowPathsAndExpectedResults() = listOf(
             Path("""a\b\c""") to Path("a/b/c"),
             Path("""C:\Users\User\Desktop\abc.mp4""") to Path("C:/Users/User/Desktop/abc.mp4"),

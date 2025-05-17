@@ -1,6 +1,5 @@
 package ir.mahozad.cutcon.ui.widget
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -63,7 +62,6 @@ const val INTRO_PREVIEW_SIZE = 66f
 
 private val height = 92.dp
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FrameWindowScope.IntroInput(
     isEnabled: Boolean,
