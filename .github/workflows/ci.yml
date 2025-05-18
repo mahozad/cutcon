@@ -16,7 +16,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: "temurin" # OR adopt OR microsoft OR...
-          java-version: "21"
+          java-version: "24"
       - name: Run all unit tests
         run: ./gradlew test --stacktrace
       - name: Upload test reports
