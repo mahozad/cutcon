@@ -4,8 +4,8 @@ compose-gradlePlugin = "1.8.0"
 download-gradlePlugin = "5.6.0"
 kotlin = "2.2.0-RC"
 junit5 = "5.11.4"
-assertj = "3.27.0"
-system-stubs = "2.1.7"
+assertj = "3.27.3"
+system-stubs = "2.1.8"
 
 [libraries]
 # Can find the id of a gradle plugin as described in https://stackoverflow.com/q/74221701

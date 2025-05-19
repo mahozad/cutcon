@@ -17,7 +17,8 @@
 -dontwarn org.apache.**
 -dontwarn ch.qos.logback.**
 -dontwarn kotlinx.datetime.**
--dontwarn io.github.oshai.kotlinlogging.coroutines.**
+# For KotlinLogging library version 7.0.7
+-dontwarn com.oracle.svm.core.annotate.**
 
 # Obfuscation breaks coroutines/ktor for some reason
 -dontobfuscate
