@@ -17,7 +17,7 @@ class LinuxTasksConfigure(
 
     override fun apply(): TaskProvider<*> {
         val vlcDownload = project.tasks.register("vlcDownload", VlcDownloadTask::class.java) {
-            it.vlcVersion.set("3.0.20" /* FIXME: vlcSetupExtension.vlcVersion */)
+            it.vlcVersion.set("3.0.20-2" /* FIXME: vlcSetupExtension.vlcVersion */)
         }
         val upxDownload = project.tasks.register("upxDownload", UpxDownloadTask::class.java) {
             it.upxVersion.set(vlcSetupExtension.upxVersion)
