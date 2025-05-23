@@ -15,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -27,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import ir.mahozad.cutcon.calculateMaxSizeInFrame
 import ir.mahozad.cutcon.localization.Messages
 import ir.mahozad.cutcon.model.AspectRatio
+import ir.mahozad.cutcon.ui.theme.mediaDisplay
 
 @Composable
 fun Display(
@@ -115,13 +115,7 @@ private fun Transition(topFactor: Float, bottomFactor: Float) {
         modifier = Modifier
             .fillMaxSize()
             .clip(clipShape)
-            .background(
-                if (MaterialTheme.colors.isLight) {
-                    Color.hsv(0f, 0f, 0.88f)
-                } else {
-                    Color.hsv(0f, 0f, 0.18f)
-                }
-            )
+            .background(MaterialTheme.colors.mediaDisplay)
     ) {
         Image(
             painter = painterResource("logo.svg"),

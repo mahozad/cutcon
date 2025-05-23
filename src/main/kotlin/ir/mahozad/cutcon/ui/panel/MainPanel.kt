@@ -31,14 +31,13 @@ import ir.mahozad.cutcon.localization.LanguageFa
 import ir.mahozad.cutcon.localization.Messages
 import ir.mahozad.cutcon.model.Shortcut
 import ir.mahozad.cutcon.ui.icon.*
-import ir.mahozad.cutcon.ui.theme.borderColor
 import ir.mahozad.cutcon.ui.widget.*
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
+import ir.mahozad.cutcon.ui.theme.border
 import java.net.URI
 import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.seconds
@@ -172,7 +171,7 @@ private fun ExitFullScreenButton(hazeState: HazeState, onClick: () -> Unit) {
                 .clip(CircleShape)
                 .hazeEffect(hazeState, style = hazeMaterial(MaterialTheme.colors.surface))
                 // .border is applied after .hazeEffect to make the haze blurring prettier
-                .border(Dp.Hairline, borderColor, CircleShape)
+                .border(Dp.Hairline, MaterialTheme.colors.border, CircleShape)
         ) {
             CustomIcon(
                 icon = Icons.Custom.Close,

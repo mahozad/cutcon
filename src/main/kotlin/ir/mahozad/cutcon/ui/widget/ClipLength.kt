@@ -5,6 +5,7 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -17,7 +18,7 @@ import ir.mahozad.cutcon.defaultChipHeight
 import ir.mahozad.cutcon.defaultDurationConverter
 import ir.mahozad.cutcon.defaultFontSize
 import ir.mahozad.cutcon.model.Clip
-import ir.mahozad.cutcon.ui.theme.borderColor
+import ir.mahozad.cutcon.ui.theme.border
 import kotlin.time.Duration.Companion.seconds
 
 @Preview
@@ -36,7 +37,7 @@ fun ClipLength(clip: Clip) {
             modifier = Modifier
                 .width(152.dp)
                 .height(defaultChipHeight)
-                .border(1.dp, borderColor, RoundedCornerShape(percent = 50))
+                .border(1.dp, MaterialTheme.colors.border, RoundedCornerShape(percent = 50))
         ) {
             Text(text = language.messages.txtLblClipLength, fontSize = defaultFontSize)
             Spacer(Modifier.width(4.dp))

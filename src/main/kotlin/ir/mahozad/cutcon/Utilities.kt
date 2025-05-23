@@ -1,6 +1,5 @@
 package ir.mahozad.cutcon
 
-import androidx.compose.material.Colors
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
@@ -184,9 +183,6 @@ val TextRange.Companion.Two get() = TextRange(2)
 val TextRange.Companion.Three get() = TextRange(3)
 
 fun Color.toHex() = "#${toArgb().toHexString(hexFormat).takeLast(6)}"
-
-@Suppress("UnusedReceiverParameter")
-val Colors.success: Color get() = Color(red = 88, green = 150, blue = 0)
 
 fun Int.toTwoDigit() = "%02d".format(this)
 

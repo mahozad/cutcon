@@ -24,7 +24,8 @@ import ir.mahozad.cutcon.localization.LanguageFa
 import ir.mahozad.cutcon.model.Source
 import ir.mahozad.cutcon.model.Status
 import ir.mahozad.cutcon.model.Status.*
-import ir.mahozad.cutcon.ui.theme.borderColor
+import ir.mahozad.cutcon.ui.theme.border
+import ir.mahozad.cutcon.ui.theme.success
 import kotlin.math.roundToInt
 
 @Composable
@@ -44,7 +45,7 @@ fun StatusLabel(status: Status) {
                     is Error -> MaterialTheme.colors.error
                     is Finished.Failure -> MaterialTheme.colors.error
                     is Finished.Success -> MaterialTheme.colors.success
-                    else -> borderColor
+                    else -> MaterialTheme.colors.border
                 }
             )
             .padding(all = defaultChipHeight / 4)
