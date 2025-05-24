@@ -61,7 +61,7 @@ class MainViewModel(
 
     data class WindowWidth(val value: Int, val isAnimated: Boolean)
 
-    private val logger = logger(name = MainViewModel::class.simpleName ?: "")
+    private val logger = logger(name = javaClass.simpleName)
     private val coroutineScope = CoroutineScope(dispatcher)
     private var operationJob: Job? = null
     private val _isAppExitConfirmDialogDisplayed = MutableStateFlow(false)

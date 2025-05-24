@@ -78,7 +78,7 @@ interface MediaPlayer {
 // and https://github.com/caprica/vlcj/issues/1234
 class DefaultMediaPlayer : MediaPlayer {
 
-    private val logger = logger(MediaPlayer::class.simpleName ?: "")
+    private val logger = logger(name = javaClass.simpleName)
     // Run vlc -H or vlc --help --advanced or add -H or --help and --advanced options
     // separately below to see all vlc configurations and capabilities in the standard output.
     private val vlcOptions = listOf(

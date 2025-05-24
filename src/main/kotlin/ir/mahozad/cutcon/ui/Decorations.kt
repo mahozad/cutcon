@@ -256,7 +256,7 @@ data class WindowMargins(
 
 private class CustomWindowProcedure(private val windowHandle: HWND) : WindowProc {
 
-    private val logger = logger(name = CustomWindowProcedure::class.simpleName ?: "")
+    private val logger = logger(name = javaClass.simpleName)
     // See https://learn.microsoft.com/en-us/windows/win32/winmsg/about-messages-and-message-queues#system-defined-messages
     private val WM_NCCALCSIZE = 0x0083
     private val WM_NCHITTEST = 0x0084

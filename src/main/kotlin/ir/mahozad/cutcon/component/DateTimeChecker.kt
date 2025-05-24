@@ -8,13 +8,13 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.coroutines.CoroutineContext
 
-private val logger = logger(name = DateTimeChecker::class.simpleName ?: "")
-
 fun interface DateTimeChecker {
     fun dateTimeFlow(): Flow<Pair<LocalDate, LocalTime>>
 }
 
 class DefaultDateTimeChecker(private val dispatcher: CoroutineContext) : DateTimeChecker {
+
+    private val logger = logger(name = javaClass.simpleName)
 
     override fun dateTimeFlow() = flow {
         while (true) {

@@ -5,13 +5,14 @@ import ir.mahozad.cutcon.model.Source
 import java.net.URL
 import kotlin.io.path.absolutePathString
 
-private val logger = logger(name = UrlMaker::class.simpleName ?: "")
-
 fun interface UrlMaker {
     fun makeUrl(source: Source): URL
 }
 
 object DefaultUrlMaker : UrlMaker {
+
+    private val logger = logger(name = javaClass.simpleName)
+
     override fun makeUrl(source: Source) = when (source) {
         is Source.Local -> {
             // For playing local files use a URL with "localhost" like this:

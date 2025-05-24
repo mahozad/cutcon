@@ -9,8 +9,6 @@ import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.nameWithoutExtension
 
-private val logger = logger(name = SaveFileNameGenerator::class.simpleName ?: "")
-
 fun interface SaveFileNameGenerator {
     fun generate(
         directory: Path,
@@ -20,6 +18,9 @@ fun interface SaveFileNameGenerator {
 }
 
 object DefaultSaveFileNameGenerator : SaveFileNameGenerator {
+
+    private val logger = logger(name = javaClass.simpleName)
+
     override fun generate(
         directory: Path,
         date: ChronoLocalDate,

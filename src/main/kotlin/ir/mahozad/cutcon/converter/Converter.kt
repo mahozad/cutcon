@@ -30,7 +30,7 @@ abstract class Converter(private val dispatcher: CoroutineDispatcher) {
     // See the docs in README -> FFmpeg section and its subsections for more information.
     private val ffmpegPath = Loader.load(ffmpeg::class.java)
     private val millisecondRegex = Regex("""\.\d+""")
-    private val logger = logger(name = Converter::class.simpleName ?: "")
+    private val logger = logger(name = javaClass.simpleName)
 
     protected data class ConverterFlags(
         val isInterlacingFixEnabled: Boolean,
