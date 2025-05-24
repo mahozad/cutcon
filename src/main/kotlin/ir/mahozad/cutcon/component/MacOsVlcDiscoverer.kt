@@ -1,6 +1,7 @@
 package ir.mahozad.cutcon.component
 
 import com.sun.jna.NativeLibrary
+import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import ir.mahozad.cutcon.BuildConfig
 import ir.mahozad.cutcon.assetsPath
 import ir.mahozad.cutcon.getCurrentOs
@@ -18,6 +19,8 @@ class MacOsVlcDiscoverer() : BaseNativeDiscoveryStrategy(
     arrayOf("%s/plugins")
 ) {
 
+    private val logger = logger(name = javaClass.simpleName)
+
     override fun supported() = getCurrentOs() == OS.MAC
 
     override fun discoveryDirectories() = listOf(
@@ -25,6 +28,7 @@ class MacOsVlcDiscoverer() : BaseNativeDiscoveryStrategy(
     )
 
     override fun onFound(path: String): Boolean {
+        logger.debug { "Found native VLC libraries in $path" }
         forceLoadLibVlcCore(path)
         return true
     }
