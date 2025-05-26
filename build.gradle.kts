@@ -217,6 +217,9 @@ compose.desktop {
             linux {
                 iconFile = (rootDir.toPath() / "raw" / "logo.png").toFile()
             }
+            macOS {
+                iconFile = (rootDir.toPath() / "raw" / "logo.icns").toFile()
+            }
             appResourcesRootDir = appResourcesPath.toFile()
             buildTypes.release.proguard {
                 version = libs.versions.proguard.get()
