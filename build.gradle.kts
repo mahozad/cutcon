@@ -15,7 +15,6 @@ plugins {
     id("vlc-setup")
 }
 
-val appIconFilePath = rootDir.toPath() / "raw" / "logo.ico"
 val appResourcesPath = rootDir.toPath() / "src" / "asset"
 val vlcDirectoryName = "vlc"
 val releaseDate: LocalDate = LocalDate.of(2024, 7, 21)
@@ -212,8 +211,11 @@ compose.desktop {
             packageName = project.name
             vendor = "Mahdi Hosseinzadeh"
             windows {
-                iconFile = appIconFilePath.toFile()
+                iconFile = (rootDir.toPath() / "raw" / "logo.ico").toFile()
                 menuGroup = project.name // Start menu shortcut
+            }
+            linux {
+                iconFile = (rootDir.toPath() / "raw" / "logo.png").toFile()
             }
             appResourcesRootDir = appResourcesPath.toFile()
             buildTypes.release.proguard {
