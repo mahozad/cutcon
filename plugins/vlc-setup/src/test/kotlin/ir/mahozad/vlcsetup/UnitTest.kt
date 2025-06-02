@@ -37,6 +37,15 @@ class UnitTest {
     }
 
     @Test
+    @EnabledOnOs(OS.MAC)
+    fun `When user project applies the plugin in macOS, the vlcSetup task should be added to the project`() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply("vlc-setup")
+        assertThat(project.tasks.getByName("vlcSetup"))
+            .isInstanceOf(ir.mahozad.vlcsetup.mac.VlcSetupTask::class.java)
+    }
+
+    @Test
     fun `The vlcSetup task should have the same Gradle group as Compose Multiplatform Desktop tasks`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply("vlc-setup")
