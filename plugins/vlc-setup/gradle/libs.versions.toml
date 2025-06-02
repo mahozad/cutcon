@@ -6,6 +6,7 @@ kotlin = "2.2.0-RC"
 junit5 = "5.11.4"
 assertj = "3.27.3"
 system-stubs = "2.1.8"
+publish-plugin = "1.3.1"
 
 [libraries]
 # Can find the id of a gradle plugin as described in https://stackoverflow.com/q/74221701
@@ -19,4 +20,4 @@ systemStubs-jupiter = { group = "uk.org.webcompere", name = "system-stubs-jupite
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-gradle-pluginDevelopment = { id = "org.gradle.java-gradle-plugin" }
+publish-plugin = { id = "com.gradle.plugin-publish", version.ref = "publish-plugin" }

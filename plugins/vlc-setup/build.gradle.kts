@@ -1,7 +1,10 @@
 plugins {
-    alias(libs.plugins.gradle.pluginDevelopment)
+    alias(libs.plugins.publish.plugin)
     alias(libs.plugins.kotlin.jvm)
 }
+
+group = "ir.mahozad"
+version = "0.0.1"
 
 dependencies {
     implementation(libs.download.gradlePlugin)
