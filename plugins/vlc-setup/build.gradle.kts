@@ -21,7 +21,7 @@ gradlePlugin {
     plugins {
         create("vlc-setup") {
             id = "vlc-setup"
-            implementationClass = "VlcSetupPlugin"
+            implementationClass = "ir.mahozad.vlcsetup.VlcSetupPlugin"
         }
     }
 }
