@@ -212,7 +212,7 @@ sealed interface Messages {
         const val ERR_COMPOSE_RES_DIR_NOT_SET = """
             JVM property 'compose.application.resources.dir'
             which specifies the directory containing application custom assets hasn't been set.
-            See https://github.com/JetBrains/compose-multiplatform/tree/master/tutorials/Native_distributions_and_local_execution#packaging-resources
+            See https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-native-distribution.html#adding-files-to-packaged-application
         """
         const val ICO_DSC_SUCCESS = "Success"
         const val ICO_DSC_FAILURE = "Failure"
