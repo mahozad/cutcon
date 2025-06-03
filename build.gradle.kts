@@ -11,8 +11,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.buildConfig)
+    alias(libs.plugins.vlcSetup)
     id("ui-test-setup")
-    id("vlc-setup")
 }
 
 val appResourcesPath = rootDir.toPath() / "src" / "asset"

@@ -12,6 +12,7 @@ kotlinLogging = "7.0.7"
 ffmpeg = "6.1.1-1.5.10" # Update to 7.1-1.5.11 or newer when https://trac.ffmpeg.org/ticket/11366 is resolved
 vlc = "3.0.21"
 vlcj = "4.11.0"
+vlcSetup = "0.1.0"
 wavySlider="2.1.0-rc"
 persianDateTime = "4.2.1"
 junit5 = "5.11.4"
@@ -54,5 +55,6 @@ haze-materials = { group = "dev.chrisbanes.haze", name = "haze-materials", versi
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+vlcSetup = { id = "ir.mahozad.vlc-setup", version.ref = "vlcSetup" }
 # Alternative: https://github.com/yshrsmz/BuildKonfig
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
