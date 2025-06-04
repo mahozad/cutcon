@@ -18,7 +18,7 @@ private val logger = logger(name = "Main")
 private var appError: Throwable? = null
 private val viewModel = MainViewModel(
     urlMaker = DefaultUrlMaker,
-    settings = Preferences.userNodeForPackage({}::class.java),
+    settings = Preferences.userNodeForPackage(::main.javaClass),
     dispatcher = Dispatchers.Default,
     mediaPlayer = DefaultMediaPlayer(),
     dateTimeChecker = DefaultDateTimeChecker(Dispatchers.IO),

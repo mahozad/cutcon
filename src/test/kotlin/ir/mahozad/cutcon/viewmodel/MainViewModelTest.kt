@@ -76,7 +76,7 @@ class MainViewModelTest {
      * Preferences.userNode()
      * ```
      *
-     * because that way the preferences may collide or override preferences of
+     * because that way, the preferences may collide or override preferences of
      * other JVM apps that also use the root node and have the same keys.
      *
      * Rather, it should use something specific to the app (like app package name):
