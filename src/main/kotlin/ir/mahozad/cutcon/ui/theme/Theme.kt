@@ -26,7 +26,7 @@ private val DarkColors = darkColors(
     primaryVariant = Color(0xff208bb2)
 )
 
-private val animationSpec = tween<Color>(durationMillis = 300, easing = Ease)
+private val animationSpec = tween<Color>(durationMillis = 250, easing = Ease)
 
 @Composable
 private fun animatedColors(colors: Colors) = Colors(
