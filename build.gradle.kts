@@ -146,8 +146,6 @@ dependencies {
     implementation(libs.jAudioTagger)
     implementation(libs.jna.jpms)
     implementation(libs.jna.platform.jpms)
-    implementation(libs.haze)
-    implementation(libs.haze.materials)
 
     testImplementation(compose.desktop.uiTestJUnit4)
     testImplementation(libs.kotlin.coroutines.test)

@@ -20,7 +20,6 @@ import androidx.compose.ui.draganddrop.DragData.FilesList
 import androidx.compose.ui.draganddrop.dragData
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.Dp
@@ -32,11 +31,6 @@ import ir.mahozad.cutcon.localization.Messages
 import ir.mahozad.cutcon.model.Shortcut
 import ir.mahozad.cutcon.ui.icon.*
 import ir.mahozad.cutcon.ui.widget.*
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
 import ir.mahozad.cutcon.ui.theme.border
 import java.net.URI
 import kotlin.io.path.toPath
@@ -50,7 +44,6 @@ fun MainPanel(viewModel: MainViewModel) {
     val isFullscreen by viewModel.isFullscreen.collectAsState()
     val isMiniScreen by viewModel.isMiniScreen.collectAsState()
     var isDragging by remember { mutableStateOf(false) }
-    val hazeState = remember { HazeState() }
     val dragAndDropTarget = remember {
         object : DragAndDropTarget {
             override fun onEntered(event: DragAndDropEvent) {
@@ -106,14 +99,13 @@ fun MainPanel(viewModel: MainViewModel) {
                 aspectRatio = aspectRatio,
                 modifier = Modifier
                     .fillMaxSize()
-                    .hazeSource(hazeState)
                     .dragAndDropTarget(
                         shouldStartDragAndDrop = { true },
                         target = dragAndDropTarget
                     )
             )
             if (isFullscreen) {
-                ExitFullScreenButton(hazeState, viewModel::exitFullscreen)
+                ExitFullScreenButton(viewModel::exitFullscreen)
             }
             if (isDragging) {
                 PlayMediaIndicator()
@@ -145,10 +137,10 @@ private fun PlayMediaIndicator() {
 
 @OptIn(
     ExperimentalComposeUiApi::class,
-    ExperimentalMaterialApi::class,
+    ExperimentalMaterialApi::class
 )
 @Composable
-private fun ExitFullScreenButton(hazeState: HazeState, onClick: () -> Unit) {
+private fun ExitFullScreenButton(onClick: () -> Unit) {
     // Do not move this up and outside the if block
     // (so the offset resets automatically when fullscreen exits)
     var offsetOfCloseButton by remember { mutableStateOf((-48).dp) }
@@ -162,15 +154,12 @@ private fun ExitFullScreenButton(hazeState: HazeState, onClick: () -> Unit) {
             .onPointerEvent(eventType = PointerEventType.Exit) { offsetOfCloseButton = (-48).dp }
     ) {
         Surface(
-            color = Color.Transparent,
+            color = MaterialTheme.colors.surface.copy(alpha = 0.66f),
             shape = CircleShape,
             onClick = onClick,
             elevation = 0.dp,
             modifier = Modifier
                 .offset(y = offsetOfCloseButtonAnimated)
-                .clip(CircleShape)
-                .hazeEffect(hazeState, style = hazeMaterial(MaterialTheme.colors.surface))
-                // .border is applied after .hazeEffect to make the haze blurring prettier
                 .border(Dp.Hairline, MaterialTheme.colors.border, CircleShape)
         ) {
             CustomIcon(
@@ -181,16 +170,6 @@ private fun ExitFullScreenButton(hazeState: HazeState, onClick: () -> Unit) {
         }
     }
 }
-
-private fun hazeMaterial(
-    containerColor: Color,
-    lightAlpha: Float = 0.45f,
-    darkAlpha: Float = 0.50f,
-): HazeStyle = HazeStyle(
-    blurRadius = 16.dp,
-    backgroundColor = containerColor,
-    tint = HazeTint(containerColor.copy(alpha = if (containerColor.luminance() >= 0.5) lightAlpha else darkAlpha))
-)
 
 @Composable
 private fun ControlsForRegularScreen(viewModel: MainViewModel) {

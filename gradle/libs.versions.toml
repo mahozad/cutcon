@@ -23,7 +23,6 @@ jna = "5.17.0"
 jaudioTagger = "3.0.1"
 image-comparison = "4.4.0"
 system-stubs = "2.1.8"
-haze = "1.6.1"
 
 [libraries]
 kotlin-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
@@ -48,8 +47,6 @@ assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 systemStubs-core = { group = "uk.org.webcompere", name = "system-stubs-core", version.ref = "system-stubs" }
 systemStubs-jupiter = { group = "uk.org.webcompere", name = "system-stubs-jupiter", version.ref = "system-stubs" }
-haze = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze" }
-haze-materials = { group = "dev.chrisbanes.haze", name = "haze-materials", version.ref = "haze" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
