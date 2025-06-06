@@ -494,7 +494,7 @@ abstract class MediaInfoTest {
             assertThat(results.map(ImageBitmap?::getPixels)).containsExactly(
                 localFileAlbumArt.getPixels(),
                 null,
-                defaultAudioImage.getPixels()
+                defaultMusicCoverArt.getPixels()
             )
         }
 

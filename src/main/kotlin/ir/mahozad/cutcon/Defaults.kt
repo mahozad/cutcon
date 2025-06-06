@@ -31,7 +31,7 @@ const val WINDOW_HEIGHT_REGULAR = DISPLAY_HEIGHT + (4 /* Rows of components */ *
 const val WINDOW_WIDTH_MINI = 372
 const val WINDOW_HEIGHT_MINI = 314
 
-val defaultAudioImage by lazy { decodeImage(assetsPath / "cover.svg") }
+val defaultMusicCoverArt by lazy { decodeImage(path = assetsPath / "music.svg") }
 
 /**
  * Because VLC has a problem that finishes the media when seeking to 1.0f,
@@ -44,7 +44,7 @@ val liveSeekFraction: Float get() {
     return 1 - safeMarginFraction.toFloat().coerceIn(0f..1f)
 }
 val liveSeekSafeMargin = 5.seconds
-val defaultSource by lazy { Source.Local(assetsPath / "cover.svg") }
+val defaultSource by lazy { Source.Local(assetsPath / "logo.svg") }
 val defaultTimeStamp = Duration.ZERO
 val defaultClip = Clip(defaultTimeStamp, defaultTimeStamp)
 val defaultFormat = Format.MP4

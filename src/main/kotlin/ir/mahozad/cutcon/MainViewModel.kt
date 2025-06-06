@@ -187,7 +187,7 @@ class MainViewModel(
         } else if (it is MediaPlayer.Output.Image) {
             emit(it.image)
         } else if (_source.value.mediaType == Source.MediaType.AUDIO) {
-            emit(defaultAudioImage)
+            emit(defaultMusicCoverArt)
         }
     }
     val language = _language.asStateFlow()

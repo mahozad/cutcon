@@ -56,7 +56,7 @@ class Mp3Converter(dispatcher: CoroutineDispatcher) : Converter(dispatcher) {
     companion object {
         private const val DEFAULT_ALBUM_ART_SIZE = 512f
         val defaultAlbumArtPath = convertSvgToPng(
-            path = assetsPath / "cover-little-padding.svg",
+            path = assetsPath / "logo-little-padding.svg",
             size = DEFAULT_ALBUM_ART_SIZE
         )
     }

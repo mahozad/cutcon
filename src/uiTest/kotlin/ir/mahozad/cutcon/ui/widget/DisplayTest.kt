@@ -9,7 +9,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Density
-import ir.mahozad.cutcon.defaultAudioImage
+import ir.mahozad.cutcon.defaultMusicCoverArt
 import ir.mahozad.cutcon.model.AspectRatio
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
@@ -26,7 +26,7 @@ class DisplayTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
                     Display(
-                        image = defaultAudioImage,
+                        image = defaultMusicCoverArt,
                         aspectRatio = AspectRatio.SOURCE,
                         modifier = Modifier.background(Color.Cyan)
                     )
@@ -50,7 +50,7 @@ class DisplayTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f)) {
                     Display(
-                        image = defaultAudioImage,
+                        image = defaultMusicCoverArt,
                         aspectRatio = AspectRatio.W16H9,
                         modifier = Modifier.background(Color.Cyan)
                     )
@@ -75,7 +75,7 @@ class DisplayTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1.25f)) {
                     Display(
-                        image = defaultAudioImage,
+                        image = defaultMusicCoverArt,
                         aspectRatio = AspectRatio.SOURCE,
                         modifier = Modifier.background(Color.Cyan)
                     )
@@ -100,7 +100,7 @@ class DisplayTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1.25f)) {
                     Display(
-                        image = defaultAudioImage,
+                        image = defaultMusicCoverArt,
                         aspectRatio = AspectRatio.W16H9,
                         modifier = Modifier.background(Color.Cyan)
                     )
