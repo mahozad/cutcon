@@ -42,6 +42,10 @@ import ir.mahozad.cutcon.ui.icon.Close
 import ir.mahozad.cutcon.ui.icon.Icons
 import ir.mahozad.cutcon.ui.icon.Minimize
 
+/**
+ * It is called client-side decorations.
+ * See https://en.wikipedia.org/wiki/Client-side_decoration
+ */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun WindowScope.WindowDecoration(
