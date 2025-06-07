@@ -1,5 +1,6 @@
 package ir.mahozad.cutcon.ui.theme
 
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
@@ -21,6 +22,9 @@ private val DarkColors = darkColors(
     secondary = Color(0xff1faedc),
     primaryVariant = Color(0xff208bb2)
 )
+
+@Composable
+fun BorderColor() = MaterialTheme.colors.onSurface.copy(ContentAlpha.medium)
 
 @Composable
 fun AppTheme(

@@ -44,6 +44,7 @@ import ir.mahozad.cutcon.ui.dialog.showOpenFileDialog
 import ir.mahozad.cutcon.ui.icon.Curtain
 import ir.mahozad.cutcon.ui.icon.Delete
 import ir.mahozad.cutcon.ui.icon.Icons
+import ir.mahozad.cutcon.ui.theme.BorderColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.URI
@@ -361,7 +362,7 @@ private fun IntroImage(
             },
             modifier = Modifier
                 .size(INTRO_PREVIEW_SIZE.dp)
-                .border(Dp.Hairline, MaterialTheme.colors.onSurface.copy(alpha = 0.5f))
+                .border(Dp.Hairline, BorderColor())
                 .blur(if (isImageHovered && isEnabled) 8.dp else 0.dp)
                 .drawBehind { drawRect(color = backgroundColor) }
         )
@@ -434,7 +435,7 @@ private fun BackgroundColor(
                 color = if (isSelected) {
                     MaterialTheme.colors.primary
                 } else {
-                    MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
+                    BorderColor()
                 }
             )
     )

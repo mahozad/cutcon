@@ -21,6 +21,7 @@ import ir.mahozad.cutcon.localization.LanguageFa
 import ir.mahozad.cutcon.localization.Messages
 import ir.mahozad.cutcon.model.Shortcut
 import ir.mahozad.cutcon.ui.icon.*
+import ir.mahozad.cutcon.ui.theme.BorderColor
 import ir.mahozad.cutcon.ui.widget.*
 import java.net.URI
 import kotlin.io.path.toPath
@@ -138,7 +139,7 @@ private fun ExitFullScreenButton() {
             elevation = 0.dp,
             modifier = Modifier
                 .offset(y = offsetOfCloseButtonAnimated)
-                .border(Dp.Hairline, MaterialTheme.colors.onSurface.copy(alpha = 0.5f), CircleShape)
+                .border(Dp.Hairline, BorderColor(), CircleShape)
         ) {
             CustomIcon(
                 icon = Icons.Custom.Close,

@@ -51,6 +51,7 @@ import ir.mahozad.cutcon.ui.dialog.showOpenFileDialog
 import ir.mahozad.cutcon.ui.icon.Cover
 import ir.mahozad.cutcon.ui.icon.Delete
 import ir.mahozad.cutcon.ui.icon.Icons
+import ir.mahozad.cutcon.ui.theme.BorderColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.URI
@@ -384,7 +385,7 @@ private fun CoverImage(
             },
             modifier = Modifier
                 .size(COVER_PREVIEW_SIZE.dp)
-                .border(Dp.Hairline, MaterialTheme.colors.onSurface.copy(alpha = 0.5f))
+                .border(Dp.Hairline, BorderColor())
                 .blur(if (isCoverHovered && isEnabled) 8.dp else 0.dp)
                 .drawBehind {
                     // Draws checkerboard in case the image contains transparent parts
