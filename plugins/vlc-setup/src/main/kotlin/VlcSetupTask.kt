@@ -7,7 +7,6 @@ import org.gradle.api.tasks.TaskAction
 import java.io.File
 import kotlin.sequences.forEach
 
-// See <PROJECT_ROOT>/README.md for more info.
 abstract class VlcSetupTask : DefaultTask() {
 
     init {
