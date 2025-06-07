@@ -73,59 +73,53 @@ fun WindowScope.WindowDecoration(
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                     WindowDraggableArea(modifier = Modifier.fillMaxWidth().height(30.dp)) {
                         Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxHeight()
-                            ) {
-                                Spacer(Modifier.width(8.dp))
-                                Image(
-                                    painter = icon,
-                                    contentDescription = Messages.ICO_DSC_TITLE_BAR_ICON,
-                                    modifier = Modifier.height(20.dp)
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                title(defaultFontSize)
-                            }
-                            Row {
-                                if (isMinimizable && window is ComposeWindow) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier
-                                            .width(48.dp)
-                                            .fillMaxHeight()
-                                            .clickable {
-                                                // See the code below for why
-                                                User32.INSTANCE.CloseWindow(windowHandle)
-                                            }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Custom.Minimize,
-                                            contentDescription = Messages.ICO_DSC_MINIMIZE,
-                                            modifier = Modifier.size(12.dp)
-                                        )
-                                    }
-                                }
-                                var isHovered by remember { mutableStateOf(false) }
+                            Spacer(Modifier.width(8.dp))
+                            Image(
+                                painter = icon,
+                                contentDescription = Messages.ICO_DSC_TITLE_BAR_ICON,
+                                modifier = Modifier.height(20.dp)
+                            )
+                            Spacer(Modifier.width(2.dp))
+                            title(defaultFontSize)
+                            Spacer(modifier = Modifier.weight(1f))
+                            if (isMinimizable && window is ComposeWindow) {
                                 Box(
                                     contentAlignment = Alignment.Center,
                                     modifier = Modifier
                                         .width(48.dp)
-                                        .onPointerEvent(PointerEventType.Enter, onEvent = { isHovered = true })
-                                        .onPointerEvent(PointerEventType.Exit, onEvent = { isHovered = false })
-                                        .background(if (isHovered) Color(0xffc42b1c) else Color(0x00c42b1c))
                                         .fillMaxHeight()
-                                        .clickable(onClick = onCloseRequest)
+                                        .clickable {
+                                            // See the code below for why
+                                            User32.INSTANCE.CloseWindow(windowHandle)
+                                        }
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Custom.Close,
-                                        contentDescription = Messages.ICO_DSC_CLOSE,
-                                        modifier = Modifier.size(14.dp),
-                                        tint = if (isHovered) Color.White else MaterialTheme.colors.onSurface
+                                        imageVector = Icons.Custom.Minimize,
+                                        contentDescription = Messages.ICO_DSC_MINIMIZE,
+                                        modifier = Modifier.size(12.dp)
                                     )
                                 }
+                            }
+                            var isCloseHovered by remember { mutableStateOf(false) }
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .width(48.dp)
+                                    .onPointerEvent(PointerEventType.Enter, onEvent = { isCloseHovered = true })
+                                    .onPointerEvent(PointerEventType.Exit, onEvent = { isCloseHovered = false })
+                                    .background(if (isCloseHovered) Color(0xffc42b1c) else Color(0x00c42b1c))
+                                    .fillMaxHeight()
+                                    .clickable(onClick = onCloseRequest)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Custom.Close,
+                                    contentDescription = Messages.ICO_DSC_CLOSE,
+                                    modifier = Modifier.size(14.dp),
+                                    tint = if (isCloseHovered) Color.White else MaterialTheme.colors.onSurface
+                                )
                             }
                         }
                     }
@@ -153,22 +147,18 @@ fun DialogDecoration(
         Column {
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().height(30.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxHeight()
-                    ) {
-                        Spacer(Modifier.width(8.dp))
-                        Image(
-                            painter = icon,
-                            contentDescription = Messages.ICO_DSC_TITLE_BAR_ICON,
-                            modifier = Modifier.height(20.dp)
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        title(defaultFontSize)
-                    }
+                    Spacer(Modifier.width(8.dp))
+                    Image(
+                        painter = icon,
+                        contentDescription = Messages.ICO_DSC_TITLE_BAR_ICON,
+                        modifier = Modifier.height(20.dp)
+                    )
+                    Spacer(Modifier.width(2.dp))
+                    title(defaultFontSize)
+                    Spacer(modifier = Modifier.weight(1f))
                     var isHovered by remember { mutableStateOf(false) }
                     Box(
                         contentAlignment = Alignment.Center,

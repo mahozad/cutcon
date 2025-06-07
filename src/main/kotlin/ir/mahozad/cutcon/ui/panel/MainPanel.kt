@@ -199,8 +199,8 @@ private fun ControlsForRegularScreen() {
                 onChange = viewModel::setSpeed
             )
             Row(
-                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Absolute.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 PinButton(iconPadding = 12.dp)
@@ -443,9 +443,9 @@ private fun ControlsForMiniScreen() {
         onSeek = viewModel::setSeek
     )
     Row(
-        modifier = Modifier.fillMaxWidth().offset(y = (-8).dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier.fillMaxWidth().offset(y = (-8).dp)
     ) {
         PlayPauseButton(iconPadding = 0.dp)
         AudioInput(
