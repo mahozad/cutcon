@@ -92,7 +92,7 @@ fun FrameWindowScope.ConfigPanel(viewModel: MainViewModel) {
     val lastSaveDirectory by viewModel.lastSaveDirectory.collectAsState()
     val isQualityInputApplicable by viewModel.isQualityInputApplicable.collectAsState()
     val isInputEnabled by remember { derivedStateOf { status !is Initializing && status !is InProgress } }
-    Column(modifier = Modifier.fillMaxHeight()) {
+    Column {
         Spacer(Modifier.height(8.dp))
         LabeledDivider(label = LocalLanguage.current.messages.txtLblInput)
         Spacer(Modifier.height(8.dp))

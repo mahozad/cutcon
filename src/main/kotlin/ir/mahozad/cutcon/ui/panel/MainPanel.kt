@@ -42,7 +42,9 @@ fun MainPanel() {
         modifier = if (isFullscreen) {
             Modifier.fillMaxWidth()
         } else {
-            Modifier.width(DISPLAY_WIDTH.dp)
+            Modifier
+                .width(DISPLAY_WIDTH.dp)
+                .fillMaxHeight() // Needed to prevent window decoration white border in settings panel when in dark theme
         }
     ) {
         Box(
