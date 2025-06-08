@@ -9,15 +9,16 @@
 </div>
 
 # <img src="raw/logo.svg" alt="Logo"> Cutcon
-Cut, convert, and view media files (video, audio, image). Free and open source.
-
-Derived from another private project called [Clipper](https://mahozad.ir/cutcon).
+Cross-platform app to cut, convert, and view media files (video, audio, image). Free and open source.
 
 With ability to generate lossless (raw) and lossy output.  
 Supports adding watermark (overlay) and start image (intro) to MP4 output and artwork (album art) to MP3 output.
 
-Currently, only Windows is supported.  
-Support for Linux will come soon.
+Derived from another private project called [Clipper](https://mahozad.ir/cutcon).
+
+## Supported platforms
+<img width="1000px" alt="Supported operating systems" src="raw/supported-oses.svg" />
+The app is supported on Windows x64, common Linux x64 distros and also experimentally on macOS.
 
 ## Download
 See the bottom section of the [release page](https://github.com/mahozad/cutcon/releases).
