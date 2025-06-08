@@ -3,6 +3,7 @@ package ir.mahozad.cutcon.ui
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -120,14 +121,16 @@ class UiTest {
     }
 
     /**
-     * FFmpeg 5.1 gpl
+     * FFmpeg 7.1.1 full
      * ffmpeg.exe -f gdigrab -framerate 33.3333333 -i title="SplashScreenCreator" -plays 0 -y out.apng
      * ffmpeg.exe -ss 6s -to 9s -i out.apng -plays 0 out-trimmed.apng
-     * apngtogif converter 1.8 with threshold 64 to create the gif
+     * apngtogif converter 1.8 with threshold 64 to create the gif: https://sourceforge.net/projects/apng2gif
      * optimize the GIF with https://ezgif.com/optimize
      */
     @Test
     fun createSplashScreen() {
+        // Because the entire result is black, this is required before the call to `application(...`
+        System.setProperty("skiko.renderApi", "OPENGL")
         application(exitProcessOnExit = false) {
             Window(
                 title = "SplashScreenCreator",
@@ -151,7 +154,10 @@ class UiTest {
                             )
                         )
                     )
-                Box(modifier = Modifier.size(180.dp)) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(180.dp)
+                ) {
                     Image(
                         painter = painterResource("logo-background.svg"),
                         contentDescription = null,
@@ -159,7 +165,10 @@ class UiTest {
                     )
                     Image(
                         painter = painterResource("logo.svg"),
-                        contentDescription = null
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .offset(x = (-2).dp)
                     )
                 }
             }

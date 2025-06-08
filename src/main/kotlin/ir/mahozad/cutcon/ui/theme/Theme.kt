@@ -13,17 +13,16 @@ import androidx.compose.ui.unit.TextUnit
 import ir.mahozad.cutcon.LocalLanguage
 import org.jetbrains.compose.resources.Font
 
-
 private val LightColors = lightColors(
-    primary = Color(0xff208bb2),
-    secondary = Color(0xff208bb2),
-    primaryVariant = Color(0xff1faedc)
+    primary = Color(0xff06a2f7),
+    secondary = Color(0xff06a2f7),
+    primaryVariant = Color(0xff0694f9)
 )
 
 private val DarkColors = darkColors(
-    primary = Color(0xff1faedc),
-    secondary = Color(0xff1faedc),
-    primaryVariant = Color(0xff208bb2)
+    primary = Color(0xff06a2f7),
+    secondary = Color(0xff06a2f7),
+    primaryVariant = Color(0xff06c5f5)
 )
 
 private val animationSpec = tween<Color>(durationMillis = 250, easing = Ease)

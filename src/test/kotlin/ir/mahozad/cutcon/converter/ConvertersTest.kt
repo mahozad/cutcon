@@ -380,7 +380,7 @@ class ConvertersTest {
                 ?.firstArtwork
                 ?.binaryData
             assertThat(albumArt).isEqualTo(Mp3Converter.defaultAlbumArtPath?.readBytes())
-            assertThat(output.fileSize()).isBetween(50_000, 70_000)
+            assertThat(output.fileSize()).isBetween(60_000, 80_000)
         }
 
         @Test

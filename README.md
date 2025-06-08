@@ -2,9 +2,9 @@
 
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="raw/demo-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="raw/demo-light.png">
-    <img alt="Cutcon demo screenshot" src="raw/demo-light.png">
+    <source media="(prefers-color-scheme: dark)" srcset="raw/demo-dark.jpg">
+    <source media="(prefers-color-scheme: light)" srcset="raw/demo-light.jpg">
+    <img alt="Cutcon demo screenshot" src="raw/demo-light.jpg">
   </picture>
 </div>
 
@@ -27,7 +27,7 @@ In addition to being a merge of the words **cut** and **con**vert,
 it is also a Persian/Farsi name, meaning literally, *do the cut*.
 
 ## The logo
-Represents the capitalized name of the app, **CUTCON**.
+Represents the two *C* letters in the name.
 
 ## Similar apps
   - LosslessCut: https://github.com/mifi/lossless-cut

@@ -3,8 +3,9 @@ See the test in UiTest source set to generate the splash screen GIF.
 
 ## Demo images
 Run the app and play the file available in git branch demo-video downloaded from pexels.com.
+Set `System.setProperty("skiko.renderApi", "OPENGL")` before `application {}` block if the result is all black.
 
-With FFmpeg 5.1 gpl:
+With FFmpeg 7.1.1 full:
 ffmpeg.exe -f gdigrab -framerate 1 -i title="Cutcon" out.apng
 ffmpeg.exe -i out.apng -r 1/1 "$file%03d".png
 
