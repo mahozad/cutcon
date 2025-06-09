@@ -82,16 +82,16 @@ fun showErrorWindow(error: Throwable?, theme: Theme, language: Language) {
 @Composable
 private fun Prompt(language: Language) {
     val scope = rememberCoroutineScope()
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Button(onClick = scope::openAppLogFolder) {
-            Text(
-                text = language.messages.openLogFolder,
-                fontSize = defaultFontSize
-            )
-        }
-        Spacer(Modifier.width(8.dp))
+    Text(
+        text = language.messages.error,
+        fontSize = defaultFontSize
+    )
+    Button(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = scope::openAppLogFolder
+    ) {
         Text(
-            text = language.messages.error,
+            text = language.messages.openLogFolder,
             fontSize = defaultFontSize
         )
     }
