@@ -1,0 +1,33 @@
+name: Create macOS release
+
+on:
+  push:
+    tags:
+      - v*
+
+env:
+  vlcCompression: true
+  vlcAllPlugins: false
+
+jobs:
+  create-release-mac:
+    name: Create release for macOS
+    runs-on: macos-13
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+      - name: Set up a specific Java version
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin" # OR adopt OR microsoft OR...
+          java-version: "24"
+      - name: Create the release
+        # *release* tasks failed because of many proguard warnings
+        # Also, to check if the app runs OK, can execute runDistributable
+        #  and check the app logs in the GitHub Actions workflow run
+        run: ./gradlew createDistributable --stacktrace
+      - name: Upload the release
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-files
+          path: build/compose/binaries/main/app/
