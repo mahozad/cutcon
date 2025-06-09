@@ -25,7 +25,6 @@ enum class Shortcut(
     AUDIO_MUTE_TOGGLE(   symbol = "M",            keys = listOf(Key.M)),
     AUDIO_DECREASE(      symbol = "\uD83E\uDC05", keys = listOf(Key.DirectionDown)),
     AUDIO_INCREASE(      symbol = "\uD83E\uDC07", keys = listOf(Key.DirectionUp)),
-    LIVE_PLAY(           symbol = "L",            keys = listOf(Key.L)),
     PLAY_PAUSE(          symbol = "Space",        keys = listOf(Key.Spacebar)),
     PIN_TOGGLE(          symbol = "P",            keys = listOf(Key.P)),
     SCREENSHOT_TAKE(     symbol = "S",            keys = listOf(Key.S))

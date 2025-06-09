@@ -567,7 +567,7 @@ class UtilitiesTest {
                             ChangelogCategory(
                                 type = CategoryType.FEATURE,
                                 entries = listOf(
-                                    ChangelogEntry(items = listOf("Add progress/seek bar and live button to mini player")),
+                                    ChangelogEntry(items = listOf("Add progress/seek bar and restore button to mini player")),
                                     ChangelogEntry(items = listOf("Add a new slow speed (0.75)"))
                                 )
                             ),
@@ -661,7 +661,7 @@ class UtilitiesTest {
                             ChangelogCategory(
                                 type = CategoryType.FEATURE,
                                 entries = listOf(
-                                    ChangelogEntry(items = listOf("اضافه شدن نوار پیشرفت و جلو/عقب و دکمه پخش زنده به پخش\u200Cکننده مینی")),
+                                    ChangelogEntry(items = listOf("اضافه شدن نوار پیشرفت و جلو/عقب و دکمه بازیابی به پخش\u200Cکننده مینی")),
                                     ChangelogEntry(items = listOf("اضافه شدن یک سرعت جدید (۰٫۷۵)"))
                                 )
                             ),

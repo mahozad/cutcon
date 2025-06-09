@@ -4,7 +4,6 @@ import androidx.compose.ui.text.TextRange
 import io.mockk.*
 import ir.mahozad.cutcon.*
 import ir.mahozad.cutcon.component.DefaultUrlMaker
-import ir.mahozad.cutcon.component.SystemDateTime
 import ir.mahozad.cutcon.component.UrlMaker
 import ir.mahozad.cutcon.converter.Converter
 import ir.mahozad.cutcon.converter.ConvertersTest
@@ -26,7 +25,6 @@ import org.junit.jupiter.api.io.CleanupMode
 import org.junit.jupiter.api.io.TempDir
 import java.net.URI
 import java.nio.file.Path
-import java.time.LocalTime
 import java.util.prefs.Preferences
 import kotlin.io.path.Path
 import kotlin.io.path.div
@@ -104,15 +102,6 @@ class MainViewModelTest {
             .get(viewModel) as Preferences
         assertThat(preferences.absolutePath()).isEqualTo("/ir/mahozad/cutcon")
     }
-
-    @Test
-    fun `When the current time minutes and seconds is zero, live seek fraction should be zero, not infinity`() =
-        runTest {
-            mockkObject(SystemDateTime)
-            every { SystemDateTime.nowTime() } returns LocalTime.of(10, 0, 0)
-            assertThat(liveSeekFraction).isEqualTo(0f)
-            unmockkAll()
-        }
 
     @Test
     fun `Converting a TV clip to MP3 format should succeed`(

@@ -35,7 +35,6 @@ data object MessagesEn : Messages {
     override val seek5SecondsForward = "Seek 5 seconds forward"
     override val seek30SecondsBackward = "Seek 30 seconds backward"
     override val seek30SecondsForward = "Seek 30 seconds forward"
-    override val livePlayback = "Live playback"
     override val takeScreenshotAndSaveIn = "Take screenshot (S) and save in:"
     override val resumeMediaPlayback = "Resume playback"
     override val pauseMediaPlayback = "Pause playback"

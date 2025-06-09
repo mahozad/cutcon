@@ -8,7 +8,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.oshai.kotlinlogging.KotlinLogging.logger
 import ir.mahozad.cutcon.component.DefaultDurationConverter
-import ir.mahozad.cutcon.component.SystemDateTime
 import ir.mahozad.cutcon.localization.Language
 import ir.mahozad.cutcon.localization.LanguageEn
 import ir.mahozad.cutcon.localization.Messages
@@ -19,7 +18,6 @@ import kotlin.io.path.Path
 import kotlin.io.path.div
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 const val DISPLAY_WIDTH = 600  // 16:9 aspect ratio
@@ -42,18 +40,6 @@ val assetsPath = System
     ?: error(Messages.ERR_COMPOSE_RES_DIR_NOT_SET)
 
 val defaultMusicCoverArt by lazy { decodeImage(path = assetsPath / "music.svg") }
-
-/**
- * Because VLC has a problem that finishes the media when seeking to 1.0f,
- * the seek fraction is a few seconds (aka [liveSeekSafeMargin]) before the media end.
- */
-val liveSeekFraction: Float get() {
-    val now = SystemDateTime.nowTime()
-    val nowDuration = now.minute.minutes + now.second.seconds
-    val safeMarginFraction = liveSeekSafeMargin / nowDuration
-    return 1 - safeMarginFraction.toFloat().coerceIn(0f..1f)
-}
-val liveSeekSafeMargin = 5.seconds
 // A fake path is used because the source is non-null, and we don't want
 // to show any file on app startup. Also, the path name below will be
 // shown as the source input text when the app starts.

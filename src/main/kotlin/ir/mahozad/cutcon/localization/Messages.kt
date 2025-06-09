@@ -36,7 +36,6 @@ sealed interface Messages {
     val seek5SecondsForward: String
     val seek30SecondsBackward: String
     val seek30SecondsForward: String
-    val livePlayback: String
     val takeScreenshotAndSaveIn: String
     val resumeMediaPlayback: String
     val pauseMediaPlayback: String

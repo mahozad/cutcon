@@ -124,10 +124,7 @@ class DefaultMediaPlayer : MediaPlayer {
      *
      * The `onBufferOverflow` should be set to something other than [BufferOverflow.SUSPEND] so that
      * the [MutableSharedFlow.tryEmit] calls won't drop the new value on fast emissions.
-     * This caused a bug when going live from a date and time different from now because by clicking the live button,
-     * the date and time were updated separately and the [MediaPlayer.play] would be called for each of their new value
-     * separately very fast and this sometimes caused the [MutableSharedFlow.tryEmit] to drop the latest output
-     * and thus the output remained the last video which by now would be closed and empty.
+     * Read the rest of the reason in Clipper repository.
      */
     override val output = MutableSharedFlow<MediaPlayer.Output>(
         replay = 2, onBufferOverflow = BufferOverflow.DROP_OLDEST

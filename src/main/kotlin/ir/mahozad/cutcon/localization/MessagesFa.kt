@@ -34,7 +34,6 @@ data object MessagesFa : Messages {
     override val seek5SecondsForward = "رفتن به ۵ ثانیه بعد"
     override val seek30SecondsBackward = "رفتن به ۳۰ ثانیه قبل"
     override val seek30SecondsForward = "رفتن به ۳۰ ثانیه بعد"
-    override val livePlayback = "پخش زنده"
     override val takeScreenshotAndSaveIn = "گرفتن عکس (S) و ذخیره در:"
     override val resumeMediaPlayback = "ادامه پخش"
     override val pauseMediaPlayback = "توقف پخش"

@@ -10,8 +10,8 @@
 
 ## v1.2.0 (2023-06-15)
 #### New features
-  - (En) Add progress/seek bar and live button to mini player ([`76206c93`](https://github.com/mahozad/cutcon/commit/76206c93))
-  - (Fa) اضافه شدن نوار پیشرفت و جلو/عقب و دکمه پخش زنده به پخش‌کننده مینی
+  - (En) Add progress/seek bar and restore button to mini player ([`76206c93`](https://github.com/mahozad/cutcon/commit/76206c93))
+  - (Fa) اضافه شدن نوار پیشرفت و جلو/عقب و دکمه بازیابی به پخش‌کننده مینی
   - (En) Add a new slow speed (0.75) ([`50a640b1`](https://github.com/mahozad/cutcon/commit/50a640b1))
   - (Fa) اضافه شدن یک سرعت جدید (۰٫۷۵)
 
