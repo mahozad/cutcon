@@ -1,5 +1,36 @@
 # History of notable changes introduced in each version
 
+## v4 (2024-06-09) (Based on Clipper v1.20.0)
+#### New features
+  - (En) Add support for Linux operating system
+    + (En) Most common distributions should be supported
+  - (Fa) افزودن پشتیبانی از سیستم‌عامل لینوکس
+    + (Fa) بیشتر توزیع‌های رایج لینوکس باید پشتیبانی شود
+  - (En) Add support for macOS operating system (experimental)
+  - (Fa) افزودن پشتیبانی از سیستم‌عامل مک (آزمایشی)
+  - (En) Add support for playing FLAC audio format
+  - (Fa) افزودن قابلیت پخش فرمت صوتی FLAC
+  - (En) Add support for playing Opus audio format
+  - (Fa) افزودن قابلیت پخش فرمت صوتی Opus
+
+#### Updates
+  - (En) Update app brand (logo, colors, styles)
+  - (Fa) بروزرسانی برند برنامه (لوگو، رنگ‌ها، استایل‌ها)
+  - (En) Improve media player to hugely boost its performance
+  - (Fa) پیاده‌سازی مجدد پخش‌کننده‌ی رسانه و بهبود چشمگیر عملکرد آن
+  - (En) Use fake file for the app default input source
+  - (Fa) استفاده از یک پرونده ساختگی برای منبع ورودی پیش‌فرض برنامه
+  - (En) Make theme colors change with animation
+  - (Fa) افزودن انیمیشن به تغییر رنگ پوسته‌ی برنامه
+  - (En) Update the app error window layout
+  - (Fa) بروزرسانی چینش صفحه‌ی خطای برنامه
+  - (En) Change log file directory to user home
+  - (Fa) تغییر پوشه فایل وقایع (لاگ) به پوشه کاربر
+
+#### Other
+  - (En) Several improvements in app code (various commits)
+  - (Fa) بهبودهای مختلف در کد برنامه
+
 ## v3 (2024-07-21) (Based on Clipper v1.19.0)
 #### New features
   - (En) Add support for launching the app with OS Open with...

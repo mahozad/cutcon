@@ -17,10 +17,10 @@ plugins {
 
 val appResourcesPath = rootDir.toPath() / "src" / "asset"
 val vlcDirectoryName = "vlc"
-val releaseDate: LocalDate = LocalDate.of(2024, 7, 21)
+val releaseDate: LocalDate = LocalDate.of(2025, 6, 9)
 
 group = "ir.mahozad"
-version = "3"
+version = "4"
 
 vlcSetup {
     vlcVersion = libs.versions.vlc.get()
