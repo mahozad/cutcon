@@ -54,7 +54,10 @@ val liveSeekFraction: Float get() {
     return 1 - safeMarginFraction.toFloat().coerceIn(0f..1f)
 }
 val liveSeekSafeMargin = 5.seconds
-val defaultSource by lazy { Source.Local(assetsPath / "logo.svg") }
+// A fake path is used because the source is non-null, and we don't want
+// to show any file on app startup. Also, the path name below will be
+// shown as the source input text when the app starts.
+val defaultSource by lazy { Source.Local(Path("Example file")) }
 val defaultTimeStamp = Duration.ZERO
 val defaultClip = Clip(defaultTimeStamp, defaultTimeStamp)
 val defaultFormat = Format.MP4
