@@ -1,71 +1,96 @@
+* {
+   margin: 0;
+   box-sizing: border-box;
+}
+
 body {
-    padding-inline: 16px;
-    padding-block-start: 8px;
     display: flex;
     flex-flow: column;
     align-items: center;
-    background: radial-gradient(#fff, #A7821A10);
-
-    /*background: url(logo-clipper.svg) no-repeat center;*/
-    /*backdrop-filter: blur(100px);*/
-    margin: 0;
+    background: radial-gradient(#fff, #1a77a710);
+    padding-block: 16px;
     min-height: 100vh;
 }
 
-#container {
-    border: 1px solid black;
-    padding-inline: 16px;
-    padding-block-end: 16px;
-    border-radius: 8px;
-}
-
 main {
+    border: 1px solid #000;
+    padding: 16px;
+    border-radius: 12px;
     display: flex;
     flex-flow: column;
     justify-content: center;
-    gap: 8px;
-    margin-block-start: 24px;
+    gap: 16px;
+}
+
+a {
+    color: #0077cc;
 }
 
 .paragraph-with-icon {
     text-underline-offset: 2px;
+}
 
-    > img {
-        vertical-align: middle;
-    }
+#cutcon-logo {
+    height: 32px;
+    vertical-align: middle;
+    margin-block-start: -8px;
+    margin-inline-end: 4px;
 }
 
 #clipper-logo {
-    width: 20px;
-    height: 20px;
+    height: 24px;
+    vertical-align: middle;
+    margin-block-start: -4px;
 }
 
 #github-logo {
-    width: 18px;
-    height: 18px;
+    height: 20px;
+    vertical-align: middle;
+    margin-block-start: -4px;
 }
 
-.media-container {
-    display: flex;
-    flex-flow: column;
-    /*align-items: center;*/
-
-    .title {
-        color: #A7821A;
-    }
-
+#media-container {
+    margin-block-start: 4px;
     .media {
         width: 90vw;
         max-width: 400px;
         border: 1px solid gray;
         border-radius: 6px;
-        /*height: 400px;*/
-        /*clip-path: inset(5px 5px); !* To hide the black border around video *!*/
+    }
+}
+
+/*
+ * Hides the scrollbar when there is .zoomable-image.zoomed-image in the page.
+ * Not perfect (a quick glitch of scrollbar) when zooming out using mouse wheel.
+ * For current solution which downscales the image a little bit see the script file.
+ */
+/*
+html:has(.zoomable-image.zoomed-image) {
+    scrollbar-width: none;
+}
+*/
+
+#zoom-backdrop {
+    transition: all 200ms ease;
+    &.zoomed-image {
+        position: fixed;
+        inset: 0 0 0 0;
+        opacity: 0.88;
+        background: #fff;
+    }
+}
+
+.zoomable-image {
+    cursor: zoom-in;
+    transition: transform 300ms ease;
+    &.zoomed-image {
+        position: relative;
+        cursor: zoom-out;
     }
 }
 
 @media (width < 450px) {
-    #container {
+    main {
         border: none;
     }
 }

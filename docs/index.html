@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Cutcon</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="https://raw.githubusercontent.com/mahozad/cutcon/refs/heads/main/raw/logo.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
 </head>
 <body>
-<div id="container">
-    <h1>Cutcon: based on Clipper</h1>
+<main>
+    <h1><img id="cutcon-logo" src="cutcon-logo.svg" alt="Cutcon logo">Cutcon: based on Clipper</h1>
     <p class="paragraph-with-icon">
         <span>Cutcon is derived from another project called</span>
         <img id="clipper-logo" src="clipper-logo.svg" alt="Clipper logo">
@@ -23,20 +28,15 @@
         </a>
         <span>.</span>
     </p>
-    <p>A screenshot and a demo movie of Clipper is shown below.</p>
-    <main>
-        <div class="media-container">
-            <a href="clipper-screenshot.png" target="_blank">
-                <img class="media" src="clipper-screenshot.png" alt="Clipper screenshot">
-            </a>
-        </div>
-        <div class="media-container">
-            <video class="media" controls>
-                <source src="clipper-video.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-        </div>
-    </main>
-</div>
+    <p>A screenshot of the Cutcon application is shown below:</p>
+
+    <div id="media-container">
+        <div id="zoom-backdrop"></div>
+        <img
+            class="media zoomable-image"
+            src="https://raw.githubusercontent.com/mahozad/cutcon/refs/heads/main/raw/demo-light.jpg"
+            alt="Cutcon screenshot">
+    </div>
+</main>
 </body>
 </html>
