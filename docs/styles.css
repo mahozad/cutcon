@@ -20,6 +20,9 @@ main {
     flex-flow: column;
     justify-content: center;
     gap: 16px;
+    @media (width < 450px) {
+        border: none;
+    }
 }
 
 a {
@@ -47,6 +50,31 @@ a {
     height: 20px;
     vertical-align: middle;
     margin-block-start: -4px;
+}
+
+#download {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-inline-end: 32px;
+    @media (width < 370px) {
+        margin-inline-end: 8px;
+    }
+    p {
+        flex-basis: 0;
+        @media (width < 370px) {
+            flex-basis: 100%;
+            width: 100%;
+        }
+    }
+    a {
+        flex: 1 1 0;
+        text-align: center;
+        border: 1px solid #000;
+        border-radius: 4px;
+        text-decoration: none;
+        padding-inline: 8px;
+    }
 }
 
 #media-container {
@@ -86,11 +114,5 @@ html:has(.zoomable-image.zoomed-image) {
     &.zoomed-image {
         position: relative;
         cursor: zoom-out;
-    }
-}
-
-@media (width < 450px) {
-    main {
-        border: none;
     }
 }
