@@ -27,6 +27,10 @@ main {
 
 a {
     color: #0077cc;
+    transition: all 70ms;
+    &:hover {
+        color: #11a900;
+    }
 }
 
 .paragraph-with-icon {
