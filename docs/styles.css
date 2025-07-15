@@ -27,7 +27,7 @@ main {
 
 a {
     color: #0077cc;
-    transition: all 70ms;
+    transition: color 70ms;
     &:hover {
         color: #11a900;
     }
@@ -78,6 +78,10 @@ a {
         border-radius: 4px;
         text-decoration: none;
         padding-inline: 8px;
+        transition: all 200ms;
+        &:hover {
+            flex: 1.5;
+        }
     }
 }
 
