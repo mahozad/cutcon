@@ -1,3 +1,18 @@
+fetch("https://api.github.com/repos/mahozad/cutcon/releases/latest")
+    .then(result => result.json())
+    .then(json => json.tag_name)
+    .then(updateDownloadLinks);
+
+function updateDownloadLinks(tag) {
+    const baseUrl = `https://github.com/mahozad/cutcon/releases/download/${tag}`;
+    const windows = `${baseUrl}/cutcon-${tag}-win-x64.exe`;
+    const linux = `${baseUrl}/cutcon-${tag}-lin-x64.tar.gz`;
+    const mac = `${baseUrl}/cutcon-${tag}-mac-x64.zip`;
+    document.querySelector("#download-windows").setAttribute("href", windows);
+    document.querySelector("#download-linux").setAttribute("href", linux);
+    document.querySelector("#download-mac").setAttribute("href", mac);
+}
+
 ///////////////////////////////////////////////////////
 // Adopted from https://stackoverflow.com/a/62976646 //
 ///////////////////////////////////////////////////////
