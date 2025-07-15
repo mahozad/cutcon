@@ -30,10 +30,12 @@ it is also a Persian/Farsi name, meaning literally, *do the cut*.
 ## The logo
 Represents the two *C* letters in the name.
 
-## Similar apps
+## Similar and alternative apps
   - LosslessCut: https://github.com/mifi/lossless-cut
   - simple-video-cutter: https://github.com/bartekmotyl/simple-video-cutter
   - HandBrake: https://github.com/HandBrake/HandBrake
   - VidCutter: https://github.com/ozmartian/vidcutter
   - Shotcut: https://github.com/mltframework/shotcut
+  - OpenCut: https://github.com/OpenCut-app/OpenCut
+  - CapCut: https://www.capcut.com/
   - Olive: https://github.com/olive-editor/olive
