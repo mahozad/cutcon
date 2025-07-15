@@ -1,9 +1,14 @@
 fetch("https://api.github.com/repos/mahozad/cutcon/releases/latest")
     .then(result => result.json())
     .then(json => json.tag_name)
-    .then(updateDownloadLinks);
+    .then(updateDownloadLinks)
+    .catch(error => {
+        console.log("Error updating download links:", error);
+        console.log("Using the repo release page for links");
+    });
 
 function updateDownloadLinks(tag) {
+    if (!tag.startsWith("v")) return;
     const baseUrl = `https://github.com/mahozad/cutcon/releases/download/${tag}`;
     const windows = `${baseUrl}/cutcon-${tag}-win-x64.exe`;
     const linux = `${baseUrl}/cutcon-${tag}-lin-x64.tar.gz`;
