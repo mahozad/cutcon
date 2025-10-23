@@ -9,12 +9,13 @@
 </div>
 
 # <img src="raw/logo.svg" alt="Logo"> Cutcon
-Cross-platform app to cut, convert, and view media files (video, audio, image). Free and open source.
+Cross-platform app to cut/trim, convert/re-encode, and play/view media files (video, audio, image).  
+Free and open source.
 
 With ability to generate lossless (raw) and lossy output.  
 Supports adding watermark (overlay) and start image (intro) to MP4 output and artwork (album art) to MP3 output.
 
-Derived from another private project called [Clipper](https://mahozad.ir/cutcon).
+Derived from another private project called Clipper.
 
 ## Supported platforms
 <img width="1000px" alt="Supported operating systems" src="raw/supported-oses.svg" />
@@ -39,3 +40,6 @@ Represents the two *C* letters in the name.
   - OpenCut: https://github.com/OpenCut-app/OpenCut
   - CapCut: https://www.capcut.com/
   - Olive: https://github.com/olive-editor/olive
+  - Avidemux2: https://github.com/mean00/avidemux2
+  - Videomass: https://github.com/jeanslack/Videomass
+  - VidCoder: https://github.com/RandomEngy/VidCoder
